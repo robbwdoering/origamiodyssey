@@ -13,36 +13,38 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 
 // import OriDomi from "oridomi";
-
-import { useStyles, theme } from "./../theme.js";
+import { setShowNavDrawer } from "./../infra/actions";
+import useStyles from "./../style/theme.js";
 
 export const Header = props => {
-	const {} = props;
+	const { setShowNavDrawer } = props;
 
 	const [ showMenu, setShowMenu ] = useState(false);
 
-	const styles = useStyles(theme);
+	const styles = useStyles();
 	const fold = useRef(null);
 
 	const toggleMenu = (e) => {
 		console.log("toggleMenu");
-		setShowMenu(showMenu ? false : e.currentTarget);
+		setShowNavDrawer();
 	};
 
 	const handleClickAway = e => {
-		console.log("clickAwawy")
-		setShowMenu(false);
+		setShowNavDrawer(false);
 	}
+
+	console.log(styles);
 
 	return (
 		<React.Fragment>
-			<AppBar position="static" className="header">
+			<AppBar className={styles.appBarContainer}>
 				<Toolbar>
 					<IconButton edge="start" className="menu-button" color="inherit" aria-label="open drawer" onClick={toggleMenu}>
 						<MenuIcon />
 					</IconButton>
 					<Typography className="app-title" variant="h6" noWrap>
-						Origami Odyssey
+						<img height='32px' src={window.location.origin + '/logo192.png'} />
+						origami odyssey
 					</Typography>
 					<div className={styles.searchContainer}>
 						<div className={styles.searchIcon}>
@@ -83,4 +85,4 @@ export const mapStateToProps = (state, props) => {
 	return {};
 };
 
-export default connect(mapStateToProps, {})(Header);
+export default connect(mapStateToProps, { setShowNavDrawer })(Header);

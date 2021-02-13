@@ -11,3 +11,29 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.oridomi-root {
+  background-color: #f1f4f4;
+  height: 300px;
+  width: 200px;
+  position: absolute;
+  left: 10px;
+  border: 1px solid red;
+}
+
+.nested-level-0 {
+  height: 48px;
+}
+
+.nested-level-1 {
+  height: 38px;
+  padding: 4px 16px 4px 48px !important;
+}
+
+.nested-level-2 {
+  height: 48px;
+}
+
+.MuiAppBar-root {
+  z-index: 3000 !important;
+}

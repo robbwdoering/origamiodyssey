@@ -15,9 +15,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 // React Spring - animation
 import { useUpdate, useSpring, useSprings, animated, config }  from 'react-spring';
-import { a, useTransition, Transition } from '@react-spring/three';
+// import { a, useTransition, Transition } from '@react-spring/three';
 
-import { Paper } from "./../paper/Paper";
+import { Paper } from "./Paper";
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
