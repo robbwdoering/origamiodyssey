@@ -42,8 +42,8 @@ export const Header = props => {
 					<IconButton edge="start" className="menu-button" color="inherit" aria-label="open drawer" onClick={toggleMenu}>
 						<MenuIcon />
 					</IconButton>
-					<Typography className="app-title" variant="h6" noWrap>
-						<img height='32px' src={window.location.origin + '/logo192.png'} />
+					<img className={styles.appLogo} height='28px' src={window.location.origin + '/logo512x256.png'} />
+					<Typography className={styles.appTitle} variant="h6" noWrap>
 						origami odyssey
 					</Typography>
 					<div className={styles.searchContainer}>

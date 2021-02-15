@@ -24,6 +24,12 @@ export const useStyles = makeStyles(theme => ({
 		position: 'static',
 		zIndex: 3000,
 	},
+	appTitle: {
+		verticalAlign: 'middle'
+	},
+	appLogo: {
+
+	},
 	searchContainer: {
 		position: 'relative',
 		borderRadius: theme.shape.borderRadius,
@@ -77,9 +83,19 @@ export const useStyles = makeStyles(theme => ({
 	navDrawerNode2: {
 		color: 'red'
 	},
-	sceneContatiner: {
-
-	}
+	bodyContainer: {
+		marginTop: theme.spacing(8),
+		textAlign: 'center'
+	},
+	centerColumn: {
+		maxWidth: '1200px',
+		margin: '0 auto',
+	},
+	sceneContainer: {
+		width: '100%',
+		height: '100%',
+		display: 'absolute'
+	},
 }));
 
 export default useStyles;

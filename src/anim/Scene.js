@@ -32,8 +32,9 @@ const CameraControls = () => {
 	} = useThree();
 
 	const controls = useRef();
+
 	useFrame(({ gl }) => {
-		gl.setClearColor(0x080405, 1);
+		gl.setClearColor(0xf1f4f4, 1);
 		return controls.current.update();
 	});
 
@@ -59,19 +60,21 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const {} = props;
+	const { paperSize } = props;
 
 	const canvas = useRef();
 
+	console.log(paperSize);
+
 	return (
 		<React.Fragment>
-			<Canvas ref={canvas} camera={{fov: 100, position: [0, 6, 0]}} >
+			<Canvas ref={canvas} camera={{fov: 100, position: [0, 1.5, 0]}} >
 				<spotLight position={[5, 10, 0]} color='#f1f1ff' distance={100} penumbra={0.75} decay={2} />
 				<CameraControls />
 
 				<Paper
 					position={[0, 0, 0]}
-					scale={5}
+					scale={10}
 				/>
 			</Canvas>
 		</React.Fragment>

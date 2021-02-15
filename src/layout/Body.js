@@ -25,6 +25,8 @@ export const Body = props => {
 	const { page, setLayoutState } = props;
 
 	const styles = useStyles();
+	const containerRef = useRef();
+	const [curHash, setHash] = useState(0);
 
 	const renderPage = () => {
 		switch (page) {
@@ -37,10 +39,26 @@ export const Body = props => {
 		}	
 	};
 
+	const triggerRerender = () => {
+		setHash(cur => cur + 1);
+	};
+
+	const sceneHeight = useMemo(() => {
+		// The scene always fills the window after accounting for the AppBar
+		return window.innerHeight - 64;
+	}, [curHash]);
+
+	useEffect(() => {
+		window.addEventListener("resize", triggerRerender);
+	}, []);
+
 	return (
-		<div className="body">
-			<div className={styles.sceneContainer}>
-				<Scene />
+		<div className={styles.bodyContainer} ref={containerRef}>
+			<div className={styles.sceneContainer} style={{height: sceneHeight + 'px'}}>
+				<Scene paperSize={sceneHeight}/>
+			</div>
+			<div className={styles.centerColumn}>
+
 			</div>
 		</div>
 	);

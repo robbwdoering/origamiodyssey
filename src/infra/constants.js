@@ -94,3 +94,29 @@ export const initNavTree = [
 		key: "github"
 	},
 ];
+
+export const initFoldState = {
+	//place to store buffer geo vertex data
+	positions: [],
+	//place to store buffer geo vertex colors
+	colors: [],
+	indices: [],
+	nodes: [], 
+	faces: [], 
+	edges: [], 
+	creases: [], 
+	vertices: [], //indexed vertices array
+	fold: null,
+	creaseParams: null
+}
+
+/*
+export const Lines = {
+    U: hingeLines,
+    M: mountainLines,
+    V: valleyLines,
+    C: cutLines,
+    F: facetLines,
+    B: borderLines
+};
+*/
