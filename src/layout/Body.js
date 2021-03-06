@@ -17,26 +17,37 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import { Pages, initNavTree } from "./../infra/constants";
 import { setLayoutState } from "./../infra/actions";
 import Splash from "./pages/Splash";
-import Lesson from "./pages/Lesson";
+import ModelSelect from "./pages/ModelSelect";
+import FoldControls from "./pages/FoldControls";
+import User from "./pages/User";
 import Scene from "./../anim/Scene";
 import useStyles from "./../style/theme";
 
 export const Body = props => {
-	const { page, setLayoutState } = props;
+	const { layoutState, setLayoutState } = props;
 
-	const styles = useStyles();
+	const classes = useStyles();
 	const containerRef = useRef();
 	const [curHash, setHash] = useState(0);
 
 	const renderPage = () => {
-		switch (page) {
+		const pageProps = {};
+		console.log("renderPage", layoutState.page);
+
+		switch (layoutState.page) {
 			case Pages.Splash:
-				return <Splash />;
-			// case Pages.Lesson:
-			// 	return <Lesson />;
-			default:
-				return <div> error! </div>;
-		}	
+				return <Splash {...pageProps} />;
+			case Pages.ModelSelect:
+			console.log("MODEL!")
+				return <ModelSelect {...pageProps} />;
+			case Pages.Fold:
+				return <FoldControls {...pageProps} />;
+			case Pages.User:
+				return <User {...pageProps} />;
+			default: 
+				console.log("default!")
+				return <div />;
+		}
 	};
 
 	const triggerRerender = () => {
@@ -53,12 +64,12 @@ export const Body = props => {
 	}, []);
 
 	return (
-		<div className={styles.bodyContainer} ref={containerRef}>
-			<div className={styles.sceneContainer} style={{height: sceneHeight + 'px'}}>
-				<Scene paperSize={sceneHeight}/>
+		<div className={classes.bodyContainer} ref={containerRef}>
+			<div className={classes.sceneContainer} style={{height: sceneHeight + 'px'}}>
+				<Scene paperSize={sceneHeight} />
 			</div>
-			<div className={styles.centerColumn}>
-
+			<div className={classes.centerColumn}>
+				{renderPage()}
 			</div>
 		</div>
 	);
@@ -66,7 +77,8 @@ export const Body = props => {
 
 export const mapStateToProps = (state, props) => {
 	return {
-		page: state.appReducer.page,
+		layoutState: state.appReducer.layoutState,
+		layoutStateHash: state.appReducer.layoutStateHash
 	};
 };
 

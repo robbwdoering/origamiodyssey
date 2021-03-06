@@ -13,6 +13,11 @@ import GroupAddIcon from "@material-ui/icons/GroupAdd";
 
 export const Pages = {
 	Splash: "Splash",
+	ModelSelect: "ModelSelect",
+	Fold: "Fold",
+	User: "User",
+
+	// Used but undefined
 	Lesson: "Lesson",
 	History: "History",
 	LearnDashboard: "LearnDashboard",
@@ -21,8 +26,10 @@ export const Pages = {
 
 export const initAppReducerState = {
 	layoutState: {
-		curPage: Pages.Splash,
-		hash: 0
+		page: Pages.ModelSelect,
+		hash: 0,
+		curFoldName: null,
+		foldHash: 0
 	},
 	showNavDrawer: false
 };
@@ -108,6 +115,21 @@ export const initFoldState = {
 	vertices: [], //indexed vertices array
 	fold: null,
 	creaseParams: null
+}
+
+export const Folds = {
+	BirdBase: {
+		name: "Bird Base",
+		key: "bird_base"
+	},
+	BoatBase: {
+		name: "Boat Base",
+		key: "boat_base"
+	},
+	FrogBase: {
+		name: "Frog Base",
+		key: "frog_base"
+	}
 }
 
 /*

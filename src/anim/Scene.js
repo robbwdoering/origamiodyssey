@@ -17,7 +17,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useUpdate, useSpring, useSprings, animated, config }  from 'react-spring';
 // import { a, useTransition, Transition } from '@react-spring/three';
 
+import BirdBase from "./../folds/BirdBase.json";
+import BoatBase from "./../folds/BoatBase.json";
+import FrogBase from "./../folds/FrogBase.json";
 import { Paper } from "./Paper";
+import { Folds } from "./../infra/constants";
+import { setLayoutState } from "./../infra/actions";
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -48,10 +53,10 @@ const CameraControls = () => {
 			mouseButtons={{
 				RIGHT: THREE.MOUSE.ROTATE
 			}}
-			maxAzimuthAngle={Math.PI / 4}
-			maxPolarAngle={Math.PI}
-			minAzimuthAngle={-Math.PI / 4}
-			minPolarAngle={0}
+			// maxAzimuthAngle={Math.PI / 4}
+			maxPolarAngle={-Math.PI * 3 / 4}
+			// minAzimuthAngle={-Math.PI / 4}
+			minPolarAngle={-Math.PI * 3 / 4}
 		/>
 	);
 };
@@ -60,21 +65,35 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const { paperSize } = props;
+	const { paperSize, curFoldName, foldHash } = props;
 
-	const canvas = useRef();
+	const selectFold = () => {
+		switch (curFoldName) {
+			case Folds.BirdBase:
+				return BirdBase;
 
-	console.log(paperSize);
+			case Folds.BoatBase:
+				return BoatBase;
+
+			case Folds.FrogBase:
+				return FrogBase;
+		}
+	} 
+
+
+	const fold = useMemo(selectFold, []);
 
 	return (
 		<React.Fragment>
-			<Canvas ref={canvas} camera={{fov: 100, position: [0, 1.5, 0]}} >
+			<Canvas camera={{fov: 100, position: [0, 1.6, 0]}} >
 				<spotLight position={[5, 10, 0]} color='#f1f1ff' distance={100} penumbra={0.75} decay={2} />
 				<CameraControls />
 
 				<Paper
 					position={[0, 0, 0]}
 					scale={10}
+					fold={fold}
+					foldHash={foldHash}
 				/>
 			</Canvas>
 		</React.Fragment>
@@ -82,7 +101,10 @@ export const Scene = props => {
 };
 
 export const mapStateToProps = (state, props) => {
-	return {};
+	return {
+		curFoldName: state.appReducer.curFoldName,
+		foldHash: state.appReducer.foldHash
+	};
 };
 
-export default connect(mapStateToProps, {})(Scene);
+export default connect(mapStateToProps, { setLayoutState })(Scene);

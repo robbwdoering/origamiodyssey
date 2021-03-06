@@ -96,6 +96,21 @@ export const useStyles = makeStyles(theme => ({
 		height: '100%',
 		display: 'absolute'
 	},
+	page: {
+		Splash: {
+		},
+		ModelSelect: {
+			container: {
+				width: "100%",
+				height: "100%"
+			}
+		},
+		FoldControls: {
+		},
+		User: {
+		},
+
+	}	
 }));
 
 export default useStyles;

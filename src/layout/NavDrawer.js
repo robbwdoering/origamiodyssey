@@ -118,6 +118,7 @@ export const NavDrawer = props => {
 		// Nested component that just renders one node, with no regard for hierarchy beyond tracking nestedLevel
 		const Node = ({ node, nestedLevel }) => {
 			const icon = node.icon || (node.children ? (node.expanded ? <ArrowDropDownIcon /> : <ArrowRightIcon />) : null );
+			console.log("Key: ", node.key)
 
 			return (
 				<ListItem 
@@ -132,7 +133,7 @@ export const NavDrawer = props => {
 			);
 		};
 
-		let ret = [<Node node={node} nestedLevel={nestedLevel} />];
+		let ret = [<Node key={"node_"+node.key} node={node} nestedLevel={nestedLevel} />];
 
 		if (node.children && node.expanded) {
 			node.children.forEach(child => {
@@ -146,6 +147,7 @@ export const NavDrawer = props => {
 	return (
 		<SwipeableDrawer
 			anchor='left'
+			key="swipable-drawer"
 			classes={{
 				root: styles.navDrawerRoot,
 				paper: styles.navDrawerPaper
@@ -154,7 +156,7 @@ export const NavDrawer = props => {
 			onOpen={() => setShowNavDrawer(true)}
 			onClose={() => setShowNavDrawer(false)}
 		>
-			<List>
+			<List key="main-list">
 				{navTreeData.reduce((acc, node) => {
 					acc = acc.concat(renderNavNode(node));
 					return acc;

@@ -15,3 +15,8 @@ export const setLayoutState = payload => ({
 	type: Actions.SET_LAYOUT_STATE,
 	payload
 });
+
+export const setFoldName = payload => ({
+	type: Actions.SET_FOLD_NAME,
+	payload
+});
