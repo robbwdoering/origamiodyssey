@@ -29,7 +29,7 @@ export const FoldControls = () => {
 	// ----------------
 
 	const selectCardList = () => {
-		return Folds.filter(() => true);
+		return Object.keys(Folds).filter(() => true);
 	};
 
 

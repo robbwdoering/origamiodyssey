@@ -88,29 +88,53 @@ export const useStyles = makeStyles(theme => ({
 		textAlign: 'center'
 	},
 	centerColumn: {
+		width: '100%',
 		maxWidth: '1200px',
-		margin: '0 auto',
+		margin: '64px auto',
+		padding: "2rem"
 	},
 	sceneContainer: {
 		width: '100%',
 		height: '100%',
-		display: 'absolute'
+		position: 'absolute'
 	},
-	page: {
-		Splash: {
-		},
-		ModelSelect: {
-			container: {
-				width: "100%",
-				height: "100%"
-			}
-		},
-		FoldControls: {
-		},
-		User: {
-		},
-
-	}	
+	page_Splash: {
+	},
+	page_ModelSelect_container: {
+		width: "100%",
+		height: "100%"
+	},
+	page_FoldControls: {
+	},
+	page_User: {
+	},
+	modelCard: {
+		position: "absolute",
+	},
+	modelCard__active: {
+		zIndex: 300,
+	},
+	modelCard_title: {
+		padding: "0.5rem",
+		textAlign: "left",
+	},
+	modelCard_placeholder: {
+		height: "180px",
+		width: "200px",
+		display: "inline-block",
+		width: "200px",
+		margin: "0 10px"
+	},
+	modelCard_rail: {
+		flexGrow: 1,
+	},
+	modelCard_rail__container: {
+		display: "flex !important",
+		flexDirection: "row"
+	},
+	modelCard_foldButton: {
+		float: 'right'
+	}
 }));
 
 export default useStyles;

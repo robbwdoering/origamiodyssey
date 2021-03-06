@@ -38,7 +38,6 @@ export const Body = props => {
 			case Pages.Splash:
 				return <Splash {...pageProps} />;
 			case Pages.ModelSelect:
-			console.log("MODEL!")
 				return <ModelSelect {...pageProps} />;
 			case Pages.Fold:
 				return <FoldControls {...pageProps} />;
