@@ -10,13 +10,14 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 // Threejs - 3D Animation
 import { Canvas, useFrame, useThree, useLoader, extend } from 'react-three-fiber';
 import * as THREE from 'three';
+import { Line } from '@react-three/drei';
 
 // React Spring - animation
 import { a, useSpring } from '@react-spring/three';
 // import { a, useTransition, Transition } from '@react-spring/three';
 
 export const Paper = props => {
-	const { position, scale, initStep, fold, foldHash } = props;
+	const { position, scale, initStep, fold, foldKey } = props;
 
 	// ----------
 	// STATE INIT 
@@ -32,27 +33,46 @@ export const Paper = props => {
 	// MEMBER FUNCTIONS 
 	// ----------------
 
-	const createGeometry = () => {
-        let geometry = new THREE.BufferGeometry();
+	const cleanFoldFile = foldObj => {
+		const maxes = ([0, 2]).map(i => foldObj.vertices_coords.reduce(
+			(max, coords) => Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max,
+			0	
+		));
+
+		foldObj.vertices_coords = foldObj.vertices_coords.map(coords =>
+			new THREE.Vector3(coords[0] / maxes[0], 0, coords[1] / maxes[1])
+		);
+		console.log("[cleanFoldFile]", {maxes, foldObj});
+	};
+
+	const initGeometry = () => {
+        // let geometry = new THREE.BufferGeometry();
         // geometry.verticesNeedUpdate = true;
-        geometry.dynamic = true;
+        // geometry.dynamic = true;
 
-        lines.current.forEach(line => {
-            var lineGeometry = line.geometry;
-            if (lineGeometry) {
-                line.geometry = null;
-                lineGeometry.dispose();
-            }
+        // lines.current.forEach(line => {
+        //     var lineGeometry = line.geometry;
+        //     if (lineGeometry) {
+        //         line.geometry = null;
+        //         lineGeometry.dispose();
+        //     }
 
-            line.geometry = new THREE.BufferGeometry();
-            lineGeometry.dynamic = true;
-        });
+        //     line.geometry = new THREE.BufferGeometry();
+        //     lineGeometry.dynamic = true;
+        // });
 
-        if (fold) {
-        	
+        if (!fold) {
+        	return;
         }
 
-        return geometry;
+
+        let foldObj = JSON.parse(JSON.stringify(fold));
+        cleanFoldFile(foldObj);
+
+    	lines.current = fold.edges_vertices.map((vertexIndices, edgeIndex) => {
+    	});
+
+        // return geometry;
 	};
 
 	const createMaterial = () => {
@@ -75,18 +95,21 @@ export const Paper = props => {
 		// rotation.current = [0, rotation.current[1] + 1, 0];
 	});
 
-	const geometry = useMemo(createGeometry, []);
+	useMemo(initGeometry, [foldKey]);
 	const material = useMemo(createMaterial, []);
 
+	console.log("[Paper.js]", lines.current)
 	return (
-	    <a.mesh
-		    position={position}
-		    scale={[scale, 0.02, scale]}
-		    rotation={rotation.current}
-	    	geometry={geometry}
-	    	material={material}
-	    >
-	    </a.mesh>
+		<group>
+		    {fold && fold.edges_vertices.map(line => (
+			    <Line
+			    	points={line.map(index => fold.vertices_coords[index])}
+					color="black"                   // Default
+					lineWidth={1}                   // In pixels (default)
+					dashed={false}                  // Default
+			    />
+		    ))}
+	    </group>
     );
 }
 

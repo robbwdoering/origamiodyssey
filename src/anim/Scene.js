@@ -17,9 +17,6 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useUpdate, useSpring, useSprings, animated, config }  from 'react-spring';
 // import { a, useTransition, Transition } from '@react-spring/three';
 
-import BirdBase from "./../folds/BirdBase.json";
-import BoatBase from "./../folds/BoatBase.json";
-import FrogBase from "./../folds/FrogBase.json";
 import { Paper } from "./Paper";
 import { Folds } from "./../infra/constants";
 import { setLayoutState } from "./../infra/actions";
@@ -65,23 +62,15 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const { paperSize, curFoldName, foldHash } = props;
+	const { paperSize, layoutState, layoutStateHash } = props;
 
 	const selectFold = () => {
-		switch (curFoldName) {
-			case Folds.BirdBase:
-				return BirdBase;
-
-			case Folds.BoatBase:
-				return BoatBase;
-
-			case Folds.FrogBase:
-				return FrogBase;
-		}
+		return (layoutState.curFold &&  Folds[layoutState.curFold]) ? Folds[layoutState.curFold].json : null;
 	} 
 
+	const fold = useMemo(selectFold, [layoutState.curFold]);
 
-	const fold = useMemo(selectFold, []);
+	console.log("rendering fold!");
 
 	return (
 		<React.Fragment>
@@ -93,7 +82,7 @@ export const Scene = props => {
 					position={[0, 0, 0]}
 					scale={10}
 					fold={fold}
-					foldHash={foldHash}
+					foldKey={layoutState.curFold}
 				/>
 			</Canvas>
 		</React.Fragment>
@@ -102,8 +91,8 @@ export const Scene = props => {
 
 export const mapStateToProps = (state, props) => {
 	return {
-		curFoldName: state.appReducer.curFoldName,
-		foldHash: state.appReducer.foldHash
+		layoutState: state.appReducer.layoutState,
+		layoutStateHash: state.appReducer.layoutStateHash
 	};
 };
 

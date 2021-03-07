@@ -15,6 +15,7 @@ import SearchIcon from '@material-ui/icons/Search';
 // import OriDomi from "oridomi";
 import { setShowNavDrawer } from "./../infra/actions";
 import useStyles from "./../style/theme.js";
+import Lettering from './../static/lettering.js';
 
 export const Header = props => {
 	const { setShowNavDrawer } = props;
@@ -43,9 +44,10 @@ export const Header = props => {
 						<MenuIcon />
 					</IconButton>
 					<img className={styles.appLogo} height='28px' src={window.location.origin + '/logo512x256.png'} />
-					<Typography className={styles.appTitle} variant="h6" noWrap>
-						origami odyssey
-					</Typography>
+
+					<div className={styles.appLettering}>
+						<Lettering />
+					</div>
 					<div className={styles.searchContainer}>
 						<div className={styles.searchIcon}>
 							<SearchIcon />

@@ -28,35 +28,16 @@ export const FoldControls = () => {
 	// MEMBER FUNCTIONS 
 	// ----------------
 
-	const selectCardList = () => {
-		return Object.keys(Folds).filter(() => true);
-	};
-
-
-	const createCard = () => {
-
-	}
-
-
-	const updateCardRefs = () => {
-		// Recreate the refs array, reusing elements. Note that this algo doesn't support reordering
-		setCardRefs(elRefs => (
-			Array(cardList.length).fill().map((el, i) => cardRefs[i] || createRef())
-		));
-	};
-
-
 	// ---------
 	// LIFECYCLE
 	// ---------
 
-	const cardList = useMemo(selectCardList, []);
-
-	useEffect(updateCardRefs, [cardList.length]);
 
     return (
-        <div className={classes.FoldControls.container}>
-        </div>
+    	<React.Fragment>
+    		<div className={classes.foldCtrl_controls_container}> CONTROLS GO HERE </div>
+    		<div className={classes.foldCtrl_diagrams_container}> DIAGRAMS GO HERE </div>
+    	</React.Fragment>
     );
 };
 

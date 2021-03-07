@@ -32,7 +32,6 @@ export const Body = props => {
 
 	const renderPage = () => {
 		const pageProps = {};
-		console.log("renderPage", layoutState.page);
 
 		switch (layoutState.page) {
 			case Pages.Splash:
@@ -44,7 +43,6 @@ export const Body = props => {
 			case Pages.User:
 				return <User {...pageProps} />;
 			default: 
-				console.log("default!")
 				return <div />;
 		}
 	};

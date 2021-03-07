@@ -15,6 +15,7 @@ export const appReducer = (state = initAppReducerState, action) => {
 			newState.showNavDrawer = (action.payload !== undefined) ? action.payload : !newState.showNavDrawer;
 			break;
 		case Actions.SET_LAYOUT_STATE:
+			console.log("[SET_LAYOUT_STATE]", action.payload);
 			Object.assign(newState.layoutState, action.payload);
 			newState.layoutStateHash++;
 			break;

@@ -11,6 +11,11 @@ import ClassIcon from "@material-ui/icons/Class";
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import GroupAddIcon from "@material-ui/icons/GroupAdd";
 
+// The FOLD files 
+import BirdBase from "./../folds/BirdBase.json";
+import BoatBase from "./../folds/BoatBase.json";
+import FrogBase from "./../folds/FrogBase.json";
+
 export const Pages = {
 	Splash: "Splash",
 	ModelSelect: "ModelSelect",
@@ -24,17 +29,43 @@ export const Pages = {
 	TeachDashboard: "TeachDashboard"
 };
 
+export const Folds = {
+	BirdBase: {
+		name: "Bird Base",
+		description: "The first base many learn, this is perfect for winged creations such as birds and dragons.",
+		tags: [],
+		author: "Traditional",
+		json: BirdBase
+	},
+	BoatBase: {
+		name: "Boat Base",
+		description: "A more specific base for blocky models, such as boats and frames.",
+		tags: [],
+		author: "Traditional",
+		json: BoatBase
+	},
+	FrogBase: {
+		name: "Frog Base",
+		description: "A complex base used for models with length-wise asymmetry, like flowers and animals.",
+		tags: [],
+		author: "Traditional",
+		json: FrogBase 
+	}
+};
+
 export const initAppReducerState = {
 	layoutState: {
 		page: Pages.ModelSelect,
 		hash: 0,
-		curFoldName: null,
-		foldHash: 0
+		curFold: null,
+		foldHash: 0,
+		useImages: false
 	},
 	showNavDrawer: false
 };
 
 export const Actions = {
+	SET_LAYOUT_STATE: "SET_LAYOUT_STATE",
 	SET_SHOW_NAV_DRAWER: "SET_SHOW_NAV_DRAWER",
 	SET_PAGE_CONFIG: "SET_PAGE_CONFIG",
 };
@@ -115,21 +146,6 @@ export const initFoldState = {
 	vertices: [], //indexed vertices array
 	fold: null,
 	creaseParams: null
-}
-
-export const Folds = {
-	BirdBase: {
-		name: "Bird Base",
-		key: "bird_base"
-	},
-	BoatBase: {
-		name: "Boat Base",
-		key: "boat_base"
-	},
-	FrogBase: {
-		name: "Frog Base",
-		key: "frog_base"
-	}
 }
 
 /*
