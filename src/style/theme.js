@@ -44,7 +44,8 @@ export const useStyles = makeStyles(theme => ({
 	centerColumn: {
 		width: '100%',
 		maxWidth: '1200px',
-		margin: '64px auto',
+		// height: "100%",
+		margin: '0 auto',
 		padding: "2rem",
 		zIndex: 300,
 		position: "relative"
@@ -165,11 +166,24 @@ export const useStyles = makeStyles(theme => ({
 	},
 
 	// Fold Controls
-	fold_controls_container: {
-		width: "100%",
-		maxWidth: "200px",
-		border: "1px solid red"
-
+	fold_controls: {
+		width: "min-content",
+		position: "absolute",
+		bottom: "64px",
+	},
+	fold_controls_button: {
+		height: "64px",
+		width: "64px",
+		alignItems: "center"
+	},
+	fold_controls_button_label: {
+		flexDirection: "column",
+	},
+	fold_controls_button_container: {
+	},
+	fold_controls_button_icon: {
+		fontSize: '32px !important',
+		marginBottom: theme.spacing.unit
 	},
 	fold_diagrams_container: {
 		width: "100%",

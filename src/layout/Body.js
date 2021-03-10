@@ -26,10 +26,16 @@ import useStyles from "./../style/theme";
 export const Body = props => {
 	const { layoutState, setLayoutState } = props;
 
+	// ----------
+	// STATE INIT 
+	// ----------
 	const classes = useStyles();
 	const containerRef = useRef();
 	const [curHash, setHash] = useState(0);
 
+	// ----------------
+	// MEMBER FUNCTIONS 
+	// ----------------
 	const renderPage = () => {
 		const pageProps = {};
 
@@ -38,12 +44,25 @@ export const Body = props => {
 				return <Splash {...pageProps} />;
 			case Pages.ModelSelect:
 				return <ModelSelect {...pageProps} />;
-			case Pages.Fold:
-				return <FoldControls {...pageProps} />;
 			case Pages.User:
 				return <User {...pageProps} />;
+			case Pages.Fold:
 			default: 
-				return <div />;
+				return null;
+		}
+	};
+
+	const renderPiecemeal = () => {
+		const pageProps = { windowHeight };
+
+		switch (layoutState.page) {
+			case Pages.Fold:
+				return <FoldControls {...pageProps} />;
+			case Pages.Splash:
+			case Pages.ModelSelect:
+			case Pages.User:
+			default: 
+				return null;
 		}
 	};
 
@@ -51,23 +70,38 @@ export const Body = props => {
 		setHash(cur => cur + 1);
 	};
 
-	const sceneHeight = useMemo(() => {
-		// The scene always fills the window after accounting for the AppBar
-		return window.innerHeight - 64;
-	}, [curHash]);
-
+	// ---------
+	// LIFECYCLE
+	// ---------
+	// Rerender whenever the page resizes
 	useEffect(() => {
 		window.addEventListener("resize", triggerRerender);
 	}, []);
 
+	// Calculate height of window-matching containers 
+	const windowHeight = useMemo(() => {
+		// The scene always fills the window after accounting for the AppBar
+		return window.innerHeight - 64;
+	}, [curHash]);
+
+	const page = useMemo(renderPage, [layoutState.page]);
+	const piecemeal = useMemo(renderPiecemeal, [layoutState.page, windowHeight]);
+
 	return (
 		<div className={classes.bodyContainer} ref={containerRef}>
-			<div className={classes.sceneContainer} style={{height: sceneHeight + 'px'}}>
-				<Scene paperSize={sceneHeight} />
+			<div className={classes.sceneContainer} style={{height: windowHeight + 'px'}}>
+				<Scene paperSize={windowHeight} />
 			</div>
-			<div className={classes.centerColumn}>
-				{renderPage()}
+			{page && (
+				<div className={classes.centerColumn} style={{height: windowHeight + 'px'}}>
+					{renderPage()}
+				</div>
+			)}
+			{piecemeal && (
+			<div className={classes.piecemealContainter}>
+				{renderPiecemeal()}
 			</div>
+			)}
 		</div>
 	);
 };
