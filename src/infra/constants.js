@@ -61,13 +61,20 @@ export const initAppReducerState = {
 		foldHash: 0,
 		useImages: false
 	},
+	foldState: {
+		hash: 0,
+		selectedLevel: 0,
+		stepIndex: 0, // Depends on selected level
+	},
 	showNavDrawer: false
+
 };
 
 export const Actions = {
 	SET_LAYOUT_STATE: "SET_LAYOUT_STATE",
 	SET_SHOW_NAV_DRAWER: "SET_SHOW_NAV_DRAWER",
 	SET_PAGE_CONFIG: "SET_PAGE_CONFIG",
+	SET_FOLD_STATE: "SET_FOLD_STATE",
 };
 
 export const initNavTree = [

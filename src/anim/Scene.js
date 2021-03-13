@@ -19,7 +19,7 @@ import { useUpdate, useSpring, useSprings, animated, config }  from 'react-sprin
 
 import { Paper } from "./Paper";
 import { Folds } from "./../infra/constants";
-import { setLayoutState } from "./../infra/actions";
+import { setLayoutState, setFoldState } from "./../infra/actions";
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -62,7 +62,7 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const { paperSize, layoutState, layoutStateHash } = props;
+	const { paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState } = props;
 
 	const selectFold = () => {
 		return (layoutState.curFold &&  Folds[layoutState.curFold]) ? Folds[layoutState.curFold].json : null;
@@ -81,6 +81,9 @@ export const Scene = props => {
 					scale={10}
 					fold={fold}
 					foldKey={layoutState.curFold}
+					foldState={foldState}
+					foldStateHash={foldStateHash}
+					setFoldState={setFoldState}
 				/>
 			</Canvas>
 		</React.Fragment>
@@ -90,8 +93,10 @@ export const Scene = props => {
 export const mapStateToProps = (state, props) => {
 	return {
 		layoutState: state.appReducer.layoutState,
-		layoutStateHash: state.appReducer.layoutStateHash
+		layoutStateHash: state.appReducer.layoutState.hash,
+		foldState: state.appReducer.foldState,
+		foldStateHash: state.appReducer.foldState.hash,
 	};
 };
 
-export default connect(mapStateToProps, { setLayoutState })(Scene);
+export default connect(mapStateToProps, { setLayoutState, setFoldState })(Scene);

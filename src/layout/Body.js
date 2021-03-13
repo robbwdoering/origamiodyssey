@@ -109,7 +109,7 @@ export const Body = props => {
 export const mapStateToProps = (state, props) => {
 	return {
 		layoutState: state.appReducer.layoutState,
-		layoutStateHash: state.appReducer.layoutStateHash
+		layoutStateHash: state.appReducer.layoutState.hash
 	};
 };
 

@@ -17,7 +17,12 @@ export const appReducer = (state = initAppReducerState, action) => {
 		case Actions.SET_LAYOUT_STATE:
 			console.log("[SET_LAYOUT_STATE]", action.payload);
 			Object.assign(newState.layoutState, action.payload);
-			newState.layoutStateHash++;
+			newState.layoutState.hash++;
+			break;
+		case Actions.SET_FOLD_STATE:
+			console.log("[SET_FOLD_STATE]", action.payload);
+			Object.assign(newState.foldState, action.payload);
+			newState.foldState.hash++;
 			break;
 		case Actions.SET_FOLD_NAME:
 			Object.assign(newState.curFoldName, action.payload);

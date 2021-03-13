@@ -1,7 +1,7 @@
 /**
  * FILENAME: FoldControls.js 
  *
- * DESCRIPTION: This page allows the user to browser through cards, read details on models, and select one to fold. 
+ * DESCRIPTION: These are piecemeal controls for the fold state. 
  */
 
 // React + Redux
@@ -16,10 +16,11 @@ import SkipNext from "@material-ui/icons/SkipNext";
 
 import useStyles from "./../../style/theme";
 import { Folds } from "./../../infra/constants";
+import { setFoldState } from "./../../infra/actions";
 // const AnimatedCard = animated(Card);
 
 export const FoldControls = props => {
-	const { windowHeight } = props;
+	const { windowHeight, foldState, foldStateHash, setFoldState } = props;
 
 	// ----------
 	// STATE INIT 
@@ -34,6 +35,10 @@ export const FoldControls = props => {
 
 	// Changes the current instructional sequential step, prompting animation.
 	const changeStep = (delta) => {
+		let newStepIndex = Math.min(Math.max(foldState.stepIndex + delta, 0), foldState.maxSteps);
+		setFoldState({
+			stepIndex: newStepIndex
+		});
 	};
 
 	const calcControlsPosition = () => {
@@ -81,7 +86,9 @@ export const FoldControls = props => {
 
 export const mapStateToProps = (state, props) => {
 	return {
+		foldState: state.appReducer.foldState,
+		foldStateHash: state.appReducer.foldState.hash
 	};
 };
 
-export default connect(mapStateToProps, {})(FoldControls);
+export default connect(mapStateToProps, { setFoldState })(FoldControls);
