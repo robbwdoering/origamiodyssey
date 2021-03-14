@@ -59,12 +59,16 @@ export const initAppReducerState = {
 		hash: 0,
 		curFold: null,
 		foldHash: 0,
-		useImages: false
+		useImages: false,
+		showEditor: true,
 	},
 	foldState: {
 		hash: 0,
 		selectedLevel: 0,
 		stepIndex: 0, // Depends on selected level
+	},
+	editorState: {
+		highlightedVertices: [],
 	},
 	showNavDrawer: false
 

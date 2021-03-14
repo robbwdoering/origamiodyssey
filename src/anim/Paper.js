@@ -17,32 +17,41 @@ import { a, useSpring } from '@react-spring/three';
 // import { a, useTransition, Transition } from '@react-spring/three';
 
 export const Paper = props => {
-	const { position, scale, initStep, fold, foldKey, foldState, foldStateHash, setFoldState } = props;
+	const { position, scale, initStep, initFold, foldKey, foldState, foldStateHash, setFoldState } = props;
 
 	// ----------
 	// STATE INIT 
 	// ----------
 	const [instructions, setInstructions] = useState(null);
-	const [step, setStep] = useState(initStep);
+	const [prevStep, setPrevStep] = useState(initStep);
 
 	const rotation = useRef([0, 0, 0]);
 	const vertices = useRef([]) 
 	const lines = useRef([]);
+	const edgeRotations = useRef([]);
+	const fold = useRef(null);
 
 	// ----------------
 	// MEMBER FUNCTIONS 
 	// ----------------
 
-	const cleanFoldFile = foldObj => {
+	const setFoldObj = newFold => {
+		let foldObj = JSON.parse(JSON.stringify(newFold))
+		// Calculate the boundaries of the 2D shape
 		const maxes = ([0, 2]).map(i => foldObj.vertices_coords.reduce(
 			(max, coords) => Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max,
 			0	
 		));
 
+		// Re-scale the model to a unit square (1 unit x 1 unit)
 		foldObj.vertices_coords = foldObj.vertices_coords.map(coords =>
-			new THREE.Vector3(coords[0] / maxes[0], 0, coords[1] / maxes[1])
+			new THREE.Vector3(coords[0] / maxes[0], 0, coords[2] / maxes[1])
 		);
-		console.log("[cleanFoldFile]", {maxes, foldObj});
+
+		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 180);
+
+		console.log("[setFoldObj]", { maxes, foldObj });
+		fold.current = foldObj;
 	};
 
 	/*
@@ -50,10 +59,12 @@ export const Paper = props => {
 	 */
 	const collectStepsForLevel = () => {
 		const calcStepsForLevel = (inst, targetLevel, curLevel) => {
-			if (!inst.length) {
+			if (!inst.children && !inst.length) {
 				// Error case
 				return null;
 			}
+
+			console.log("[calcStepsForLevel]", inst, targetLevel, curLevel);
 
 			// Leaf nodes
 			if (Array.isArray(inst)) {
@@ -62,7 +73,7 @@ export const Paper = props => {
 			// Ancestor nodes 
 			} else {
 				if (curLevel === targetLevel) {
-					// Recursive case: Return 1 plus the height of the tallest subtree
+					// Recursive case: This is target, so COMBINE children to one array
 					return inst.children.reduce((acc, childInst) => {
 						let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
 						if (ret) {
@@ -71,7 +82,7 @@ export const Paper = props => {
 						return acc;
 					}, []);
 				} else if (curLevel > targetLevel) {
-					// Recursive case: past target level, so combine all children into one array
+					// Recursive case: past target level, so COLLECT children into one array
 					return inst.children.reduce((acc, childInst) => {
 						let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
 						if (ret) {
@@ -84,12 +95,12 @@ export const Paper = props => {
 					// If we're right before the target, return all children
 					if (curLevel === targetLevel - 1) {
 						return inst.children.map(childInst => calcStepsForLevel(childInst, targetLevel, curLevel + 1));
-					// Else combine received arrays
+					// Else COLLECT children into one array
 					} else {
 						return inst.children.reduce((acc, childInst) => {
 							let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
 							if (ret) {
-								return acc.concat(ret);
+								return acc.push(ret);
 							}
 							return acc;
 						}, []);
@@ -98,12 +109,14 @@ export const Paper = props => {
 			}
 		};
 
-		if (!fold || !fold.sequential_folds) {
+		if (!fold.current || !fold.current.instructions) {
 			console.log("returning empty", fold)
 			return [];
 		}
 
-		return calcStepsForLevel(fold.sequential_folds, foldState.selectedLevel, 0);
+		console.log("[collectStepsForLevel]", fold.instructions, foldState.selectedLevel)
+
+		return calcStepsForLevel(fold.current.instructions, foldState.selectedLevel, 0);
 	};
 
 	// Nested recursive function to calculate the depth of the instruction tree
@@ -127,11 +140,10 @@ export const Paper = props => {
 	 * contain EITHER two integer values, or 1+ subnodes. Any node with subnodes may not have integer values.
 	 */
 	const readInstructionsIntoState = inst => {
-
 		return {
 			maxLevel: calcMaxLevel(inst),
 			selectedLevel: 0,
-			stepIndex: 0,
+			stepIndex: -1,
 			maxSteps: stepArray.length
 		};
 	}
@@ -140,15 +152,15 @@ export const Paper = props => {
 	 * Initializes the fold state if possible, which involves reading the instructional hierarchy shape.
 	 */
 	const initFoldState = () => {
-        if (!fold) {
+        // console.log("[initFoldState]", initFold);
+        if (!initFold) {
         	return;
         }
 
-        let foldObj = JSON.parse(JSON.stringify(fold));
-        cleanFoldFile(foldObj);
+		setFoldObj(initFold);
 
-        if (foldObj.sequential_folds) {
-        	setFoldState(readInstructionsIntoState(foldObj.sequential_folds));
+        if (fold.current.instructions) {
+        	setFoldState(readInstructionsIntoState(fold.current.instructions));
         }
 	};
 
@@ -162,6 +174,48 @@ export const Paper = props => {
         });
 	};
 
+	/**
+	 * The ultimate goal of this function is to update vertex positions.
+	 * IDEA: Handle one folding edge at a time, then propagate out following neighbors
+	 */
+	const performInstructionStep = () => {
+		let curStep = foldState.stepIndex;
+		if (curStep < -1 || curStep >= foldState.maxSteps) {
+			curStep = -1;
+		}
+
+		console.log("[performInstructionStep] ", curStep);
+
+		// The Init step - all fold angles 0
+		// if (step === -1) {
+		// 	setFoldObj(initFold);
+		// }
+
+		setPrevStep(curStep);	
+	}
+
+
+	/* 
+	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
+	 * @param fold - the object to be modified 
+	 * @param steps - array of instructions 
+	 */
+	const applySteps = (fold, steps) => {
+		if (!fold || !steps) {
+			return null;
+		}
+
+		steps.forEach(step => {
+			// Step is array, with format [edge, rotation, type (optional, default to RH)]
+
+			// Get all faces for this edge
+			// Rotate all other vertices part of adjacent faces around this edge 
+			// Add to array of edges to do in next call 
+		});
+
+		// Do recursive call
+	}
+
 	// ---------
 	// LIFECYCLE
 	// ---------
@@ -171,15 +225,16 @@ export const Paper = props => {
 
 	const material = useMemo(createMaterial, []);
 	const stepArray = useMemo(collectStepsForLevel, [foldKey, foldState.selectedLevel]);
+	useEffect(performInstructionStep, [foldState.stepIndex]);
 	useEffect(initFoldState, [foldKey]);
 
-	console.log("[Paper]", { stepArray })
+	console.log("[Paper]", { stepArray, fold: fold.current })
 
 	return (
 		<group>
-		    {fold && fold.edges_vertices.map(line => (
+		    {fold.current && fold.current.edges_vertices.map(line => (
 			    <Line
-			    	points={line.map(index => fold.vertices_coords[index])}
+			    	points={line.map(index => fold.current.vertices_coords[index])}
 					color="black"                   // Default
 					lineWidth={1}                   // In pixels (default)
 					dashed={false}                  // Default

@@ -62,14 +62,7 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const { paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState } = props;
-
-	const selectFold = () => {
-		return (layoutState.curFold &&  Folds[layoutState.curFold]) ? Folds[layoutState.curFold].json : null;
-	} 
-
-	const fold = useMemo(selectFold, [layoutState.curFold]);
-
+	const { initFold, paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState } = props;
 	return (
 		<React.Fragment>
 			<Canvas camera={{fov: 100, position: [0, 1.2, 0]}} onCreated={state => state.gl.setClearColor("red")} >
@@ -79,11 +72,12 @@ export const Scene = props => {
 				<Paper
 					position={[0, 0, 0]}
 					scale={10}
-					fold={fold}
+					initFold={initFold}
 					foldKey={layoutState.curFold}
 					foldState={foldState}
 					foldStateHash={foldStateHash}
 					setFoldState={setFoldState}
+					initStep={-1}
 				/>
 			</Canvas>
 		</React.Fragment>

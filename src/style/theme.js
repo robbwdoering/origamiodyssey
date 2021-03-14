@@ -190,6 +190,41 @@ export const useStyles = makeStyles(theme => ({
 		border: "1px solid blue"
 	},
 
+
+	// Fold Editor
+	editorState: {
+		position: "absolute",
+		width: "400px",
+		height: "25%",
+		top: "10%",
+		left: "20px"
+	},
+	editorDetails: {
+		position: "absolute",
+		width: "400px",
+		height: "60%",
+		top: "37%",
+		left: "20px"
+	},
+	editorEntry: {
+		position: "absolute",
+		width: "500px",
+		height: "87%",
+		top: "10%",
+		right: "20px"
+		
+	},
+	editor_row: {
+		height: "4rem"
+	},
+	editor_cardTitle: {
+		textAlign: "left",	
+		margin: "0 0 15px 5px !important"
+	},
+	editor_jsonTextArea: {
+		height: "90%"
+	}
+
 }));
 
 export default useStyles;

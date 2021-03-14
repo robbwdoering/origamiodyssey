@@ -45,6 +45,10 @@ export const FoldControls = props => {
 		return (window.innerWidth - 128) / 2;
 	}
 
+	const triggerRerender = () => {
+		setHash(cur => cur + 1);
+	};
+
 	// ---------
 	// LIFECYCLE
 	// ---------
@@ -53,10 +57,6 @@ export const FoldControls = props => {
 		root: classes.fold_controls_button,
 		label: classes.fold_controls_button_label
 	}), []);
-
-	const triggerRerender = () => {
-		setHash(cur => cur + 1);
-	};
 
 	// Rerender whenever the page resizes
 	useEffect(() => {
@@ -69,17 +69,24 @@ export const FoldControls = props => {
     	<React.Fragment>
 			<Card className={classes.fold_controls} style={{left: ctrlLeft}} >
 				<ButtonGroup className={classes.fold_controls_button_container} color="primary" variant="text">
-					<Button classes={buttonClasses} onClick={() => changeStep(-1)}>
+					<Button
+						classes={buttonClasses}
+						onClick={() => changeStep(-1)}
+						disabled={foldState.stepIndex < 0}
+					>
 						<SkipPrevious className={classes.fold_controls_button_icon} />
 						Prev	
 					</Button>
-					<Button classes={buttonClasses} onClick={() => changeStep(1)}>
+					<Button
+						classes={buttonClasses}
+						onClick={() => changeStep(1)}
+						disabled={foldState.stepIndex >= foldState.maxSteps - 1}
+					>
 						<SkipNext className={classes.fold_controls_button_icon} />
 						Next	
 					</Button>
 				</ButtonGroup>
     		</Card>
-    		<div className={classes.foldCtrl_diagrams_container}> DIAGRAMS GO HERE </div>
     	</React.Fragment>
     );
 };
