@@ -11,6 +11,7 @@ import { connect } from 'react-redux';
 import { useUpdate, useSpring, useSprings, animated, config }  from 'react-spring';
 import { JsonEditor } from 'jsoneditor-react';
 import 'jsoneditor-react/es/editor.min.css';
+import Downloader from 'js-file-downloader'; 
 
 import { Button, Typography, ButtonGroup, Grid, List, Divider, ListItem, Card } from '@material-ui/core';
 import SkipPrevious from "@material-ui/icons/SkipPrevious";
@@ -22,7 +23,7 @@ import { setFoldState } from "./../../infra/actions";
 // const AnimatedCard = animated(Card);
 
 export const FoldEditorCards = props => {
-	const { initFold, windowHeight, foldState, foldStateHash, setFoldState } = props;
+	const { curFold, initFold, windowHeight, foldOverrideCallback, foldState, foldStateHash, setFoldState } = props;
 
 	// ----------
 	// STATE INIT 
@@ -51,8 +52,8 @@ export const FoldEditorCards = props => {
 		<div className={classes.editor_row}>
 			{/* Title */}
 			<CardLabel text={name} />
-			{text && (
-				<Typography className={classes.modelCard_bodyText} variant="body2" color="textSecondary" component="p">
+			{text !== undefined && (
+				<Typography className={classes.editor_bodyText} variant="body2" color="textSecondary" component="p">
 					<strong>{text}</strong>
 				</Typography>
 			)}
@@ -68,6 +69,33 @@ export const FoldEditorCards = props => {
 
 	const handleFoldChange = (e) => {
 		Object.assign(localFold.current, e);
+	};
+
+	const handleSaveClick = () => {
+		if (!localFold.current || !curFold) {
+			console.error("Couldn't save file; no current value.");
+			return;
+		}
+
+		foldOverrideCallback(localFold.current);
+	};
+
+	const handleExportClick = async () => {
+		if (!localFold.current || !curFold) {
+			console.error("Couldn't export file; no current value.");
+			return;
+		}
+
+		let fileDownloadUrl = `data:application/json,${encodeURIComponent(JSON.stringify(localFold.current, null, 2))}`;
+		// fileDownloadUrl = URL.createObjectURL(fileDownloadUrl)
+
+		new Downloader({
+			url: fileDownloadUrl,
+			filename: `${curFold}.json`
+		})
+		.then(() => {
+			console.log("finished download.");
+		});
 	};
 
 	// ---------
@@ -110,6 +138,10 @@ export const FoldEditorCards = props => {
 				<Typography className={classes.editor_cardTitle} variant="h4" color="textSecondary" component="h4">
 					<code>.fold</code> file
 				</Typography>
+				<ButtonGroup className={classes.editor_floatAction} color="primary" variant="text" size="large">
+					<Button onClick={handleSaveClick}> Local Save </Button>
+					<Button onClick={handleExportClick}> Export To Disk </Button>
+				</ButtonGroup>
 				<JsonEditor
 					value={{
 						faces_vertices: initFold.faces_vertices,

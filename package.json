@@ -10,6 +10,7 @@
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.6.3",
+    "js-file-downloader": "^1.1.16",
     "jsoneditor": "^9.2.0",
     "jsoneditor-react": "^3.1.1",
     "oridomi": "^1.1.2",

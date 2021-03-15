@@ -65,7 +65,8 @@ export const initAppReducerState = {
 	foldState: {
 		hash: 0,
 		selectedLevel: 0,
-		stepIndex: 0, // Depends on selected level
+		stepIndex: -1, // Depends on selected level
+		overrideWithEditor: false 
 	},
 	editorState: {
 		highlightedVertices: [],

@@ -197,22 +197,24 @@ export const useStyles = makeStyles(theme => ({
 		width: "400px",
 		height: "25%",
 		top: "10%",
-		left: "20px"
+		left: "20px",
+		padding: "0.5rem !important",
 	},
 	editorDetails: {
 		position: "absolute",
 		width: "400px",
 		height: "60%",
 		top: "37%",
-		left: "20px"
+		left: "20px",
+		padding: "0.5rem !important",
 	},
 	editorEntry: {
 		position: "absolute",
 		width: "500px",
 		height: "87%",
 		top: "10%",
-		right: "20px"
-		
+		right: "20px",
+		padding: "0.5rem !important"
 	},
 	editor_row: {
 		height: "4rem"
@@ -222,9 +224,18 @@ export const useStyles = makeStyles(theme => ({
 		margin: "0 0 15px 5px !important"
 	},
 	editor_jsonTextArea: {
-		height: "90%"
+		height: "90%",
+		width: "500px",
+		marginLeft: "-0.5rem"
+	},
+	editor_bodyText: {
+		fontSize: "1.25rem !important"
+	},
+	editor_floatAction: {
+		position: "absolute",
+		top: "10px",
+		right: "0"
 	}
-
 }));
 
 export default useStyles;

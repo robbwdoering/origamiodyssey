@@ -35,7 +35,7 @@ export const FoldControls = props => {
 
 	// Changes the current instructional sequential step, prompting animation.
 	const changeStep = (delta) => {
-		let newStepIndex = Math.min(Math.max(foldState.stepIndex + delta, 0), foldState.maxSteps);
+		let newStepIndex = Math.min(Math.max(foldState.stepIndex + delta, -1), foldState.maxSteps);
 		setFoldState({
 			stepIndex: newStepIndex
 		});

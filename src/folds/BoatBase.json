@@ -1,11 +1,11 @@
 {
     "file_spec": 1.1,
-    "file_creator": "Origami Simulator: http://git.amandaghassaei.com/OrigamiSimulator/",
-    "file_author": "rwd",
+    "file_creator": "origamiodyssey.com",
+    "file_author": "Traditional",
     "file_classes": [
         "singleModel"
     ],
-    "frame_title": "boatBase : 0PercentFolded",
+    "frame_title": "boatBase",
     "frame_classes": [
         "foldedForm"
     ],

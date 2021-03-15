@@ -110,7 +110,7 @@ export const Paper = props => {
 		};
 
 		if (!fold.current || !fold.current.instructions) {
-			console.log("returning empty", fold)
+			console.log("returning empty", fold.current)
 			return [];
 		}
 
@@ -152,7 +152,7 @@ export const Paper = props => {
 	 * Initializes the fold state if possible, which involves reading the instructional hierarchy shape.
 	 */
 	const initFoldState = () => {
-        // console.log("[initFoldState]", initFold);
+        console.log("[initFoldState]", initFold);
         if (!initFold) {
         	return;
         }
@@ -224,9 +224,9 @@ export const Paper = props => {
 	});
 
 	const material = useMemo(createMaterial, []);
-	const stepArray = useMemo(collectStepsForLevel, [foldKey, foldState.selectedLevel]);
+	const stepArray = useMemo(collectStepsForLevel, [!fold.current || !fold.current.instructions, foldKey, foldState.selectedLevel]);
 	useEffect(performInstructionStep, [foldState.stepIndex]);
-	useEffect(initFoldState, [foldKey]);
+	useEffect(initFoldState, [foldKey, stepArray.length]);
 
 	console.log("[Paper]", { stepArray, fold: fold.current })
 
