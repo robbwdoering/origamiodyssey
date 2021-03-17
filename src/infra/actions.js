@@ -20,3 +20,8 @@ export const setFoldState = payload => ({
 	type: Actions.SET_FOLD_STATE,
 	payload
 });
+
+export const setEditorState = payload => ({
+	type: Actions.SET_EDITOR_STATE,
+	payload
+});

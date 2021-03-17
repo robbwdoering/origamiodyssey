@@ -26,6 +26,11 @@ export const appReducer = (state = finalInitState, action) => {
 			Object.assign(newState.foldState, action.payload || initAppReducerState.foldState);
 			newState.foldState.hash++;
 			break;
+		case Actions.SET_EDITOR_STATE:
+			console.log("[SET_EDITOR_STATE]", action.payload);
+			Object.assign(newState.editorState, action.payload || initAppReducerState.editorState);
+			newState.editorState.hash++;
+			break;
 	}
 
 	return newState;

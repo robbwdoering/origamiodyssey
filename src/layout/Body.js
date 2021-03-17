@@ -33,7 +33,7 @@ export const Body = props => {
 	// ----------
 	const classes = useStyles();
 	const containerRef = useRef();
-	const fold = useRef();
+	const fold = useRef({});
 	const [curHash, setHash] = useState(0);
 	const [cookies, setCookies] = useCookies([]);
 
@@ -57,19 +57,24 @@ export const Body = props => {
 	};
 
 	const renderPiecemeal = () => {
-		const pageProps = { windowHeight, initFold: fold.current };
-
 		switch (layoutState.page) {
 			case Pages.Fold:
 				return (
 					<React.Fragment>
-						<FoldControls {...pageProps} />
+						<FoldControls 
+							windowHeight={windowHeight}
+							initFold={fold.current.json}
+							curFold={layoutState.curFold}
+							foldLastUpdated={fold.current.lastUpdated}
+						/>
 
 						{layoutState.showEditor && (
 							<FoldEditorCards
-								{...pageProps}
+								windowHeight={windowHeight}
+								initFold={fold.current.json}
 								curFold={layoutState.curFold}
 								foldOverrideCallback={foldOverrideCallback}
+								foldLastUpdated={fold.current.lastUpdated}
 							/>
 						)}
 					</React.Fragment>
@@ -83,14 +88,16 @@ export const Body = props => {
 	};
 
 	const selectFold = () => {
-		fold.current =
-			layoutState.curFold && Folds[layoutState.curFold]
-				? JSON.parse(JSON.stringify(Folds[layoutState.curFold].json))
-				: null;
+		fold.current = {
+				json: layoutState.curFold && Folds[layoutState.curFold]
+					? JSON.parse(JSON.stringify(Folds[layoutState.curFold].json))
+					: null,
+				lastUpdated: Date.now()
+		};
 	};
 
 	const foldOverrideCallback = newFold => {
-		Object.assign(fold.current, newFold);
+		Object.assign(fold.current.json, newFold);
 
 		// Reset fold state
 		setFoldState(null);
@@ -141,7 +148,7 @@ export const Body = props => {
 	return (
 		<div className={classes.bodyContainer} ref={containerRef}>
 			<div className={classes.sceneContainer} style={{ height: windowHeight + 'px' }}>
-				<Scene paperSize={windowHeight} initFold={fold.current} />
+				<Scene paperSize={windowHeight} initFold={fold.current.json} />
 			</div>
 			{page && (
 				<div className={classes.centerColumn} style={{ height: windowHeight + 'px' }}>

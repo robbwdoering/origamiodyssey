@@ -55,8 +55,8 @@ export const Folds = {
 
 export const initAppReducerState = {
 	layoutState: {
-		page: Pages.ModelSelect,
 		hash: 0,
+		page: Pages.ModelSelect,
 		curFold: null,
 		foldHash: 0,
 		useImages: false,
@@ -69,7 +69,13 @@ export const initAppReducerState = {
 		overrideWithEditor: false 
 	},
 	editorState: {
-		highlightedVertices: [],
+		hash: 0,
+		edgeHighlights: [],
+		vertexHighlights: [],
+		levelHighlights: [],
+		showEdges: true,
+		showVertices: true,
+		showFaces: true
 	},
 	showNavDrawer: false
 
@@ -80,6 +86,7 @@ export const Actions = {
 	SET_SHOW_NAV_DRAWER: "SET_SHOW_NAV_DRAWER",
 	SET_PAGE_CONFIG: "SET_PAGE_CONFIG",
 	SET_FOLD_STATE: "SET_FOLD_STATE",
+	SET_EDITOR_STATE: "SET_EDITOR_STATE",
 };
 
 export const initNavTree = [

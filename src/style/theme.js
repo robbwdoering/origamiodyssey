@@ -235,6 +235,16 @@ export const useStyles = makeStyles(theme => ({
 		position: "absolute",
 		top: "10px",
 		right: "0"
+	},
+	editor_select: {
+		width: "90%"
+	},
+
+	// Paper
+	vertLabel: {
+		position: "absolute",
+		zIndex: 3001,
+		fontWeight: "bold"
 	}
 }));
 

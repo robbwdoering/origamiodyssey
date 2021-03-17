@@ -13,17 +13,18 @@ import { JsonEditor } from 'jsoneditor-react';
 import 'jsoneditor-react/es/editor.min.css';
 import Downloader from 'js-file-downloader'; 
 
-import { Button, Typography, ButtonGroup, Grid, List, Divider, ListItem, Card } from '@material-ui/core';
+import { Button, Typography, ButtonGroup, Chip, Input, Select, MenuItem, Grid, List, Divider, ListItem, Card } from '@material-ui/core';
 import SkipPrevious from "@material-ui/icons/SkipPrevious";
 import SkipNext from "@material-ui/icons/SkipNext";
+import { ToggleButton } from "@material-ui/lab";
 
 import useStyles from "./../../style/theme";
 import { Folds } from "./../../infra/constants";
-import { setFoldState } from "./../../infra/actions";
+import { setFoldState, setEditorState } from "./../../infra/actions";
 // const AnimatedCard = animated(Card);
 
 export const FoldEditorCards = props => {
-	const { curFold, initFold, windowHeight, foldOverrideCallback, foldState, foldStateHash, setFoldState } = props;
+	const { curFold, initFold, windowHeight, foldOverrideCallback, foldState, foldStateHash, setFoldState, editorState, editorStateHash, setEditorState } = props;
 
 	// ----------
 	// STATE INIT 
@@ -48,8 +49,8 @@ export const FoldEditorCards = props => {
 		</React.Fragment>
 	);
 
-	const ControlRow = ({ name, text, children }) => (
-		<div className={classes.editor_row}>
+	const ControlRow = ({ name, text, width, children }) => (
+		<Grid item xs={width || 12} className={classes.editor_row}>
 			{/* Title */}
 			<CardLabel text={name} />
 			{text !== undefined && (
@@ -59,7 +60,7 @@ export const FoldEditorCards = props => {
 			)}
 
 			{children}
-		</div>
+		</Grid>
 	);
 
 	const resetLocalFold = () => {
@@ -98,6 +99,18 @@ export const FoldEditorCards = props => {
 		});
 	};
 
+	const handleEditorFormChange = (field, value) => {
+		setEditorState({ [field]: value });
+	}
+
+	const handleSelectionChange = (event) => {
+		console.log("GOT EVENT! ", event.target);
+		const field = event.target.name;
+		const value = event.target.value;
+
+		setEditorState({ [field]: value });
+	}
+
 	// ---------
 	// LIFECYCLE
 	// ---------
@@ -118,19 +131,90 @@ export const FoldEditorCards = props => {
 					Fold State
 				</Typography>
 		    	<Grid container>
-		    		<Grid item xs={6}> <ControlRow name="Selected Level" text={foldState.selectedLevel} /> </Grid>
-		    		<Grid item xs={6}> <ControlRow name="Step Index" text={`${foldState.stepIndex}/${foldState.maxSteps - 1}`} /> </Grid>
+		    		<ControlRow name="Selected Level" text={foldState.selectedLevel} width={6} />
+		    		<ControlRow name="Step Index" text={`${foldState.stepIndex}/${foldState.maxSteps - 1}`} width={6} />
 				</Grid>
     		</Card>
 
 	    	{/* Details on the current instruction */}
 			<Card className={classes.editorDetails} >
 				<Typography className={classes.editor_cardTitle} variant="h4" color="textSecondary" component="h4">
-					Instruction Details
+					Editor Controls
 				</Typography>
-				<ControlRow name="Selected Level" text="" />
-				<ControlRow name="Step Index" text="" />
-				<ControlRow name="Num Vertices" text="" />
+		    	<Grid container>
+			    	<ControlRow name="Highlighted Edges">
+				    	<Select
+					    	name="edgeHighlights"
+					    	multiple
+					    	value={editorState.edgeHighlights}
+					    	onChange={handleSelectionChange}
+					    	input={<Input id="select-multiple-chip" />}
+					    	renderValue={(selected) => (
+					    		<div className={classes.chips}>
+					    		{selected.map((idx) => (
+					    			<Chip key={idx} label={initFold.edges_vertices[idx].toString()} className={classes.chip} />
+					    			))}
+					    		</div>
+					    		)}
+					    	className={classes.editor_select}
+					    	// MenuProps={MenuProps}
+				    	>
+					    	{initFold.edges_vertices.map((pair, index) => {
+					    		const name = pair.toString();
+					    		return (
+						    		<MenuItem key={name} value={index}>
+							    		{name}
+						    		</MenuItem>
+					    		);
+				    		})}
+				    	</Select>
+			    	</ControlRow>
+			    	<ControlRow name="vertexHighlights">
+				    	<Select
+					    	name="vertexHighlights"
+					    	multiple
+					    	value={editorState.vertexHighlights}
+					    	onChange={handleSelectionChange}
+					    	input={<Input id="select-multiple-chip" />}
+					    	renderValue={(selected) => (
+					    		<div className={classes.chips}>
+					    		{selected.map((idx) => (
+					    			<Chip key={idx} label={`${idx}: ${initFold.vertices_coords[idx].toString()}`} className={classes.chip} />
+					    			))}
+					    		</div>
+					    		)}
+					    	className={classes.editor_select}
+					    	// MenuProps={MenuProps}
+				    	>
+					    	{initFold.vertices_coords.map((pair, index) => {
+					    		const name = pair.toString();
+					    		return (
+						    		<MenuItem key={name} value={index}>
+							    		{name}
+						    		</MenuItem>
+					    		);
+				    		})}
+				    	</Select>
+					</ControlRow>
+					<ControlRow name="Show Edges" width={4}>
+						<ToggleButton
+							selected={editorState.showEdges}
+							onChange={() => handleEditorFormChange("showEdges", !editorState.showEdges)}
+						/>
+					</ControlRow>
+					<ControlRow name="Show Vertices" width={4}>
+						<ToggleButton
+							selected={editorState.showVertices}
+							onChange={() => handleEditorFormChange("showVertices", !editorState.showVertices)}
+						/>
+					</ControlRow>
+					<ControlRow name="Show Faces" width={4}>
+						<ToggleButton
+							selected={editorState.showFaces}
+							onChange={() => handleEditorFormChange("showFaces", !editorState.showFaces)}
+						/>
+					</ControlRow>
+				</Grid>
     		</Card>
 
 	    	{/* Entry box for direct JSON manipulation */}
@@ -163,8 +247,10 @@ export const FoldEditorCards = props => {
 export const mapStateToProps = (state, props) => {
 	return {
 		foldState: state.appReducer.foldState,
-		foldStateHash: state.appReducer.foldState.hash
+		foldStateHash: state.appReducer.foldState.hash,
+		editorState: state.appReducer.editorState,
+		editorStateHash: state.appReducer.editorState.hash
 	};
 };
 
-export default connect(mapStateToProps, { setFoldState })(FoldEditorCards);
+export default connect(mapStateToProps, { setFoldState, setEditorState })(FoldEditorCards);

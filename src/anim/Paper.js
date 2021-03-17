@@ -15,9 +15,12 @@ import { Line } from '@react-three/drei';
 // React Spring - animation
 import { a, useSpring } from '@react-spring/three';
 // import { a, useTransition, Transition } from '@react-spring/three';
+import { Chip } from '@material-ui/core';
+
+import useStyles from "./../style/theme";
 
 export const Paper = props => {
-	const { position, scale, initStep, initFold, foldKey, foldState, foldStateHash, setFoldState } = props;
+	const { position, scale, ctrlOverlay, initStep, initFold, foldKey, foldState, foldStateHash, setFoldState, editorState, editorStateHash } = props;
 
 	// ----------
 	// STATE INIT 
@@ -26,10 +29,10 @@ export const Paper = props => {
 	const [prevStep, setPrevStep] = useState(initStep);
 
 	const rotation = useRef([0, 0, 0]);
-	const vertices = useRef([]) 
-	const lines = useRef([]);
+	const faceGeometry = useRef(null);
 	const edgeRotations = useRef([]);
 	const fold = useRef(null);
+	const classes = useStyles();
 
 	// ----------------
 	// MEMBER FUNCTIONS 
@@ -159,6 +162,16 @@ export const Paper = props => {
 
 		setFoldObj(initFold);
 
+		faceGeometry.current = initFold.faces_vertices.map((face, faceIdx) => {
+			let geometry = new THREE.BufferGeometry();
+			let vertices = face.reduce((spread, vertIdx) => spread.concat(initFold.vertices_coords[vertIdx]), []);
+			let normals = vertices.map((e, idx) => idx % 3 === 1 ? 1 : 0);
+
+			geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
+			geometry.setAttribute('normal', new THREE.Float32BufferAttribute( normals, 3 ));
+			return geometry;
+		});
+
         if (fold.current.instructions) {
         	setFoldState(readInstructionsIntoState(fold.current.instructions));
         }
@@ -194,6 +207,33 @@ export const Paper = props => {
 		setPrevStep(curStep);	
 	}
 
+	const findFacesForEdge = (faces, edge, isLhs) => {
+		return faces.reduce((acc, face, faceIdx) => {
+			const edgeInFace = face.some((vertIdx, faceVertIdx) => {
+				// If this vertex isn't in the edge, then we can ignore it
+				if (!edge[isLhs ? 1 : 0] === vertIdx) {
+					return false;
+
+				// If the first, compare with the last in the array (loops)
+				} else if (faceVertIdx === 0) {
+					return edge[isLhs ? 0 : 1] === face[face.length - 1];
+
+				// Else, compare with the previous
+				} else {
+					return edge[isLhs ? 0 : 1] === face[faceVertIdx - 1];
+				}
+			});
+
+			if (edgeInFace) {
+				acc.push(faceIdx);
+			}
+			return acc;
+		}, []);
+	};
+
+	const rotateVertAroundEdge = (fold, vertIdx, edge) => {
+		console.log("[rotateVertAroundEdge]", {fold, vertIdx, edge});
+	};
 
 	/* 
 	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
@@ -206,14 +246,42 @@ export const Paper = props => {
 		}
 
 		steps.forEach(step => {
-			// Step is array, with format [edge, rotation, type (optional, default to RH)]
+			// Step is an array in the format:
+			// [ edge (int or str of format "[0-9]+[R]*"),
+			// rotation (angle in degrees),
+			// args (optional object) ]
 
 			// Get all faces for this edge
+			const faceList = findFacesForEdge(fold.faces_vertices, step[0]);
+
 			// Rotate all other vertices part of adjacent faces around this edge 
+			faceList.forEach(faceIdx => {
+				// Get all vertices not part of this edge
+				fold.faces_vertices[faceIdx]
+					.filter(vertIdx => !step[0].includes(vertIdx))
+					.forEach(vertIdx => rotateVertAroundEdge(fold, vertIdx, step[0]))
+
+				// Rotate them
+
+			});
 			// Add to array of edges to do in next call 
 		});
 
 		// Do recursive call
+	}
+
+	const hoverVert = (idx, event, show) => {
+		ctrlOverlay({
+			show,
+			name: "vert_"+idx,  
+			component: (
+				<Chip
+					className={classes.vertLabel}
+					style={{left: event.pageX + 10, top: event.pageY - 64 + 10}}
+					label={initFold && `${idx}: ${initFold.vertices_coords[idx].toString()}`}
+				/>
+			)
+		})	
 	}
 
 	// ---------
@@ -232,14 +300,31 @@ export const Paper = props => {
 
 	return (
 		<group>
-		    {fold.current && fold.current.edges_vertices.map(line => (
+		    {editorState.showEdges && fold.current && fold.current.edges_vertices.map((line, idx) => (
 			    <Line
 			    	points={line.map(index => fold.current.vertices_coords[index])}
-					color="black"                   // Default
-					lineWidth={1}                   // In pixels (default)
-					dashed={false}                  // Default
+					color={editorState.edgeHighlights.includes(idx) ? "red" : "black"}
+					lineWidth={1}
+					dashed={false}
 					material={material}
 			    />
+		    ))}
+		    {editorState.showVertices && fold.current && fold.current.vertices_coords.map((vert, idx) => (
+		    	<a.mesh
+		    		position={vert}
+		    		onPointerEnter={e => hoverVert(idx, e, true)}
+		    		onPointerLeave={e => hoverVert(idx, e, false)}
+				>
+					<sphereBufferGeometry attach="geometry" args={[0.02, 8, 8]} />
+					<meshStandardMaterial attach="material" roughness={0.5} color={editorState.edgeHighlights.includes(idx) ? "red" : "black"} />
+		    	</a.mesh>	
+		    ))}
+		    {editorState.showFaces && fold.current && faceGeometry.current && faceGeometry.current.map(geometry => (
+		    	<a.mesh
+		    		geometry={geometry}
+		    		material={material}
+				>
+		    	</a.mesh>	
 		    ))}
 	    </group>
     );

@@ -62,7 +62,20 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const { initFold, paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState } = props;
+	const { initFold, paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState, editorState, editorStateHash } = props;
+	const [overlays, setOverlays] = useState({});
+
+	const ctrlOverlay = ({ show, name, component }) => {
+		const newObj = Object.assign({}, overlays);
+		if (show && !newObj[name]) {
+			newObj[name] = component;
+		} else if (!show && newObj[name]) {
+			delete newObj[name];
+		}
+
+		setOverlays(newObj);
+	}
+
 	return (
 		<React.Fragment>
 			<Canvas camera={{fov: 100, position: [0, 1.2, 0]}} onCreated={state => state.gl.setClearColor("red")} >
@@ -76,10 +89,14 @@ export const Scene = props => {
 					foldKey={layoutState.curFold}
 					foldState={foldState}
 					foldStateHash={foldStateHash}
+					editorState={editorState}
+					editorStateHash={editorStateHash}
 					setFoldState={setFoldState}
 					initStep={-1}
+					ctrlOverlay={ctrlOverlay}
 				/>
 			</Canvas>
+			{Object.values(overlays)}
 		</React.Fragment>
 	);
 };
@@ -90,6 +107,8 @@ export const mapStateToProps = (state, props) => {
 		layoutStateHash: state.appReducer.layoutState.hash,
 		foldState: state.appReducer.foldState,
 		foldStateHash: state.appReducer.foldState.hash,
+		editorState: state.appReducer.editorState,
+		editorStateHash: state.appReducer.editorState.hash,
 	};
 };
 
