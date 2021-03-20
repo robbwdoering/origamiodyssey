@@ -26,6 +26,7 @@ export const Paper = props => {
 		ctrlOverlay,
 		initStep,
 		initFold,
+		foldLastUpdated,
 		foldKey,
 		foldState,
 		foldStateHash,
@@ -355,7 +356,7 @@ export const Paper = props => {
 	 * @param fold - the object to be modified
 	 * @param steps - array of instructions
 	 */
-	const performStep = (fold, stepIdx) => {
+	const performStep = (fold, stepIdx, vertsMoved = new Set()) => {
 		if (!fold || stepIdx == undefined || stepIdx < 0 || stepIdx > stepArray.length) {
 			return null;
 		}
@@ -365,14 +366,15 @@ export const Paper = props => {
 		// rotation (angle in degrees),
 		// args (optional object) ]
 		let cmds = stepArray[stepIdx];
+		let todoEdges = new Set();
 		if (!Array.isArray(cmds)) {
 			cmds = [ cmds ];
 		}
 		cmds.forEach((cmd, cmdIdx) => {
-			const args = cmd.length === 3 ? cmd[2] : {};
-			const edgeVerts = fold.edges_vertices[cmd[0]];
+			const args = cmd.length === 4 ? cmd[3] : {};
+			const edgeVerts = [cmd[0], cmd[1]];
 
-			// Get the face that includes this edge on the right left hand side, depending on the cmd args
+			// Get the face that includes this edge on the right or left hand side, depending on the cmd args
 			const faceIdx = faceToFoldForEdge(fold.faces_vertices, edgeVerts, args.lhs);
 
 			// This case is intentional for certain edge-of-paper edges that don't have anything on that side
@@ -385,13 +387,27 @@ export const Paper = props => {
 			console.log("[performStep] ", {cmd, args, faceIdx})
 			// Get all vertices not part of this edge and rotate them
 			fold.faces_vertices[faceIdx]
-				.filter(vertIdx => !edgeVerts.includes(vertIdx) && !edgeVerts.includes(vertIdx))
-				.forEach(vertIdx => rotateVertAroundEdge(fold, vertIdx, edgeVerts, cmd[1]));
+				.filter(vertIdx => !edgeVerts.includes(vertIdx) && !vertsMoved.has(vertIdx))
+				.forEach(vertIdx => {
+					vertsMoved.add(vertIdx);
+					rotateVertAroundEdge(fold, vertIdx, edgeVerts, cmd[2]);
+				});
 
 			// Add to array of edges to do in next call
+			const third = fold.faces_vertices[faceIdx].find(vertIdx => !edgeVerts.includes(vertIdx));
+			const edgeIdxOne = fold.edges_vertices.findIndex(edge => edge.includes[edgeVerts[0]] && edge.includes(third));
+			const edgeIdxTwo = fold.edges_vertices.findIndex(edge => edge.includes[edgeVerts[1]] && edge.includes(third));
 
-			// Do recursive call
+			if (edgeIdxOne === -1 || edgeIdxTwo === -1) {
+				console.log("[performStep] ERR: Couldn't find other edges for face ", edgeVerts, third);
+				return;
+			}
+
+			todoEdges.add(edgeIdxOne);
+			todoEdges.add(edgeIdxTwo);
 		});
+
+		// Do recursive call for every edge in the todo list
 	};
 
 	const hoverVert = (idx, event, show) => {
@@ -425,6 +441,10 @@ export const Paper = props => {
 	useEffect(initFoldState, [foldKey, stepArray.length]);
 
 	// console.log('[Paper]', { stepArray, fold: fold.current });
+
+	if (!initFold) {
+		return null;
+	}
 
 	return (
 		<group>

@@ -62,7 +62,7 @@ const CameraControls = () => {
  * Main component.
  */
 export const Scene = props => {
-	const { initFold, paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState, editorState, editorStateHash } = props;
+	const { initFold, foldLastUpdated, paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState, editorState, editorStateHash } = props;
 	const [overlays, setOverlays] = useState({});
 
 	const ctrlOverlay = ({ show, name, component }) => {
@@ -86,6 +86,7 @@ export const Scene = props => {
 					position={[0, 0, 0]}
 					scale={10}
 					initFold={initFold}
+					foldLastUpdated={foldLastUpdated}
 					foldKey={layoutState.curFold}
 					foldState={foldState}
 					foldStateHash={foldStateHash}
