@@ -1,7 +1,7 @@
 /**
- * FILENAME: Paper.js 
+ * FILENAME: Paper.js
  *
- * DESCRIPTION: Simulates a piece of paper. 
+ * DESCRIPTION: Simulates a piece of paper.
  */
 
 // React + Redux
@@ -17,13 +17,25 @@ import { a, useSpring } from '@react-spring/three';
 // import { a, useTransition, Transition } from '@react-spring/three';
 import { Chip } from '@material-ui/core';
 
-import useStyles from "./../style/theme";
+import useStyles from './../style/theme';
 
 export const Paper = props => {
-	const { position, scale, ctrlOverlay, initStep, initFold, foldKey, foldState, foldStateHash, setFoldState, editorState, editorStateHash } = props;
+	const {
+		position,
+		scale,
+		ctrlOverlay,
+		initStep,
+		initFold,
+		foldKey,
+		foldState,
+		foldStateHash,
+		setFoldState,
+		editorState,
+		editorStateHash
+	} = props;
 
 	// ----------
-	// STATE INIT 
+	// STATE INIT
 	// ----------
 	const [instructions, setInstructions] = useState(null);
 	const [prevStep, setPrevStep] = useState(initStep);
@@ -35,25 +47,45 @@ export const Paper = props => {
 	const classes = useStyles();
 
 	// ----------------
-	// MEMBER FUNCTIONS 
+	// MEMBER FUNCTIONS
 	// ----------------
+	const recursiveTriangulation = (curFace, foldObj) => {
+		// If this is a triangle (or invalid...), just push it as is
+		if (curFace.length <= 3) {
+			foldObj.faces_vertices.push(curFace);
+			// Else push a new triangle, and call this function again on the new shape
+		} else {
+			const [cutIdx] = curFace.splice(1, 1);
+			foldObj.faces_vertices.push([curFace[0], cutIdx, curFace[1]]);
+			foldObj.edges_vertices.push([curFace[0], curFace[1]]);
+			recursiveTriangulation(curFace, foldObj);
+		}
+	};
 
 	const setFoldObj = newFold => {
-		let foldObj = JSON.parse(JSON.stringify(newFold))
+		let foldObj = JSON.parse(JSON.stringify(newFold));
 		// Calculate the boundaries of the 2D shape
-		const maxes = ([0, 2]).map(i => foldObj.vertices_coords.reduce(
-			(max, coords) => Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max,
-			0	
-		));
+		const maxes = [0, 2].map(i =>
+			foldObj.vertices_coords.reduce((max, coords) => (Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max), 0)
+		);
 
 		// Re-scale the model to a unit square (1 unit x 1 unit)
-		foldObj.vertices_coords = foldObj.vertices_coords.map(coords =>
-			new THREE.Vector3(coords[0] / maxes[0], 0, coords[2] / maxes[1])
+		foldObj.vertices_coords = foldObj.vertices_coords.map(
+			coords => new THREE.Vector3(coords[0] / maxes[0], 0, coords[2] / maxes[1])
 		);
 
 		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 180);
 
-		console.log("[setFoldObj]", { maxes, foldObj });
+		// TODO: Validate that all the angles in every face are acute
+
+		// Triangulate all faces
+		foldObj.faces_vertices = [];
+		newFold.faces_vertices.forEach((face, faceIdx) => {
+			let curFace = [...face];
+			recursiveTriangulation(curFace, foldObj);
+		});
+
+		console.log('[setFoldObj]', { maxes, foldObj });
 		fold.current = foldObj;
 	};
 
@@ -67,13 +99,13 @@ export const Paper = props => {
 				return null;
 			}
 
-			console.log("[calcStepsForLevel]", inst, targetLevel, curLevel);
+			// console.log("[calcStepsForLevel]", inst, targetLevel, curLevel);
 
 			// Leaf nodes
 			if (Array.isArray(inst)) {
-				return curLevel >= targetLevel ? [ inst ] : [];
+				return curLevel >= targetLevel ? [inst] : [];
 
-			// Ancestor nodes 
+				// Ancestor nodes
 			} else {
 				if (curLevel === targetLevel) {
 					// Recursive case: This is target, so COMBINE children to one array
@@ -95,11 +127,11 @@ export const Paper = props => {
 					}, []);
 				} else if (curLevel < targetLevel) {
 					// Recursive case: still above target level, so keep drilling down
-					// If we're right before the target, return all children
 					if (curLevel === targetLevel - 1) {
+						// If we're right before the target, return all children
 						return inst.children.map(childInst => calcStepsForLevel(childInst, targetLevel, curLevel + 1));
-					// Else COLLECT children into one array
 					} else {
+						// Else COLLECT children into one array
 						return inst.children.reduce((acc, childInst) => {
 							let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
 							if (ret) {
@@ -113,11 +145,11 @@ export const Paper = props => {
 		};
 
 		if (!fold.current || !fold.current.instructions) {
-			console.log("returning empty", fold.current)
+			console.log('returning empty', fold.current);
 			return [];
 		}
 
-		console.log("[collectStepsForLevel]", fold.instructions, foldState.selectedLevel)
+		// console.log("[collectStepsForLevel]", fold.instructions, foldState.selectedLevel)
 
 		return calcStepsForLevel(fold.current.instructions, foldState.selectedLevel, 0);
 	};
@@ -132,10 +164,9 @@ export const Paper = props => {
 			return 1 + Math.max(...inst.map(childInst => calcMaxLevel(childInst)));
 		} else {
 			// Base case: leaf node
-			return 1
+			return 1;
 		}
 	};
-
 
 	/*
 	 * Reads the hierarchical instructions, collecting some descriptive values and initializing state.
@@ -149,140 +180,233 @@ export const Paper = props => {
 			stepIndex: -1,
 			maxSteps: stepArray.length
 		};
+	};
+
+	const refreshFaceVertices = () => {
+		if (!fold.current) {
+			return;
+		}
+
+		// NOTE: 9 = 3 coords per vert * 3 vals per coord (such as x,y,z or r,g,b)
+		let vertices = new Float32Array(9 * fold.current.faces_vertices.length);
+
+		fold.current.faces_vertices.forEach((face, faceIdx) => {
+			face.forEach((vertIdx, faceVertIdx) => {
+				const coords = fold.current.vertices_coords[vertIdx];
+				const startIdx = (faceIdx * 9) + (faceVertIdx * 3);
+
+				// Copy over one vertex
+				vertices[startIdx] = coords.x;
+				vertices[startIdx + 1] = coords.y;
+				vertices[startIdx + 2] = coords.z;
+			});
+		});
+
+		faceGeometry.current.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 	}
 
 	/*
 	 * Initializes the fold state if possible, which involves reading the instructional hierarchy shape.
 	 */
 	const initFoldState = () => {
-        console.log("[initFoldState]", initFold);
-        if (!initFold) {
-        	return;
-        }
+		console.log('[initFoldState]', initFold);
+		if (!initFold) {
+			return;
+		}
 
 		setFoldObj(initFold);
 
-		faceGeometry.current = initFold.faces_vertices.map((face, faceIdx) => {
-			let geometry = new THREE.BufferGeometry();
-			let vertices = face.reduce((spread, vertIdx) => spread.concat(initFold.vertices_coords[vertIdx]), []);
-			let normals = vertices.map((e, idx) => idx % 3 === 1 ? 1 : 0);
+		// 
+		// NOTE: 9 = 3 coords per vert * 3 vals per coord (such as x,y,z or r,g,b)
+		faceGeometry.current = new THREE.BufferGeometry();
+		let vertices = new Float32Array(9 * fold.current.faces_vertices.length);
+		let normals = new Float32Array(9 * fold.current.faces_vertices.length);
+		let colors = new Float32Array(9 * fold.current.faces_vertices.length);
 
-			geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ));
-			geometry.setAttribute('normal', new THREE.Float32BufferAttribute( normals, 3 ));
-			return geometry;
+		fold.current.faces_vertices.forEach((face, faceIdx) => {
+			face.forEach((vertIdx, faceVertIdx) => {
+				const coords = fold.current.vertices_coords[vertIdx];
+				const startIdx = (faceIdx * 9) + (faceVertIdx * 3);
+
+				// Copy over one vertex
+				vertices[startIdx] = coords.x;
+				vertices[startIdx + 1] = coords.y;
+				vertices[startIdx + 2] = coords.z;
+
+				normals[startIdx] = 0;
+				normals[startIdx + 1] = -1;
+				normals[startIdx + 2] = 0;
+
+				colors[startIdx] = 300;
+				colors[startIdx + 1] = 100;
+				colors[startIdx + 2] = 100;
+			});
 		});
 
-        if (fold.current.instructions) {
-        	setFoldState(readInstructionsIntoState(fold.current.instructions));
-        }
+		console.log({ vertices, normals, colors });
+
+		// OPTIONALL DEBUGS
+		// for (let i = 0; i < vertices.length; i += 9) {
+		// 	console.log(
+		// 		`TRI: [(${vertices[i]}, ${vertices[i] + 2}), (${vertices[i + 3]}, ${vertices[i] + 5}), (${
+		// 			vertices[i] + 6
+		// 		}, ${vertices[i] + 8})]`
+		// 	);
+		// }
+
+		faceGeometry.current.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+		faceGeometry.current.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+		faceGeometry.current.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+
+		if (fold.current.instructions) {
+			setFoldState(readInstructionsIntoState(fold.current.instructions));
+		}
 	};
 
 	const createMaterial = () => {
-        return  new THREE.MeshNormalMaterial({
-            flatShading: true,
-	        roughness: 0.5,
-	        attach: "material",
-	        color: '#ef626c',
-            side: THREE.DoubleSide
-        });
+		return new THREE.MeshNormalMaterial({
+			flatShading: true,
+			// roughness: 1,
+			attach: 'material',
+			// color: '#ef626c',
+			side: THREE.DoubleSide
+		});
 	};
 
 	/**
 	 * The ultimate goal of this function is to update vertex positions.
 	 * IDEA: Handle one folding edge at a time, then propagate out following neighbors
 	 */
-	const performInstructionStep = () => {
+	const performInstructions = () => {
 		let curStep = foldState.stepIndex;
 		if (curStep < -1 || curStep >= foldState.maxSteps) {
 			curStep = -1;
 		}
+		const diff = curStep - prevStep;
+		console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`);
 
-		console.log("[performInstructionStep] ", curStep);
-
-		// The Init step - all fold angles 0
-		// if (step === -1) {
-		// 	setFoldObj(initFold);
-		// }
-
-		setPrevStep(curStep);	
-	}
-
-	const findFacesForEdge = (faces, edge, isLhs) => {
-		return faces.reduce((acc, face, faceIdx) => {
-			const edgeInFace = face.some((vertIdx, faceVertIdx) => {
-				// If this vertex isn't in the edge, then we can ignore it
-				if (!edge[isLhs ? 1 : 0] === vertIdx) {
-					return false;
-
-				// If the first, compare with the last in the array (loops)
-				} else if (faceVertIdx === 0) {
-					return edge[isLhs ? 0 : 1] === face[face.length - 1];
-
-				// Else, compare with the previous
-				} else {
-					return edge[isLhs ? 0 : 1] === face[faceVertIdx - 1];
-				}
-			});
-
-			if (edgeInFace) {
-				acc.push(faceIdx);
+		if (diff > 0) {
+			for (let i = 1; i <= diff; i++) {
+				performStep(fold.current, prevStep + i);
 			}
-			return acc;
-		}, []);
+		} else {
+
+		}
+
+		refreshFaceVertices();
+
+		setPrevStep(curStep);
 	};
 
-	const rotateVertAroundEdge = (fold, vertIdx, edge) => {
-		console.log("[rotateVertAroundEdge]", {fold, vertIdx, edge});
-	};
-
-	/* 
-	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
-	 * @param fold - the object to be modified 
-	 * @param steps - array of instructions 
+	const degToRad = degree => {
+		return degree * Math.PI / 180;
+	}
+	/**
+	 * Find the faces that include the given edge.
+	 * Note that this was built specifically for purposes of rotation (i.e. folding),
+	 * so it will use the isLhs parameter to decide which side of the edge to rotate
 	 */
-	const applySteps = (fold, steps) => {
-		if (!fold || !steps) {
+	const faceToFoldForEdge = (faces, edge, isLhs) => {
+		console.log("[faceToFoldForEdge]", edge)
+		return faces.findIndex((face, faceIdx) => {
+			// If this face doesn't include the edge, ignore it
+			if (!face.includes(edge[0]) || !face.includes(edge[1])) {
+				return false;	
+			}
+
+			// Else check if this face is on the right side 
+			// NOTE: this is using the initFold object, so it's looking at a flat version
+			const start = initFold.vertices_coords[edge[0]];
+			const end = initFold.vertices_coords[edge[1]];
+			const third = initFold.vertices_coords[face.find(vert => !edge.includes(vert))];
+
+			const d = (third[0] - start[0]) * (end[2] - start[2]) - (third[2] - start[2]) * (end[0] - start[0]);
+			return isLhs ? d > 0 : d < 0;
+		});
+	};
+
+	const rotateVertAroundEdge = (fold, vertIdx, edge, angle) => {
+		// Read in the vectors of the three triangle points
+		const start = fold.vertices_coords[edge[0]];
+		const end = fold.vertices_coords[edge[1]];
+		const third = fold.vertices_coords[vertIdx];
+
+		console.log('[rotateVertAroundEdge]', { start, end, third, angle });
+
+		// Setup vectors for edge (start --> end), and the target (start --> third)
+		const edgeDirection = new THREE.Vector3(end.x - start.x, end.y - start.y, end.z - start.z);
+	    edgeDirection.normalize();
+	    const targetVec = new THREE.Vector3(third.x - start.x, third.y - start.x, third.z - start.z);
+
+	    // Rotate the target vector around the edge
+	   	targetVec.applyAxisAngle(edgeDirection, degToRad(angle));
+
+	   	// Add the start back to the target, giving us the actual final location
+	   	targetVec.add(start);
+
+	    console.log("pointVec2", targetVec, degToRad(angle));
+
+	    // Store the vertex coords for edges + vertices
+	    fold.vertices_coords[vertIdx] = targetVec;
+	};
+
+	/*
+	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
+	 * @param fold - the object to be modified
+	 * @param steps - array of instructions
+	 */
+	const performStep = (fold, stepIdx) => {
+		if (!fold || stepIdx == undefined || stepIdx < 0 || stepIdx > stepArray.length) {
 			return null;
 		}
 
-		steps.forEach(step => {
-			// Step is an array in the format:
-			// [ edge (int or str of format "[0-9]+[R]*"),
-			// rotation (angle in degrees),
-			// args (optional object) ]
+		// Command is an array in the format:
+		// [ edge (int or str of format "[0-9]+[R]*"),
+		// rotation (angle in degrees),
+		// args (optional object) ]
+		let cmds = stepArray[stepIdx];
+		if (!Array.isArray(cmds)) {
+			cmds = [ cmds ];
+		}
+		cmds.forEach((cmd, cmdIdx) => {
+			const args = cmd.length === 3 ? cmd[2] : {};
+			const edgeVerts = fold.edges_vertices[cmd[0]];
 
-			// Get all faces for this edge
-			const faceList = findFacesForEdge(fold.faces_vertices, step[0]);
+			// Get the face that includes this edge on the right left hand side, depending on the cmd args
+			const faceIdx = faceToFoldForEdge(fold.faces_vertices, edgeVerts, args.lhs);
 
-			// Rotate all other vertices part of adjacent faces around this edge 
-			faceList.forEach(faceIdx => {
-				// Get all vertices not part of this edge
-				fold.faces_vertices[faceIdx]
-					.filter(vertIdx => !step[0].includes(vertIdx))
-					.forEach(vertIdx => rotateVertAroundEdge(fold, vertIdx, step[0]))
+			// This case is intentional for certain edge-of-paper edges that don't have anything on that side
+			// In other words, this is an edge-related edge case of the edge modeling code 
+			if (faceIdx === -1) {
+				console.log("[performStep] ERR: couldn't find faceIdx", faceIdx);
+				return;
+			}
 
-				// Rotate them
+			console.log("[performStep] ", {cmd, args, faceIdx})
+			// Get all vertices not part of this edge and rotate them
+			fold.faces_vertices[faceIdx]
+				.filter(vertIdx => !edgeVerts.includes(vertIdx) && !edgeVerts.includes(vertIdx))
+				.forEach(vertIdx => rotateVertAroundEdge(fold, vertIdx, edgeVerts, cmd[1]));
 
-			});
-			// Add to array of edges to do in next call 
+			// Add to array of edges to do in next call
+
+			// Do recursive call
 		});
-
-		// Do recursive call
-	}
+	};
 
 	const hoverVert = (idx, event, show) => {
 		ctrlOverlay({
 			show,
-			name: "vert_"+idx,  
+			name: 'vert_' + idx,
 			component: (
 				<Chip
 					className={classes.vertLabel}
-					style={{left: event.pageX + 10, top: event.pageY - 64 + 10}}
+					style={{ left: event.pageX + 10, top: event.pageY - 64 + 10 }}
 					label={initFold && `${idx}: ${initFold.vertices_coords[idx].toString()}`}
 				/>
 			)
-		})	
-	}
+		});
+	};
 
 	// ---------
 	// LIFECYCLE
@@ -292,43 +416,58 @@ export const Paper = props => {
 	});
 
 	const material = useMemo(createMaterial, []);
-	const stepArray = useMemo(collectStepsForLevel, [!fold.current || !fold.current.instructions, foldKey, foldState.selectedLevel]);
-	useEffect(performInstructionStep, [foldState.stepIndex]);
+	const stepArray = useMemo(collectStepsForLevel, [
+		!fold.current || !fold.current.instructions,
+		foldKey,
+		foldState.selectedLevel
+	]);
+	useEffect(performInstructions, [foldState.stepIndex]);
 	useEffect(initFoldState, [foldKey, stepArray.length]);
 
-	console.log("[Paper]", { stepArray, fold: fold.current })
+	// console.log('[Paper]', { stepArray, fold: fold.current });
 
 	return (
 		<group>
-		    {editorState.showEdges && fold.current && fold.current.edges_vertices.map((line, idx) => (
-			    <Line
-			    	points={line.map(index => fold.current.vertices_coords[index])}
-					color={editorState.edgeHighlights.includes(idx) ? "red" : "black"}
-					lineWidth={1}
-					dashed={false}
+			{editorState.showEdges &&
+				fold.current &&
+				fold.current.edges_vertices.map((line, idx) => 
+					(idx >= initFold.edges_vertices.length && !editorState.showTriangulations) ? null : (
+					<Line
+						points={line.map(index => fold.current.vertices_coords[index])}
+						color={(idx < initFold.edges_vertices.length) ? editorState.edgeHighlights.includes(idx) ? 'red' : 'black' : 'yellow'}
+						lineWidth={1}
+						dashed={idx >= initFold.edges_vertices.length}
+						material={material}
+						dashSize={0.1}
+						gapSize={0.1}
+					/>
+				))}
+			{editorState.showVertices &&
+				fold.current &&
+				fold.current.vertices_coords.map((vert, idx) => (
+					<a.mesh
+						position={vert}
+						onPointerEnter={e => hoverVert(idx, e, true)}
+						onPointerLeave={e => hoverVert(idx, e, false)}
+					>
+						<sphereBufferGeometry attach="geometry" args={[0.02, 8, 8]} />
+						<meshStandardMaterial
+							attach="material"
+							roughness={0.5}
+							color={editorState.vertexHighlights.includes(idx) ? 'red' : 'black'}
+						/>
+					</a.mesh>
+				))}
+			{editorState.showFaces && fold.current && faceGeometry.current && (
+				<a.mesh
+					geometry={faceGeometry.current}
 					material={material}
-			    />
-		    ))}
-		    {editorState.showVertices && fold.current && fold.current.vertices_coords.map((vert, idx) => (
-		    	<a.mesh
-		    		position={vert}
-		    		onPointerEnter={e => hoverVert(idx, e, true)}
-		    		onPointerLeave={e => hoverVert(idx, e, false)}
-				>
-					<sphereBufferGeometry attach="geometry" args={[0.02, 8, 8]} />
-					<meshStandardMaterial attach="material" roughness={0.5} color={editorState.edgeHighlights.includes(idx) ? "red" : "black"} />
-		    	</a.mesh>	
-		    ))}
-		    {editorState.showFaces && fold.current && faceGeometry.current && faceGeometry.current.map(geometry => (
-		    	<a.mesh
-		    		geometry={geometry}
-		    		material={material}
-				>
-		    	</a.mesh>	
-		    ))}
-	    </group>
-    );
-}
+					>
+				</a.mesh>
+			)}
+		</group>
+	);
+};
 
 /*
 FOLDING ENGINE

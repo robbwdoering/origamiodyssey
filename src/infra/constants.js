@@ -72,10 +72,11 @@ export const initAppReducerState = {
 		hash: 0,
 		edgeHighlights: [],
 		vertexHighlights: [],
-		levelHighlights: [],
+		faceHighlights: [],
 		showEdges: true,
 		showVertices: true,
-		showFaces: true
+		showFaces: true,
+		showTriangulations: false
 	},
 	showNavDrawer: false
 

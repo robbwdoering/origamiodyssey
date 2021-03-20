@@ -159,8 +159,8 @@ export const FoldEditorCards = props => {
 					    	className={classes.editor_select}
 					    	// MenuProps={MenuProps}
 				    	>
-					    	{initFold.edges_vertices.map((pair, index) => {
-					    		const name = pair.toString();
+					    	{initFold.edges_vertices.map((edge, index) => {
+					    		const name = edge.toString();
 					    		return (
 						    		<MenuItem key={name} value={index}>
 							    		{name}
@@ -186,8 +186,35 @@ export const FoldEditorCards = props => {
 					    	className={classes.editor_select}
 					    	// MenuProps={MenuProps}
 				    	>
-					    	{initFold.vertices_coords.map((pair, index) => {
-					    		const name = pair.toString();
+					    	{initFold.vertices_coords.map((coords, index) => {
+					    		const name = coords.toString();
+					    		return (
+						    		<MenuItem key={name} value={index}>
+							    		{name}
+						    		</MenuItem>
+					    		);
+				    		})}
+				    	</Select>
+					</ControlRow>
+			    	<ControlRow name="faceHighlights">
+				    	<Select
+					    	name="faceHighlights"
+					    	multiple
+					    	value={editorState.faceHighlights}
+					    	onChange={handleSelectionChange}
+					    	input={<Input id="select-multiple-chip" />}
+					    	renderValue={(selected) => (
+					    		<div className={classes.chips}>
+					    		{selected.map((idx) => (
+					    			<Chip key={idx} label={`${idx}: ${initFold.faces_vertices[idx].toString()}`} className={classes.chip} />
+					    			))}
+					    		</div>
+					    		)}
+					    	className={classes.editor_select}
+					    	// MenuProps={MenuProps}
+				    	>
+					    	{initFold.faces_vertices.map((face, index) => {
+					    		const name = face.toString();
 					    		return (
 						    		<MenuItem key={name} value={index}>
 							    		{name}
@@ -212,6 +239,12 @@ export const FoldEditorCards = props => {
 						<ToggleButton
 							selected={editorState.showFaces}
 							onChange={() => handleEditorFormChange("showFaces", !editorState.showFaces)}
+						/>
+					</ControlRow>
+					<ControlRow name="Show Triangulations" width={4}>
+						<ToggleButton
+							selected={editorState.showTriangulations}
+							onChange={() => handleEditorFormChange("showTriangulations", !editorState.showTriangulations)}
 						/>
 					</ControlRow>
 				</Grid>

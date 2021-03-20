@@ -16,7 +16,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useCookies } from 'react-cookie';
 
 import { Pages, Folds, initNavTree } from './../infra/constants';
-import { setLayoutState, setFoldState } from './../infra/actions';
+import { setLayoutState, setFoldState, setEditorState } from './../infra/actions';
 import Splash from './pages/Splash';
 import ModelSelect from './pages/ModelSelect';
 import FoldControls from './pages/FoldControls';
@@ -26,7 +26,17 @@ import Scene from './../anim/Scene';
 import useStyles from './../style/theme';
 
 export const Body = props => {
-	const { layoutState, setLayoutState, foldState, foldStateHash, layoutStateHash, setFoldState } = props;
+	const {
+		layoutState,
+		layoutStateHash,
+		setLayoutState,
+		foldState,
+		foldStateHash,
+		setFoldState,
+		editorState,
+		editorStateHash,
+		setEditorState
+	} = props;
 
 	// ----------
 	// STATE INIT
@@ -61,7 +71,7 @@ export const Body = props => {
 			case Pages.Fold:
 				return (
 					<React.Fragment>
-						<FoldControls 
+						<FoldControls
 							windowHeight={windowHeight}
 							initFold={fold.current.json}
 							curFold={layoutState.curFold}
@@ -89,10 +99,11 @@ export const Body = props => {
 
 	const selectFold = () => {
 		fold.current = {
-				json: layoutState.curFold && Folds[layoutState.curFold]
+			json:
+				layoutState.curFold && Folds[layoutState.curFold]
 					? JSON.parse(JSON.stringify(Folds[layoutState.curFold].json))
 					: null,
-				lastUpdated: Date.now()
+			lastUpdated: Date.now()
 		};
 	};
 
@@ -109,7 +120,7 @@ export const Body = props => {
 
 	const saveStateToCookies = () => {
 		console.log('Saving state to cookies');
-		setCookies('origamiodyssey_state', { layoutState, foldState }, { path: '/' });
+		setCookies('origamiodyssey_state', { layoutState, foldState, editorState }, { path: '/' });
 	};
 
 	const fetchStateFromCookies = () => {
@@ -117,6 +128,7 @@ export const Body = props => {
 		if (cookies.origamiodyssey_state) {
 			setLayoutState(cookies.origamiodyssey_state.layoutState);
 			setFoldState(cookies.origamiodyssey_state.foldState);
+			setEditorState(cookies.origamiodyssey_state.editorState);
 		}
 	};
 
@@ -165,8 +177,10 @@ export const mapStateToProps = (state, props) => {
 		layoutState: state.appReducer.layoutState,
 		layoutStateHash: state.appReducer.layoutState.hash,
 		foldState: state.appReducer.foldState,
-		foldStateHash: state.appReducer.foldState.hash
+		foldStateHash: state.appReducer.foldState.hash,
+		editorState: state.appReducer.editorState,
+		editorStateHash: state.appReducer.editorState.hash
 	};
 };
 
-export default connect(mapStateToProps, { setLayoutState, setFoldState })(Body);
+export default connect(mapStateToProps, { setLayoutState, setFoldState, setEditorState })(Body);
