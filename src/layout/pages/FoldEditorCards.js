@@ -199,7 +199,7 @@ export const FoldEditorCards = props => {
 								const name = edge.toString();
 								return (
 									<MenuItem key={name} value={index}>
-										{name}
+										{index}: {name}
 									</MenuItem>
 								);
 							})}
@@ -230,7 +230,7 @@ export const FoldEditorCards = props => {
 								const name = coords.toString();
 								return (
 									<MenuItem key={name} value={index}>
-										{name}
+										{index}: {name}
 									</MenuItem>
 								);
 							})}

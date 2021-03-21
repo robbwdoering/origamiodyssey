@@ -75,7 +75,7 @@ export const Paper = props => {
 			coords => new THREE.Vector3(coords[0] / maxes[0], 0, coords[2] / maxes[1])
 		);
 
-		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 180);
+		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 0);
 
 		// TODO: Validate that all the angles in every face are acute
 
@@ -217,7 +217,6 @@ export const Paper = props => {
 
 		setFoldObj(initFold);
 
-		// 
 		// NOTE: 9 = 3 coords per vert * 3 vals per coord (such as x,y,z or r,g,b)
 		faceGeometry.current = new THREE.BufferGeometry();
 		let vertices = new Float32Array(9 * fold.current.faces_vertices.length);
@@ -288,7 +287,7 @@ export const Paper = props => {
 
 		if (diff > 0) {
 			for (let i = 1; i <= diff; i++) {
-				performStep(fold.current, prevStep + i);
+				performCommands(fold.current, stepArray[prevStep + i], new Set(), );
 			}
 		} else {
 
@@ -308,7 +307,6 @@ export const Paper = props => {
 	 * so it will use the isLhs parameter to decide which side of the edge to rotate
 	 */
 	const faceToFoldForEdge = (faces, edge, isLhs) => {
-		console.log("[faceToFoldForEdge]", edge)
 		return faces.findIndex((face, faceIdx) => {
 			// If this face doesn't include the edge, ignore it
 			if (!face.includes(edge[0]) || !face.includes(edge[1])) {
@@ -330,25 +328,43 @@ export const Paper = props => {
 		// Read in the vectors of the three triangle points
 		const start = fold.vertices_coords[edge[0]];
 		const end = fold.vertices_coords[edge[1]];
-		const third = fold.vertices_coords[vertIdx];
 
-		console.log('[rotateVertAroundEdge]', { start, end, third, angle });
+
+		// Find the plane formed by the other side of this edge
+		const otherFace = fold.faces_vertices.find(face => face.includes(edge[0]) && face.includes(edge[1]) && !face.includes(vertIdx));
+		if (otherFace === null) {
+			console.log("[rotateVertAroundEdge] ERR: Couldn't find other plane to base rotation in.");
+			return;
+		}
+		const plane = new THREE.Plane();
+		plane.setFromCoplanarPoints(...(otherFace.map(vertIdx => fold.vertices_coords[vertIdx])));
+
+		const initStart = initFold.vertices_coords[edge[0]];
+		const initThird = initFold.vertices_coords[vertIdx];
+		const diffInPlane = new THREE.Vector3(initThird.x - initStart.x, initThird.y - initStart.x, initThird.z - initStart.z)
+
+
+		// The third point starts off assuming no rotation
+		const third = new THREE.Vector3(); 
+		// const third = fold.vertices_coords[vertIdx];
 
 		// Setup vectors for edge (start --> end), and the target (start --> third)
 		const edgeDirection = new THREE.Vector3(end.x - start.x, end.y - start.y, end.z - start.z);
 	    edgeDirection.normalize();
 	    const targetVec = new THREE.Vector3(third.x - start.x, third.y - start.x, third.z - start.z);
 
+		console.log(`targetVec1: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
 	    // Rotate the target vector around the edge
 	   	targetVec.applyAxisAngle(edgeDirection, degToRad(angle));
+		console.log(`targetVec2: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
 
 	   	// Add the start back to the target, giving us the actual final location
 	   	targetVec.add(start);
-
-	    console.log("pointVec2", targetVec, degToRad(angle));
+		console.log(`targetVec3: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
 
 	    // Store the vertex coords for edges + vertices
 	    fold.vertices_coords[vertIdx] = targetVec;
+	    console.log("[rotateVertAroundEdge]", start, end, third, edgeDirection, targetVec)
 	};
 
 	/*
@@ -356,58 +372,105 @@ export const Paper = props => {
 	 * @param fold - the object to be modified
 	 * @param steps - array of instructions
 	 */
-	const performStep = (fold, stepIdx, vertsMoved = new Set()) => {
-		if (!fold || stepIdx == undefined || stepIdx < 0 || stepIdx > stepArray.length) {
+	const performCommands = (fold, cmds, vertsMoved = new Set(), edgesMoved = new Set(), level = 0) => {
+		console.log("[performCommands] RUN: ", fold && fold.vertices_coords, cmds, level)
+		if (!fold || cmds === undefined || level > 2) {
 			return null;
 		}
 
-		// Command is an array in the format:
-		// [ edge (int or str of format "[0-9]+[R]*"),
-		// rotation (angle in degrees),
-		// args (optional object) ]
-		let cmds = stepArray[stepIdx];
-		let todoEdges = new Set();
+		let todoEdges = [];
 		if (!Array.isArray(cmds)) {
 			cmds = [ cmds ];
 		}
+
 		cmds.forEach((cmd, cmdIdx) => {
+			// Parse the command - 0 & 1 are verts, 2 is foldAngle, and 3 is optional args
 			const args = cmd.length === 4 ? cmd[3] : {};
 			const edgeVerts = [cmd[0], cmd[1]];
+			const edgeIdx = fold.edges_vertices.find(edge => edge.includes(cmd[0]) && edge.includes(cmd[1]));
 
 			// Get the face that includes this edge on the right or left hand side, depending on the cmd args
 			const faceIdx = faceToFoldForEdge(fold.faces_vertices, edgeVerts, args.lhs);
 
-			// This case is intentional for certain edge-of-paper edges that don't have anything on that side
-			// In other words, this is an edge-related edge case of the edge modeling code 
-			if (faceIdx === -1) {
-				console.log("[performStep] ERR: couldn't find faceIdx", faceIdx);
+			// Find the index of the the third point in this triangle
+			const thirdIdx = fold.faces_vertices[faceIdx].find(vertIdx => !edgeVerts.includes(vertIdx));
+
+			// Stop if we should not move this edge, because it's at the end of the paper, or
+			// we've already processed it during this step
+			if (faceIdx === -1 || edgesMoved.has(edgeIdx) || vertsMoved.has(thirdIdx)) {
 				return;
 			}
 
-			console.log("[performStep] ", {cmd, args, faceIdx})
-			// Get all vertices not part of this edge and rotate them
-			fold.faces_vertices[faceIdx]
-				.filter(vertIdx => !edgeVerts.includes(vertIdx) && !vertsMoved.has(vertIdx))
-				.forEach(vertIdx => {
-					vertsMoved.add(vertIdx);
-					rotateVertAroundEdge(fold, vertIdx, edgeVerts, cmd[2]);
-				});
+			// Remember to not move this edge or vertex again
+			edgesMoved.add(edgeIdx);
+			vertsMoved.add(edgeVerts[0]);
+			vertsMoved.add(edgeVerts[1]);
+			vertsMoved.add(thirdIdx);
 
-			// Add to array of edges to do in next call
-			const third = fold.faces_vertices[faceIdx].find(vertIdx => !edgeVerts.includes(vertIdx));
-			const edgeIdxOne = fold.edges_vertices.findIndex(edge => edge.includes[edgeVerts[0]] && edge.includes(third));
-			const edgeIdxTwo = fold.edges_vertices.findIndex(edge => edge.includes[edgeVerts[1]] && edge.includes(third));
+			// Rotate the third vertex around this edge 
+			console.log(`Rotating ${thirdIdx} around (${edgeVerts[0]}, ${edgeVerts[1]} by ${cmd[2]})`)
+			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, cmd[2]);
 
-			if (edgeIdxOne === -1 || edgeIdxTwo === -1) {
-				console.log("[performStep] ERR: Couldn't find other edges for face ", edgeVerts, third);
-				return;
-			}
+			// Store the fold angle
+			fold.edges_foldAngle[edgeIdx] = cmd[2];
 
-			todoEdges.add(edgeIdxOne);
-			todoEdges.add(edgeIdxTwo);
+			// Store the two other edges of the triangle
+			const edgeIndices = fold.edges_vertices.reduce((acc, edge, idx) => {
+				if (edge.includes(edgeVerts[0]) && edge.includes(thirdIdx)) {
+					acc[0] = idx;
+				} else if (edge.includes(edgeVerts[1]) && edge.includes(thirdIdx)) {
+					acc[1] = idx;
+				}
+				return acc;
+			}, [-1, -1]);
+
+			// Get the angle to rotate these edges (last used, or default to 180)
+			const foldAngleOne = edgeIndices[0] < fold.edges_foldAngle.length ? fold.edges_foldAngle[edgeIndices[0]] : 0;
+			const foldAngleTwo = edgeIndices[1] < fold.edges_foldAngle.length ? fold.edges_foldAngle[edgeIndices[1]] : 0;
+
+			const edges = [
+				[edgeVerts[0], thirdIdx, foldAngleOne],
+				[thirdIdx, edgeVerts[1], foldAngleTwo]
+			];
+
+			// Inspect both of the other edges - if they're novel, fold them as well
+			// NOTE: the edge pointed to by the associated edgeIdx might be reversed
+			// from what we're looking at; this is okay, since we're just using the indices
+			// to ensure uniqueness here, we don't care about that value
+			edgeIndices.forEach((edgeIdx, triIdx) => {
+				if (!edgesMoved.has(edgeIdx) && !isEdgeOfPaper(edgeIdx)) {
+					// Mark this edge to be moved next 
+					todoEdges.push(edges[triIdx]);
+				}
+			});
 		});
 
 		// Do recursive call for every edge in the todo list
+		performCommands(fold, todoEdges, vertsMoved, edgesMoved, level + 1);
+	};
+
+	/**
+	 * Returns true if this vertex is on the very edge of the paper, false otherwise.
+	 */
+	const vertIsOnEdge = vertCoords => (
+		Math.abs(vertCoords[0]) === 1 || Math.abs(vertCoords[2]) === 1
+	);
+
+	/**
+	 * Returns true if this edge is on the very edge of the paper, false otherwise.
+	 */
+	const isEdgeOfPaper = (edgeIdx) => {
+		// If this edge was created during triangulization, it can't be an edge
+		if (!initFold || edgeIdx >= initFold.edges_vertices.length) {
+			return false
+		}
+
+		// Find the coordinates of the vertices for this edge
+		const edge = initFold.edges_vertices[edgeIdx];
+		const coordsArr = edge.map(vertIdx => initFold.vertices_coords[vertIdx]);
+
+		// If both vertices are on the edge, this edge is on the edge
+		return vertIsOnEdge(coordsArr[0]) && vertIsOnEdge(coordsArr[1]);
 	};
 
 	const hoverVert = (idx, event, show) => {
