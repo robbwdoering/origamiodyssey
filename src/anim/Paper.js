@@ -343,7 +343,6 @@ export const Paper = props => {
 		const initThird = initFold.vertices_coords[vertIdx];
 		const diffInPlane = new THREE.Vector3(initThird.x - initStart.x, initThird.y - initStart.x, initThird.z - initStart.z)
 
-
 		// The third point starts off assuming no rotation
 		const third = new THREE.Vector3(); 
 		// const third = fold.vertices_coords[vertIdx];
