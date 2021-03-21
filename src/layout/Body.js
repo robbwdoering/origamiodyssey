@@ -98,6 +98,7 @@ export const Body = props => {
 	};
 
 	const selectFold = () => {
+		console.log("selectFold", layoutState, Folds, )
 		fold.current = {
 			json:
 				layoutState.curFold && Folds[layoutState.curFold]
@@ -105,9 +106,12 @@ export const Body = props => {
 					: null,
 			lastUpdated: Date.now()
 		};
+
+		triggerRerender();
 	};
 
 	const foldOverrideCallback = newFold => {
+		console.log("[foldOverrideCallback] ", newFold);
 		Object.assign(fold.current.json, newFold);
 
 		// Reset fold state
@@ -120,12 +124,13 @@ export const Body = props => {
 
 	const saveStateToCookies = () => {
 		console.log('Saving state to cookies');
-		setCookies('origamiodyssey_state', { layoutState, foldState, editorState }, { path: '/' });
+		const editorState = Object.assign({}, editorState, { stepIndex: -1 });
+		setCookies('origamiodyssey_state', { layoutState, foldState,  }, { path: '/' });
 	};
 
 	const fetchStateFromCookies = () => {
-		console.log('Applying state from cookies.');
 		if (cookies.origamiodyssey_state) {
+			console.log('Applying state from cookies.');
 			setLayoutState(cookies.origamiodyssey_state.layoutState);
 			setFoldState(cookies.origamiodyssey_state.foldState);
 			setEditorState(cookies.origamiodyssey_state.editorState);
@@ -155,12 +160,12 @@ export const Body = props => {
 	const page = useMemo(renderPage, [layoutState.page]);
 	const piecemeal = useMemo(renderPiecemeal, [layoutState.page, windowHeight]);
 
-	// console.log("[body]", layoutState);
+	console.log("[body]", fold.current);
 
 	return (
 		<div className={classes.bodyContainer} ref={containerRef}>
 			<div className={classes.sceneContainer} style={{ height: windowHeight + 'px' }}>
-				<Scene paperSize={windowHeight} initFold={fold.current.json} />
+				<Scene paperSize={windowHeight} initFold={fold.current.json} foldLastUpdated={fold.current.lastUpdated} />
 			</div>
 			{page && (
 				<div className={classes.centerColumn} style={{ height: windowHeight + 'px' }}>

@@ -86,6 +86,9 @@ export const Paper = props => {
 			recursiveTriangulation(curFace, foldObj);
 		});
 
+
+		foldObj.faces_normals = foldObj.faces_vertices.map(face => new THREE.Vector3(0, 1, 0));
+
 		console.log('[setFoldObj]', { maxes, foldObj });
 		fold.current = foldObj;
 	};
@@ -317,7 +320,7 @@ export const Paper = props => {
 			// NOTE: this is using the initFold object, so it's looking at a flat version
 			const start = initFold.vertices_coords[edge[0]];
 			const end = initFold.vertices_coords[edge[1]];
-			const third = initFold.vertices_coords[face.find(vert => !edge.includes(vert))];
+			const third = initFold.vertices_coords[face.find(vertIdx => !edge.includes(vertIdx))];
 
 			const d = (third[0] - start[0]) * (end[2] - start[2]) - (third[2] - start[2]) * (end[0] - start[0]);
 			return isLhs ? d > 0 : d < 0;
@@ -325,45 +328,95 @@ export const Paper = props => {
 	};
 
 	const rotateVertAroundEdge = (fold, vertIdx, edge, angle) => {
-		// Read in the vectors of the three triangle points
+		// Read in the positions of the vertices of the edge that we're rotating around 
 		const start = fold.vertices_coords[edge[0]];
 		const end = fold.vertices_coords[edge[1]];
 
+		// ------------------------------------------------------------------------------------------
+		// SECTION 1: Figure out where this point would be if the angle were 0 (like in initial fold)
+		// ------------------------------------------------------------------------------------------
 
 		// Find the plane formed by the other side of this edge
 		const otherFace = fold.faces_vertices.find(face => face.includes(edge[0]) && face.includes(edge[1]) && !face.includes(vertIdx));
-		if (otherFace === null) {
+		const otherVert = otherFace.find(otherVertIdx => !edge.includes(otherVertIdx));
+		if (otherFace === null || otherVert === null) {
 			console.log("[rotateVertAroundEdge] ERR: Couldn't find other plane to base rotation in.");
 			return;
 		}
 		const plane = new THREE.Plane();
-		plane.setFromCoplanarPoints(...(otherFace.map(vertIdx => fold.vertices_coords[vertIdx])));
+		plane.setFromCoplanarPoints(start, end, fold.vertices_coords[otherVert]);
 
-		const initStart = initFold.vertices_coords[edge[0]];
-		const initThird = initFold.vertices_coords[vertIdx];
-		const diffInPlane = new THREE.Vector3(initThird.x - initStart.x, initThird.y - initStart.x, initThird.z - initStart.z)
+		const planeOrigin = new THREE.Vector3().copy(plane.normal).multiplyScalar(plane.constant);
+		const norm = new THREE.Vector3().copy(plane.normal);
+
+		// Get the translation vector from the original plane (i.e. 0,1,0)
+		const initStart = new THREE.Vector3(...initFold.vertices_coords[edge[0]]);
+		const initThird = new THREE.Vector3(...initFold.vertices_coords[vertIdx]);
+		const diffInPlane = new THREE.Vector3().subVectors(initThird, initStart);
+
+		// Get the angle between the X axis ([1, 0, 0]) and the vector from the origin to the start vertex
+		let axisRotation = initStart.angleTo(new THREE.Vector3(1, 0, 0));
+		if (initStart.z < 0) {
+			axisRotation = (2 * Math.PI) - axisRotation;
+		}
+
+		// We know the start is in the plane, so the x Axis starts as that
+		const xAxis = new THREE.Vector3().subVectors(start, planeOrigin).normalize();
+
+		// Use this fake x Axis to get a Z axis
+		const zAxis = new THREE.Vector3().crossVectors(start, plane.normal).normalize();
+
+		// Rotate both the X and Z axiis around the Y (the normal) to get correct vals
+		xAxis.applyAxisAngle(plane.normal, axisRotation);
+		zAxis.applyAxisAngle(plane.normal, axisRotation);
+
+		// We don't care about the y axis, since the paper is flat during this step
+
+		// Transform this translation vector to the new coordinate system 
+		const newCoords = new THREE.Matrix3().set(
+			xAxis.x, plane.normal.x, zAxis.x,
+			xAxis.y, plane.normal.y, zAxis.y,
+			xAxis.z, plane.normal.z, zAxis.z
+		);
+
+		// Invert the matrix, so we can use it to translate from fake coords to real ones 
+		// newCoords.invert();
+
+		// NORMAL1 = [0, 1, 0]
+		// Add the transformed vector to the start point to 
+		const diffInOrigCoords = new THREE.Vector3().copy(diffInPlane).applyMatrix3(newCoords);
+		// const diffInOrigCoords = new THREE.Vector3().copy(diffInPlane);
 
 		// The third point starts off assuming no rotation
-		const third = new THREE.Vector3(); 
-		// const third = fold.vertices_coords[vertIdx];
+		// const third = new THREE.Vector3().addVectors(start, diffInOrigCoords).add(planeOrigin);
+		const third = new THREE.Vector3().addVectors(start, diffInOrigCoords);
 
-		// Setup vectors for edge (start --> end), and the target (start --> third)
-		const edgeDirection = new THREE.Vector3(end.x - start.x, end.y - start.y, end.z - start.z);
-	    edgeDirection.normalize();
-	    const targetVec = new THREE.Vector3(third.x - start.x, third.y - start.x, third.z - start.z);
+		console.log("[rotateVertAroundEdge]", {planeOrigin, initStart, initThird, diffInPlane, diffInOrigCoords, axisRotation, xAxis, zAxis, newCoords, norm, third, angle, start, end, otherVert})
 
-		console.log(`targetVec1: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
-	    // Rotate the target vector around the edge
-	   	targetVec.applyAxisAngle(edgeDirection, degToRad(angle));
-		console.log(`targetVec2: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
+		// ----------------------------------------------------
+		// SECTION 2: Rotate an existing point around this edge
+		// ----------------------------------------------------
+		let targetVec;
+		if (angle !== 180) {
+			// Setup vectors for edge (start --> end), and the target (start --> third)
+			const edgeDirection = new THREE.Vector3(end.x - start.x, end.y - start.y, end.z - start.z);
+		    edgeDirection.normalize();
+		    targetVec = new THREE.Vector3(third.x - start.x, third.y - start.x, third.z - start.z);
 
-	   	// Add the start back to the target, giving us the actual final location
-	   	targetVec.add(start);
-		console.log(`targetVec3: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
+			console.log(`targetVec1: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
+		    // Rotate the target vector around the edge
+		   	targetVec.applyAxisAngle(edgeDirection, degToRad(angle));
+			console.log(`targetVec2: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
+
+		   	// Add the start back to the target, giving us the actual final location
+		   	targetVec.add(start);
+			console.log(`targetVec3: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
+		} else {
+			targetVec = third;
+		}
 
 	    // Store the vertex coords for edges + vertices
 	    fold.vertices_coords[vertIdx] = targetVec;
-	    console.log("[rotateVertAroundEdge]", start, end, third, edgeDirection, targetVec)
 	};
 
 	/*
@@ -408,7 +461,7 @@ export const Paper = props => {
 
 			// Rotate the third vertex around this edge 
 			console.log(`Rotating ${thirdIdx} around (${edgeVerts[0]}, ${edgeVerts[1]} by ${cmd[2]})`)
-			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, cmd[2]);
+			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, 180 - cmd[2]);
 
 			// Store the fold angle
 			fold.edges_foldAngle[edgeIdx] = cmd[2];
@@ -472,6 +525,11 @@ export const Paper = props => {
 		return vertIsOnEdge(coordsArr[0]) && vertIsOnEdge(coordsArr[1]);
 	};
 
+	/**
+	 * Prints a THREE.Vector3 object.
+	 */
+	const printVect = vect => `${vect.x}, ${vect.y}, ${vect.z}`;
+
 	const hoverVert = (idx, event, show) => {
 		ctrlOverlay({
 			show,
@@ -480,7 +538,7 @@ export const Paper = props => {
 				<Chip
 					className={classes.vertLabel}
 					style={{ left: event.pageX + 10, top: event.pageY - 64 + 10 }}
-					label={initFold && `${idx}: ${initFold.vertices_coords[idx].toString()}`}
+					label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
 				/>
 			)
 		});

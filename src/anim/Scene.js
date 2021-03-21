@@ -50,9 +50,9 @@ const CameraControls = () => {
 			mouseButtons={{
 				RIGHT: THREE.MOUSE.ROTATE
 			}}
-			maxAzimuthAngle={Math.PI / 4}
+			// maxAzimuthAngle={Math.PI / 4}
 			maxPolarAngle={Math.PI * 3 / 4}
-			minAzimuthAngle={-Math.PI / 4}
+			// minAzimuthAngle={-Math.PI / 4}
 			minPolarAngle={-Math.PI * 3 / 4}
 		/>
 	);
@@ -78,7 +78,7 @@ export const Scene = props => {
 
 	return (
 		<React.Fragment>
-			<Canvas camera={{fov: 100, position: [0, 1.2, 0]}} onCreated={state => state.gl.setClearColor("red")} >
+			<Canvas camera={{fov: 100, position: [0, 1.8, 0]}} onCreated={state => state.gl.setClearColor("red")} >
 				<spotLight position={[5, 10, 0]} color='#f1f1ff' distance={100} penumbra={0.75} decay={2} />
 				<CameraControls />
 
