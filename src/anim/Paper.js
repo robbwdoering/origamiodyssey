@@ -327,7 +327,24 @@ export const Paper = props => {
 		});
 	};
 
+	/**
+	 * This is a very complex step, and best understood by just reading the comments and section titles.
+	 * his is taking in an existing triangle (positioned as it actually is in the model
+	 * at the moment), the vertex of some triangle that's adjacent to it, and finally an angle in degrees. With this,
+	 * this function will figure out where the point would be if you folded this edge completly flat, then rotating the
+	 * new triangle by the amount given.
+	 *
+	 * To make a long story short, this is placing a vertex based on existing ones that we know are in the right place already.
+	 * 
+	 * @props fold - the fold object, which will be mutated by this method
+	 * @props vertIdx - the index of the vertex that's being placed
+	 * @props edge - array of the two vertIdxs that make up the edge b/w the two faces
+	 * @props angle - the angle to rotate the second face around the edge by. 
+	 */
 	const rotateVertAroundEdge = (fold, vertIdx, edge, angle) => {
+		// Convenience object
+		const actualXAxis = new THREE.Vector3(1, 0, 0);
+
 		// Read in the positions of the vertices of the edge that we're rotating around 
 		const start = fold.vertices_coords[edge[0]];
 		const end = fold.vertices_coords[edge[1]];
@@ -335,7 +352,6 @@ export const Paper = props => {
 		// ------------------------------------------------------------------------------------------
 		// SECTION 1: Figure out where this point would be if the angle were 0 (like in initial fold)
 		// ------------------------------------------------------------------------------------------
-
 		// Find the plane formed by the other side of this edge
 		const otherFace = fold.faces_vertices.find(face => face.includes(edge[0]) && face.includes(edge[1]) && !face.includes(vertIdx));
 		const otherVert = otherFace.find(otherVertIdx => !edge.includes(otherVertIdx));
@@ -354,8 +370,39 @@ export const Paper = props => {
 		const initThird = new THREE.Vector3(...initFold.vertices_coords[vertIdx]);
 		const diffInPlane = new THREE.Vector3().subVectors(initThird, initStart);
 
+		// Before we use the initStart for figuring out angle, check if this vector is the X axis - 
+		// we can use any other vector, but if we use this exact vector, we're doing a cross vector with this same axis
+		// later on. Which, of course, is 0. Which is not good!
+		if (initStart.normalize().equals(actualXAxis)) {
+			// Figure out which of the other two points we can use - it's a triangle, so one will work
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+			// TODO
+		}
+
 		// Get the angle between the X axis ([1, 0, 0]) and the vector from the origin to the start vertex
-		let axisRotation = initStart.angleTo(new THREE.Vector3(1, 0, 0));
+		let axisRotation = initStart.angleTo(actualXAxis);
+
+		// If it's in the back quadrants, `angleTo` gets lazy and measures the wrong direction (to the line, not the vector)
 		if (initStart.z < 0) {
 			axisRotation = (2 * Math.PI) - axisRotation;
 		}
@@ -397,7 +444,11 @@ export const Paper = props => {
 		// SECTION 2: Rotate an existing point around this edge
 		// ----------------------------------------------------
 		let targetVec;
-		if (angle !== 180) {
+
+		// If the paper is flat, we can skip this step
+		if (angle === 180) {
+			targetVec = third;
+		} else {
 			// Setup vectors for edge (start --> end), and the target (start --> third)
 			const edgeDirection = new THREE.Vector3(end.x - start.x, end.y - start.y, end.z - start.z);
 		    edgeDirection.normalize();
@@ -411,8 +462,6 @@ export const Paper = props => {
 		   	// Add the start back to the target, giving us the actual final location
 		   	targetVec.add(start);
 			console.log(`targetVec3: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
-		} else {
-			targetVec = third;
 		}
 
 	    // Store the vertex coords for edges + vertices

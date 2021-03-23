@@ -293,14 +293,6 @@ export const FoldEditorCards = props => {
 							}
 						/>
 					</ControlRow>
-					<ControlRow name="Add Lines" width={12}>
-						<ToggleButton
-							selected={editorState.showTriangulations}
-							onChange={() =>
-								handleEditorFormChange('showTriangulations', !editorState.showTriangulations)
-							}
-						/>
-					</ControlRow>
 				</Grid>
 			</Card>
 

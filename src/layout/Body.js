@@ -123,17 +123,18 @@ export const Body = props => {
 	};
 
 	const saveStateToCookies = () => {
-		console.log('Saving state to cookies');
-		const editorState = Object.assign({}, editorState, { stepIndex: -1 });
-		setCookies('origamiodyssey_state', { layoutState, foldState,  }, { path: '/' });
+		const finalEditorState = Object.assign({}, editorState, { stepIndex: -1 });
+		setCookies('origamiodyssey_state', { layoutState, foldState,  editorState: finalEditorState }, { path: '/' });
 	};
 
 	const fetchStateFromCookies = () => {
 		if (cookies.origamiodyssey_state) {
-			console.log('Applying state from cookies.');
+			console.log('Applying state from cookies.', cookies.origamiodyssey_state);
 			setLayoutState(cookies.origamiodyssey_state.layoutState);
 			setFoldState(cookies.origamiodyssey_state.foldState);
 			setEditorState(cookies.origamiodyssey_state.editorState);
+		} else {
+			console.log("cannot apply cookies... :(", cookies)
 		}
 	};
 
@@ -147,6 +148,10 @@ export const Body = props => {
 
 		fetchStateFromCookies();
 	}, []);
+
+	useEffect(() => {
+		saveStateToCookies();
+	}, [layoutState.hash, foldState.hash, editorState.hash]);
 
 	// Get the actual JSON for whatever fold name is selected
 	useEffect(selectFold, [layoutState.curFold]);

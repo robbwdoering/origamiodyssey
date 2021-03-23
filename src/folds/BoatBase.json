@@ -372,60 +372,10 @@
                 "name": "",
                 "desc": "Valley fold in half every possible way.",
                 "children": [
-                    [ 14, 18, 0 ],
-                    [ 18, 17, 0 ],
-                    [ 17, 16, 0 ],
-                    [ 16, 15, 0 ]
-                ]
-            },
-            {
-                "name": "",
-                "desc": "Valley fold in half every possible way.",
-                "children": [
-                    [ 14, 18, 15 ],
-                    [ 18, 17, 15 ],
-                    [ 17, 16, 15 ],
-                    [ 16, 15, 15 ]
-                ]
-            },
-            {
-                "name": "",
-                "desc": "Valley fold in half every possible way.",
-                "children": [
-                    [ 14, 18, 45 ],
-                    [ 18, 17, 45 ],
-                    [ 17, 16, 45 ],
-                    [ 16, 15, 45 ]
-                ]
-            },
-            {
-                "name": "",
-                "desc": "Valley fold in half every possible way.",
-                "children": [
-                    [ 14, 18, 90 ],
-                    [ 18, 17, 90 ],
-                    [ 17, 16, 90 ],
-                    [ 16, 15, 90 ]
-                ]
-            },
-            {
-                "name": "",
-                "desc": "next step",
-                "children": [
-                    [ 14, 18, 0 ],
-                    [ 18, 17, 0 ],
-                    [ 17, 16, 0 ],
-                    [ 16, 15, 0 ]
-                ]
-            },
-            {
-                "name": "",
-                "desc": "Valley fold in half every possible way.",
-                "children": [
-                    [ 14, 18, 1 ],
-                    [ 18, 17, 1 ],
-                    [ 17, 16, 1 ],
-                    [ 16, 15, 1 ]
+                    [ 18, 14, -135 ],
+                    [ 17, 18, -135 ],
+                    [ 16, 17, -135 ],
+                    [ 15, 16, -135 ]
                 ]
             }
         ]

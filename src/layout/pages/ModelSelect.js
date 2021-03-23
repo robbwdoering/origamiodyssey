@@ -1,7 +1,7 @@
 /**
  * FILENAME: ModelSelect.js
  *
- * DESCRIPTION: This page allows the user to browser through cards, read details on models, and select one to fold.
+ * DESCRIPTION: This page allows the user to browse through cards, read details on models, and select one to fold.
  */
 
 // React + Redux
@@ -34,40 +34,77 @@ export const ModelSelect = props => {
 	// ----------
 	// STATE INIT
 	// ----------
-	const [cardRefs, setCardRefs] = useState([]);
+	// Used to track each "placeholder" element	
+	// const [cardRefs, setCardRefs] = useState([]);
+
+	// Used to track which card is currently open
 	const [activeIndex, setActiveIndex] = useState(-1);
 
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
 
-	const selectCardList = () => {
+	/**
+	 * Reads the list of all cards, and decides which to include.
+	 * Note that this is likely to grow suddenly and quickly in complexity as soon as we start
+	 * including folds from other sources, or, god forbid, external REST sources.
+	 * @return an array of Fold objects - see constants.js for format
+	 */
+	const filterCardList = () => {
 		return Object.keys(Folds).filter(() => true);
 	};
 
+	/**
+	 * Handles a click on one of the cards - just prompts update and relies on hooks to do actual work.
+	 */
 	const handleCardClick = (event, index) => {
 		setActiveIndex(activeIndex === index ? -1 : index);
 	};
 
+	/**
+	 * Open the fold page with the supplied model name, closing this page.
+	 */
 	const openFold = foldKey => {
 		setLayoutState({
 			page: Pages.Fold,
 			curFold: foldKey
-		})
+		});
 	};
 
+	/**
+	 * Recreate the refs array, reusing elements. Note that this algo doesn't support reordering
+	 */
+	// const updateCardRefs = () => {
+	// 	setCardRefs(elRefs =>
+	// 		Array(cardList.length)
+	// 			.fill()
+	// 			.map((el, i) => cardRefs[i] || createRef())
+	// 	);
+	// };
+
+	/**
+	 * A subcomponent that displays one card. This component needs to grow and shrink without affecting html
+	 * layout styling, so it relies on a placeholder div that only suggests a shape to the actual, absolute, Card.
+	 */
 	const ModelCard = props => {
 		const { foldEntry, name, cardKey, index, isActive } = props;
 		const [posHash, setPosHash] = useState(0);
 		const ref = useRef();
 
+		/**
+		 * Pass the click event on to the parent function to open a fold page.
+		 */
 		const handleFoldClick = e => {
-			e.preventDefault();	
+			e.preventDefault();
 			e.stopPropagation();
 
 			openFold(cardKey);
-		}
+		};
 
+		/**
+		 * Sub-subcomponent to show the label for a row on this card. This probably could be abstracted out, but it 
+		 * doesn't seem worth it.
+		 */
 		const CardLabel = ({ text }) => (
 			<React.Fragment>
 				<Typography className={classes.modelCard_label} variant="body2" color="textSecondary" component="h4">
@@ -77,6 +114,9 @@ export const ModelSelect = props => {
 			</React.Fragment>
 		);
 
+		// INNER LIFECYCLE
+
+		// Dynamically calculate the target size of the card
 		const style = useMemo(
 			() => ({
 				height: isActive ? '400px' : '180px',
@@ -87,14 +127,14 @@ export const ModelSelect = props => {
 			[isActive, ref.current && ref.current.offsetTop, ref.current && ref.current.offsetLeft]
 		);
 
+		// Update hash when style changes so we can inform children
 		useEffect(() => setPosHash(cur => cur + 1), [style]);
 
-		const imagePath = useMemo(
-			() => (layoutState.useImages ? require(`./../../static/${name}.png`) : undefined),
-			[name, layoutState.useImages]
-		);
-
-		const title = useMemo(() => `Folded ${name}`)
+		// Get the location of the current image using webpack  - probably only done once per card
+		const imagePath = useMemo(() => (layoutState.useImages ? require(`./../../static/${name}.png`) : undefined), [
+			name,
+			layoutState.useImages
+		]);
 
 		return (
 			<React.Fragment>
@@ -108,40 +148,39 @@ export const ModelSelect = props => {
 					onClick={event => handleCardClick(event, index)}
 					style={style}
 				>
-					<CardActionArea className={`${classes.modelCard_rail_container} ${isActive ? classes.modelCard_rail_container__active : ""}`}>
+					<CardActionArea
+						className={`${classes.modelCard_rail_container} ${
+							isActive ? classes.modelCard_rail_container__active : ''
+						}`}
+					>
 						<div className={classes.modelCard_rail}>
 							{/* Picture / Preview Model */}
 							<CardMedia
 								component="img"
-								alt={"Folded Model Picture"}
+								alt={'Folded Model Picture'}
 								title="Folded Model Picture"
 								height="120"
 								image={imagePath}
 							/>
 							<CardContent>
 								{/* Title */}
-								<Typography
-									className={classes.modelCard_title}
-									variant="h5"
-									component="h2"
-								>
+								<Typography className={classes.modelCard_title} variant="h5" component="h2">
 									{name}
 								</Typography>
 
 								{/* Tags */}
 								{props.isActive && (
 									<div className={classes.tags} variant="body2" color="textSecondary" component="p">
-										{(foldEntry.tags && foldEntry.tags.length) ? 
-											foldEntry.tags.map(({ name, category }, i) => (
-												<Chip
-													key={cardKey + "_" + name}
-													clickable
-													label={name}
-													className={category ? classes[`tags__${category}`] : undefined}
-												/>
-											)) :
-											""
-										}
+										{foldEntry.tags && foldEntry.tags.length
+											? foldEntry.tags.map(({ name, category }, i) => (
+													<Chip
+														key={cardKey + '_' + name}
+														clickable
+														label={name}
+														className={category ? classes[`tags__${category}`] : undefined}
+													/>
+											  ))
+											: ''}
 									</div>
 								)}
 							</CardContent>
@@ -155,14 +194,24 @@ export const ModelSelect = props => {
 										<React.Fragment>
 											{/* Attribution */}
 											<CardLabel text="Creator" />
-											<Typography className={classes.modelCard_bodyText} variant="body2" color="textSecondary" component="p">
+											<Typography
+												className={classes.modelCard_bodyText}
+												variant="body2"
+												color="textSecondary"
+												component="p"
+											>
 												{foldEntry.author}
 											</Typography>
 
 											<br />
 
 											<CardLabel text="Description" />
-											<Typography className={classes.modelCard_bodyText} variant="body2" color="textSecondary" component="p">
+											<Typography
+												className={classes.modelCard_bodyText}
+												variant="body2"
+												color="textSecondary"
+												component="p"
+											>
 												{foldEntry.description}
 											</Typography>
 										</React.Fragment>
@@ -171,6 +220,8 @@ export const ModelSelect = props => {
 							</div>
 						)}
 					</CardActionArea>
+
+					{/* Actions */}
 					{isActive && (
 						<CardActions classes={classes.modelCard_footer}>
 							<Button size="small" color="primary">
@@ -191,22 +242,15 @@ export const ModelSelect = props => {
 		);
 	};
 
-	const updateCardRefs = () => {
-		// Recreate the refs array, reusing elements. Note that this algo doesn't support reordering
-		setCardRefs(elRefs =>
-			Array(cardList.length)
-				.fill()
-				.map((el, i) => cardRefs[i] || createRef())
-		);
-	};
-
 	// ---------
 	// LIFECYCLE
 	// ---------
 
-	const cardList = useMemo(selectCardList, []);
+	// Get the list of all cards to display
+	const cardList = useMemo(filterCardList, []);
 
-	useEffect(updateCardRefs, [cardList.length]);
+	// Update our list of refs for each card
+	// useEffect(updateCardRefs, [cardList.length]);
 
 	return (
 		<div className={classes.page_ModelSelect_container}>
