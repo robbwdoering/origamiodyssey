@@ -61,11 +61,12 @@ export const initAppReducerState = {
 		foldHash: 0,
 		useImages: false,
 		showEditor: true,
+		expandHierarchy: false 
 	},
 	foldState: {
 		hash: 0,
 		selectedLevel: 0,
-		stepIndex: -1, // Depends on selected level
+		stepIdx: -1, // Depends on selected level
 		overrideWithEditor: false 
 	},
 	editorState: {

@@ -18,6 +18,7 @@ import { a, useSpring } from '@react-spring/three';
 import { Chip } from '@material-ui/core';
 
 import useStyles from './../style/theme';
+import { collectStepsForLevel, calcMaxLevel } from './../infra/utils';
 
 export const Paper = props => {
 	const {
@@ -43,7 +44,7 @@ export const Paper = props => {
 
 	const rotation = useRef([0, 0, 0]);
 	const faceGeometry = useRef(null);
-	const edgeRotations = useRef([]);
+	const creasedEdges = useRef(new Set());
 	const fold = useRef(null);
 	const classes = useStyles();
 
@@ -75,7 +76,7 @@ export const Paper = props => {
 			coords => new THREE.Vector3(coords[0] / maxes[0], 0, coords[2] / maxes[1])
 		);
 
-		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 0);
+		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 180);
 
 		// TODO: Validate that all the angles in every face are acute
 
@@ -94,85 +95,6 @@ export const Paper = props => {
 	};
 
 	/*
-	 * This walks the tree recursively, collecting an array of steps at this "level".
-	 */
-	const collectStepsForLevel = () => {
-		const calcStepsForLevel = (inst, targetLevel, curLevel) => {
-			if (!inst.children && !inst.length) {
-				// Error case
-				return null;
-			}
-
-			// console.log("[calcStepsForLevel]", inst, targetLevel, curLevel);
-
-			// Leaf nodes
-			if (Array.isArray(inst)) {
-				return curLevel >= targetLevel ? [inst] : [];
-
-				// Ancestor nodes
-			} else {
-				if (curLevel === targetLevel) {
-					// Recursive case: This is target, so COMBINE children to one array
-					return inst.children.reduce((acc, childInst) => {
-						let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
-						if (ret) {
-							acc.push(ret);
-						}
-						return acc;
-					}, []);
-				} else if (curLevel > targetLevel) {
-					// Recursive case: past target level, so COLLECT children into one array
-					return inst.children.reduce((acc, childInst) => {
-						let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
-						if (ret) {
-							return acc.concat(ret);
-						}
-						return acc;
-					}, []);
-				} else if (curLevel < targetLevel) {
-					// Recursive case: still above target level, so keep drilling down
-					if (curLevel === targetLevel - 1) {
-						// If we're right before the target, return all children
-						return inst.children.map(childInst => calcStepsForLevel(childInst, targetLevel, curLevel + 1));
-					} else {
-						// Else COLLECT children into one array
-						return inst.children.reduce((acc, childInst) => {
-							let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1);
-							if (ret) {
-								return acc.push(ret);
-							}
-							return acc;
-						}, []);
-					}
-				}
-			}
-		};
-
-		if (!fold.current || !fold.current.instructions) {
-			console.log('returning empty', fold.current);
-			return [];
-		}
-
-		// console.log("[collectStepsForLevel]", fold.instructions, foldState.selectedLevel)
-
-		return calcStepsForLevel(fold.current.instructions, foldState.selectedLevel, 0);
-	};
-
-	// Nested recursive function to calculate the depth of the instruction tree
-	const calcMaxLevel = inst => {
-		if (!inst.length) {
-			// Error case
-			return 0;
-		} else if (Array.isArray(inst[0])) {
-			// Recursive case: Return 1 plus the height of the tallest subtree
-			return 1 + Math.max(...inst.map(childInst => calcMaxLevel(childInst)));
-		} else {
-			// Base case: leaf node
-			return 1;
-		}
-	};
-
-	/*
 	 * Reads the hierarchical instructions, collecting some descriptive values and initializing state.
 	 * This task is greatly simplified by mandating that any one node of the instructional tree
 	 * contain EITHER two integer values, or 1+ subnodes. Any node with subnodes may not have integer values.
@@ -181,7 +103,7 @@ export const Paper = props => {
 		return {
 			maxLevel: calcMaxLevel(inst),
 			selectedLevel: 0,
-			stepIndex: -1,
+			stepIdx: -1,
 			maxSteps: stepArray.length
 		};
 	};
@@ -281,7 +203,7 @@ export const Paper = props => {
 	 * IDEA: Handle one folding edge at a time, then propagate out following neighbors
 	 */
 	const performInstructions = () => {
-		let curStep = foldState.stepIndex;
+		let curStep = foldState.stepIdx;
 		if (curStep < -1 || curStep >= foldState.maxSteps) {
 			curStep = -1;
 		}
@@ -328,6 +250,15 @@ export const Paper = props => {
 	};
 
 	/**
+	 * Helper function to check if the two vectors are within the same line.
+	 */
+	const isSameLine = (lhs, rhs) => {
+		const crossLen = new THREE.Vector3().crossVectors(lhs, rhs);
+		return crossLen.length() < 0.0001; // Account for floating point errors
+	}
+
+
+	/**
 	 * This is a very complex step, and best understood by just reading the comments and section titles.
 	 * his is taking in an existing triangle (positioned as it actually is in the model
 	 * at the moment), the vertex of some triangle that's adjacent to it, and finally an angle in degrees. With this,
@@ -342,7 +273,6 @@ export const Paper = props => {
 	 * @props angle - the angle to rotate the second face around the edge by. 
 	 */
 	const rotateVertAroundEdge = (fold, vertIdx, edge, angle) => {
-		// Convenience object
 		const actualXAxis = new THREE.Vector3(1, 0, 0);
 
 		// Read in the positions of the vertices of the edge that we're rotating around 
@@ -359,8 +289,7 @@ export const Paper = props => {
 			console.log("[rotateVertAroundEdge] ERR: Couldn't find other plane to base rotation in.");
 			return;
 		}
-		const plane = new THREE.Plane();
-		plane.setFromCoplanarPoints(start, end, fold.vertices_coords[otherVert]);
+		const plane = new THREE.Plane().setFromCoplanarPoints(start, end, fold.vertices_coords[otherVert]);
 
 		const planeOrigin = new THREE.Vector3().copy(plane.normal).multiplyScalar(plane.constant);
 		const norm = new THREE.Vector3().copy(plane.normal);
@@ -371,32 +300,19 @@ export const Paper = props => {
 		const diffInPlane = new THREE.Vector3().subVectors(initThird, initStart);
 
 		// Before we use the initStart for figuring out angle, check if this vector is the X axis - 
-		// we can use any other vector, but if we use this exact vector, we're doing a cross vector with this same axis
-		// later on. Which, of course, is 0. Which is not good!
-		if (initStart.normalize().equals(actualXAxis)) {
-			// Figure out which of the other two points we can use - it's a triangle, so one will work
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
-			// TODO
+		// we can use any other vector, we crossproduct with this exact vector later
+		// Figure out which of the other two points we can use - it's a triangle, so one will work
+		const vecInTransformedPlane = new THREE.Vector3(); 
+
+		if (!isSameLine(start, actualXAxis)) {
+			// Just use first one we found
+			vecInTransformedPlane.copy(start);
+		} else if (!isSameLine(fold.vertices_coords[otherVert], actualXAxis)) {
+			// Set to the third point
+			vecInTransformedPlane.copy(fold.vertices_coords[otherVert]);
+		} else {
+			// Set to end of the edge
+			vecInTransformedPlane.copy(end);
 		}
 
 		// Get the angle between the X axis ([1, 0, 0]) and the vector from the origin to the start vertex
@@ -405,13 +321,16 @@ export const Paper = props => {
 		// If it's in the back quadrants, `angleTo` gets lazy and measures the wrong direction (to the line, not the vector)
 		if (initStart.z < 0) {
 			axisRotation = (2 * Math.PI) - axisRotation;
+			// axisRotation = -axisRotation;
 		}
 
 		// We know the start is in the plane, so the x Axis starts as that
-		const xAxis = new THREE.Vector3().subVectors(start, planeOrigin).normalize();
+		const xAxis = new THREE.Vector3().subVectors(vecInTransformedPlane, planeOrigin).normalize();
 
 		// Use this fake x Axis to get a Z axis
-		const zAxis = new THREE.Vector3().crossVectors(start, plane.normal).normalize();
+		const zAxis = new THREE.Vector3().crossVectors(xAxis, plane.normal).normalize();
+
+		// console.log(`(${xAxis.x}, ${xAxis.y}, ${xAxis.z}), (${zAxis.x}, ${zAxis.y}, ${zAxis.z})`);
 
 		// Rotate both the X and Z axiis around the Y (the normal) to get correct vals
 		xAxis.applyAxisAngle(plane.normal, axisRotation);
@@ -431,14 +350,14 @@ export const Paper = props => {
 
 		// NORMAL1 = [0, 1, 0]
 		// Add the transformed vector to the start point to 
-		const diffInOrigCoords = new THREE.Vector3().copy(diffInPlane).applyMatrix3(newCoords);
-		// const diffInOrigCoords = new THREE.Vector3().copy(diffInPlane);
+		const actualDiff = new THREE.Vector3().copy(diffInPlane).applyMatrix3(newCoords);
+		// const actualDiff = new THREE.Vector3().copy(diffInPlane);
 
 		// The third point starts off assuming no rotation
-		// const third = new THREE.Vector3().addVectors(start, diffInOrigCoords).add(planeOrigin);
-		const third = new THREE.Vector3().addVectors(start, diffInOrigCoords);
+		// const third = new THREE.Vector3().addVectors(start, actualDiff).add(planeOrigin);
+		const third = new THREE.Vector3().addVectors(start, actualDiff);
 
-		console.log("[rotateVertAroundEdge]", {planeOrigin, initStart, initThird, diffInPlane, diffInOrigCoords, axisRotation, xAxis, zAxis, newCoords, norm, third, angle, start, end, otherVert})
+		console.log("[rotateVertAroundEdge]", {edge, planeOrigin, vecInTransformedPlane, initStart, initThird, diffInPlane, actualDiff, axisRotation, xAxis, zAxis, newCoords, norm, third, angle, start, end, otherVert})
 
 		// ----------------------------------------------------
 		// SECTION 2: Rotate an existing point around this edge
@@ -446,7 +365,7 @@ export const Paper = props => {
 		let targetVec;
 
 		// If the paper is flat, we can skip this step
-		if (angle === 180) {
+		if (Math.abs(angle) === 180) {
 			targetVec = third;
 		} else {
 			// Setup vectors for edge (start --> end), and the target (start --> third)
@@ -454,14 +373,11 @@ export const Paper = props => {
 		    edgeDirection.normalize();
 		    targetVec = new THREE.Vector3(third.x - start.x, third.y - start.x, third.z - start.z);
 
-			console.log(`targetVec1: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
 		    // Rotate the target vector around the edge
-		   	targetVec.applyAxisAngle(edgeDirection, degToRad(angle));
-			console.log(`targetVec2: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
+		   	targetVec.applyAxisAngle(edgeDirection, degToRad(180 - angle));
 
 		   	// Add the start back to the target, giving us the actual final location
 		   	targetVec.add(start);
-			console.log(`targetVec3: ${targetVec.x}, ${targetVec.y}, ${targetVec.z}`);
 		}
 
 	    // Store the vertex coords for edges + vertices
@@ -510,7 +426,7 @@ export const Paper = props => {
 
 			// Rotate the third vertex around this edge 
 			console.log(`Rotating ${thirdIdx} around (${edgeVerts[0]}, ${edgeVerts[1]} by ${cmd[2]})`)
-			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, 180 - cmd[2]);
+			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, -cmd[2]);
 
 			// Store the fold angle
 			fold.edges_foldAngle[edgeIdx] = cmd[2];
@@ -526,8 +442,8 @@ export const Paper = props => {
 			}, [-1, -1]);
 
 			// Get the angle to rotate these edges (last used, or default to 180)
-			const foldAngleOne = edgeIndices[0] < fold.edges_foldAngle.length ? fold.edges_foldAngle[edgeIndices[0]] : 0;
-			const foldAngleTwo = edgeIndices[1] < fold.edges_foldAngle.length ? fold.edges_foldAngle[edgeIndices[1]] : 0;
+			const foldAngleOne = edgeIndices[0] < fold.edges_foldAngle.length ? fold.edges_foldAngle[edgeIndices[0]] : 180;
+			const foldAngleTwo = edgeIndices[1] < fold.edges_foldAngle.length ? fold.edges_foldAngle[edgeIndices[1]] : 180;
 
 			const edges = [
 				[edgeVerts[0], thirdIdx, foldAngleOne],
@@ -544,6 +460,12 @@ export const Paper = props => {
 					todoEdges.push(edges[triIdx]);
 				}
 			});
+
+		   	// Remember that we folded this edge, to simulate paper creases
+		   	fold.edges_foldAngle[edgeIdx] = cmd[2];
+		   	if (cmd[2] !== 180) {
+			   	creasedEdges.current.add(edgeIdx);
+		   	}
 		});
 
 		// Do recursive call for every edge in the todo list
@@ -561,6 +483,7 @@ export const Paper = props => {
 	 * Returns true if this edge is on the very edge of the paper, false otherwise.
 	 */
 	const isEdgeOfPaper = (edgeIdx) => {
+		console.log("[isEdgeOfPaper]", edgeIdx);
 		// If this edge was created during triangulization, it can't be an edge
 		if (!initFold || edgeIdx >= initFold.edges_vertices.length) {
 			return false
@@ -577,7 +500,7 @@ export const Paper = props => {
 	/**
 	 * Prints a THREE.Vector3 object.
 	 */
-	const printVect = vect => `${vect.x}, ${vect.y}, ${vect.z}`;
+	const printVect = vect => `${vect.x.toFixed(2)}, ${vect.y.toFixed(2)}, ${vect.z.toFixed(2)}`;
 
 	const hoverVert = (idx, event, show) => {
 		ctrlOverlay({
@@ -586,12 +509,14 @@ export const Paper = props => {
 			component: (
 				<Chip
 					className={classes.vertLabel}
-					style={{ left: event.pageX + 10, top: event.pageY - 64 + 10 }}
+					style={{ left: event.pageX + 10, top: event.pageY + 10 + 64 }}
 					label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
 				/>
 			)
 		});
 	};
+
+	const buildStepArray = () => collectStepsForLevel(fold.current, foldState.selectedLevel);
 
 	// ---------
 	// LIFECYCLE
@@ -601,12 +526,12 @@ export const Paper = props => {
 	});
 
 	const material = useMemo(createMaterial, []);
-	const stepArray = useMemo(collectStepsForLevel, [
+	const stepArray = useMemo(buildStepArray, [
 		!fold.current || !fold.current.instructions,
 		foldKey,
 		foldState.selectedLevel
 	]);
-	useEffect(performInstructions, [foldState.stepIndex]);
+	useEffect(performInstructions, [foldState.stepIdx]);
 	useEffect(initFoldState, [foldKey, stepArray.length]);
 
 	// console.log('[Paper]', { stepArray, fold: fold.current });
@@ -620,17 +545,21 @@ export const Paper = props => {
 			{editorState.showEdges &&
 				fold.current &&
 				fold.current.edges_vertices.map((line, idx) => 
-					(idx >= initFold.edges_vertices.length && !editorState.showTriangulations) ? null : (
-					<Line
-						points={line.map(index => fold.current.vertices_coords[index])}
-						color={(idx < initFold.edges_vertices.length) ? editorState.edgeHighlights.includes(idx) ? 'red' : 'black' : 'yellow'}
-						lineWidth={1}
-						dashed={idx >= initFold.edges_vertices.length}
-						material={material}
-						dashSize={0.1}
-						gapSize={0.1}
-					/>
-				))}
+					(
+						(idx >= initFold.edges_vertices.length && !editorState.showTriangulations) || 
+						(creasedEdges.current.length > 0 && !creasedEdges.current.has(idx))
+					) ? null : (
+						<Line
+							points={line.map(index => fold.current.vertices_coords[index])}
+							color={(idx < initFold.edges_vertices.length) ? editorState.edgeHighlights.includes(idx) ? 'red' : 'black' : 'yellow'}
+							lineWidth={1}
+							dashed={idx >= initFold.edges_vertices.length}
+							material={material}
+							dashSize={0.1}
+							gapSize={0.1}
+						/>
+					)
+				)}
 			{editorState.showVertices &&
 				fold.current &&
 				fold.current.vertices_coords.map((vert, idx) => (

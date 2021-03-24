@@ -35,9 +35,9 @@ export const FoldControls = props => {
 
 	// Changes the current instructional sequential step, prompting animation.
 	const changeStep = (delta) => {
-		let newStepIndex = Math.min(Math.max(foldState.stepIndex + delta, -1), foldState.maxSteps);
+		let newStepIndex = Math.min(Math.max(foldState.stepIdx + delta, -1), foldState.maxSteps);
 		setFoldState({
-			stepIndex: newStepIndex
+			stepIdx: newStepIndex
 		});
 	};
 
@@ -72,7 +72,7 @@ export const FoldControls = props => {
 					<Button
 						classes={buttonClasses}
 						onClick={() => changeStep(-1)}
-						disabled={foldState.stepIndex < 0}
+						disabled={foldState.stepIdx < 0}
 					>
 						<SkipPrevious className={classes.fold_controls_button_icon} />
 						Prev	
@@ -80,7 +80,7 @@ export const FoldControls = props => {
 					<Button
 						classes={buttonClasses}
 						onClick={() => changeStep(1)}
-						disabled={foldState.stepIndex >= foldState.maxSteps - 1}
+						disabled={foldState.stepIdx >= foldState.maxSteps - 1}
 					>
 						<SkipNext className={classes.fold_controls_button_icon} />
 						Next	

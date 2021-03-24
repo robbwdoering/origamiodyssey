@@ -22,6 +22,7 @@ import ModelSelect from './pages/ModelSelect';
 import FoldControls from './pages/FoldControls';
 import FoldEditorCards from './pages/FoldEditorCards';
 import User from './pages/User';
+import InstructionalHierarchy from './pages/InstructionalHierarchy';
 import Scene from './../anim/Scene';
 import useStyles from './../style/theme';
 
@@ -74,7 +75,12 @@ export const Body = props => {
 						<FoldControls
 							windowHeight={windowHeight}
 							initFold={fold.current.json}
-							curFold={layoutState.curFold}
+							foldLastUpdated={fold.current.lastUpdated}
+						/>
+
+						<InstructionalHierarchy
+							windowHeight={windowHeight}
+							initFold={fold.current.json}
 							foldLastUpdated={fold.current.lastUpdated}
 						/>
 
