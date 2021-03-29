@@ -67,7 +67,8 @@ export const initAppReducerState = {
 		hash: 0,
 		selectedLevel: 0,
 		stepIdx: -1, // Depends on selected level
-		overrideWithEditor: false 
+		overrideWithEditor: false,
+		usingDefaults: true
 	},
 	editorState: {
 		hash: 0,

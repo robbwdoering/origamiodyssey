@@ -81,7 +81,7 @@ export const Paper = props => {
 		// TODO: Validate that all the angles in every face are acute
 
 		// Triangulate all faces
-		foldObj.faces_vertices = [];
+	foldObj.faces_vertices = [];
 		newFold.faces_vertices.forEach((face, faceIdx) => {
 			let curFace = [...face];
 			recursiveTriangulation(curFace, foldObj);
@@ -100,9 +100,10 @@ export const Paper = props => {
 	 * contain EITHER two integer values, or 1+ subnodes. Any node with subnodes may not have integer values.
 	 */
 	const readInstructionsIntoState = inst => {
+		const maxLevel = calcMaxLevel(inst);
 		return {
-			maxLevel: calcMaxLevel(inst),
-			selectedLevel: 0,
+			maxLevel: maxLevel,
+			selectedLevel: maxLevel - 1,
 			stepIdx: -1,
 			maxSteps: stepArray.length
 		};
@@ -516,7 +517,7 @@ export const Paper = props => {
 		});
 	};
 
-	const buildStepArray = () => collectStepsForLevel(fold.current, foldState.selectedLevel);
+	const buildStepArray = () => collectStepsForLevel(fold.current, foldState.selectedLevel, foldState.usingDefaults);
 
 	// ---------
 	// LIFECYCLE
@@ -532,9 +533,9 @@ export const Paper = props => {
 		foldState.selectedLevel
 	]);
 	useEffect(performInstructions, [foldState.stepIdx]);
-	useEffect(initFoldState, [foldKey, stepArray.length]);
+	useEffect(initFoldState, [foldKey]);
 
-	// console.log('[Paper]', { stepArray, fold: fold.current });
+	console.log('[Paper]', { stepArray });
 
 	if (!initFold) {
 		return null;

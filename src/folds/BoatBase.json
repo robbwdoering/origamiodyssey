@@ -518,18 +518,22 @@
                         "children": [
                             {
                                 "name": "",
-                                "desc": "Fold along horizontal midpoint.",
+                                "desc": "Fold along positive diagonal.",
                                 "children": [
-                                    [ 8, 17, 1 ],
-                                    [ 17, 9, 1 ]
+                                    [ 2, 4, 1 ],
+                                    [ 4, 17, 1 ],
+                                    [ 17, 7, 1 ],
+                                    [ 7, 1, 1 ]
                                 ]
                             },
                             {
                                 "name": "",
                                 "desc": "Unfold.",
                                 "children": [
-                                    [ 8, 17, 180 ],
-                                    [ 17, 9, 180 ]
+                                    [ 2, 4, 180 ],
+                                    [ 4, 17, 180 ],
+                                    [ 17, 7, 180 ],
+                                    [ 7, 1, 180 ]
                                 ]
                             }
                         ]
@@ -540,22 +544,22 @@
                         "children": [
                             {
                                 "name": "",
-                                "desc": "Fold along vertical midpoint.",
+                                "desc": "Fold along negative diagonal.",
                                 "children": [
-                                    [ 18, 14, 1 ],
-                                    [ 17, 18, 1 ],
-                                    [ 16, 17, 1 ],
-                                    [ 15, 16, 1 ]
+                                    [ 0, 6, 1 ],
+                                    [ 6, 17, 1 ],
+                                    [ 17, 5, 1 ],
+                                    [ 5, 3, 1 ]
                                 ]
                             },
                             {
                                 "name": "",
                                 "desc": "Unfold.",
                                 "children": [
-                                    [ 18, 14, 180 ],
-                                    [ 17, 18, 180 ],
-                                    [ 16, 17, 180 ],
-                                    [ 15, 16, 180 ]
+                                    [ 0, 6, 180 ],
+                                    [ 6, 17, 180 ],
+                                    [ 17, 5, 180 ],
+                                    [ 5, 3, 180 ]
                                 ]
                             }
                         ]
@@ -580,6 +584,33 @@
                                     [ 17, 9, 180 ]
                                 ]
                             }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "",
+                "desc": "Fold sides of paper to the horizontal midpoint.",
+                "default": true,
+                "children": [
+                    {
+                        "name": "",
+                        "desc": "Fold left side to midpoint.",
+                        "children": [
+                            [ 22, 6, 1 ],
+                            [ 6, 23, 1 ],
+                            [ 23, 4, 1 ],
+                            [ 4, 24, 1 ]
+                        ]
+                    },
+                    {
+                        "name": "",
+                        "desc": "Fold right side to midpoint.",
+                        "children": [
+                            [ 21, 5, 1 ],
+                            [ 5, 20, 1 ],
+                            [ 20, 7, 1 ],
+                            [ 7, 19, 1 ]
                         ]
                     }
                 ]

@@ -104,7 +104,7 @@ export const Body = props => {
 	};
 
 	const selectFold = () => {
-		console.log("selectFold", layoutState, Folds, )
+		console.log("selectFold", layoutState, Folds);
 		fold.current = {
 			json:
 				layoutState.curFold && Folds[layoutState.curFold]

@@ -21,12 +21,15 @@ import { Folds } from "./../../infra/constants";
 import { setFoldState, setLayoutState } from "./../../infra/actions";
 import { collectStepsForLevel, calcMaxLevel } from './../../infra/utils';
 
+const HIER_PX_SIZE = 15;
+
 export const InstructionalHierarchy = props => {
 	const { windowHeight, initFold, foldLastUpdated, foldState, foldStateHash, setFoldState, layoutState, layoutStateHash, setLayoutState  } = props;
 
 	// ----------
 	// STATE INIT 
 	// ----------
+	const [contStyle, setContStyle] = useState({});
 	const classes = useStyles();
 	const cardRef = useRef();
 	const renderRows = useRef([]);
@@ -68,7 +71,7 @@ export const InstructionalHierarchy = props => {
 	}
 
 
-	const buildStepArray = () => collectStepsForLevel(initFold, foldState.selectedLevel);
+	const buildStepArray = () => collectStepsForLevel(initFold, foldState.selectedLevel, foldState.usingDefaults);
 
 	// ---------
 	// LIFECYCLE
@@ -93,14 +96,13 @@ export const InstructionalHierarchy = props => {
 	]);
 
 	const renderNode = (inst, renderRows, levelIdx, path, stepIdx) => {
-		console.log("[renderNode]", levelIdx, path, stepIdx);
 		if (levelIdx > maxLevel) {
 			return [1, stepIdx];
 		}
-		// Set width in units for flexbox
 		let width = 0;
 		let children = [];
-		const isSelectedLevel = foldState.selectedLevel === levelIdx || (foldState.selectedLevel > levelIdx && !children.length);
+		const isDefaultNode = foldState.usingDefaults && inst.default;
+		const isSelectedLevel = isDefaultNode || foldState.selectedLevel === levelIdx || (foldState.selectedLevel > levelIdx && !inst.children.length);
 		let retStepIdx = isSelectedLevel ? stepIdx : stepIdx + 1;
 
 		const style = {};
@@ -136,10 +138,11 @@ export const InstructionalHierarchy = props => {
 			type = "inUse";
 		};
 
+		console.log("[renderNode]", levelIdx, path, stepIdx, type, isSelectedLevel);
 		renderRows[levelIdx].push(
-			// <Tooltip title="This is a node in the instructional hierarchy." placement="bottom-start">
-				<div className={`${classes.hier_node} ${classes['hier_node__'+type]}`} style={style} key={pathToKey(path)}/>
-			// </Tooltip>
+			<Tooltip title={inst.desc} placement="bottom-start" classes={{popper: classes.hier_node_tooltip}} key={pathToKey(path)}>
+				<div className={`${classes.hier_node} ${classes['hier_node__'+type]}`} style={style}/>
+			</Tooltip>
 		);
 
 		return [width, retStepIdx];
@@ -152,8 +155,6 @@ export const InstructionalHierarchy = props => {
 			return;
 		};
 
-		console.log("[refreshRenderRows]", initFold.instructions, maxLevel);
-
 		let tmpRows = [];
 		for (let i = 0; i < maxLevel; i++) {
 			tmpRows.push([]);
@@ -162,10 +163,11 @@ export const InstructionalHierarchy = props => {
 		renderNode(initFold.instructions, tmpRows, 0, [0], 0);
 
 		renderRows.current = tmpRows;
-		console.log("renderRows: ", renderRows.current);
-	}
+		const longestRowLen = Math.max(...(tmpRows.map(arr => arr.length)));
+		setContStyle(Object.assign({}, contStyle, { width: HIER_PX_SIZE * longestRowLen + 16 }));
+	};
 
-	const maxLevel = useMemo(() => calcMaxLevel(initFold.instructions), [foldLastUpdated])
+	const maxLevel = useMemo(() => calcMaxLevel(initFold && initFold.instructions), [foldLastUpdated])
 
 	useEffect(refreshRenderRows, [foldState.selectedLevel, foldLastUpdated]);
 
@@ -177,9 +179,9 @@ export const InstructionalHierarchy = props => {
 				<Fab aria-label="expand instructions" className={classes.hier_expandCtrl} onClick={handleExpandClick} color="secondary" size="small">
 					{layoutState.expandHierarchy ? <ExpandLess /> : <ExpandMore />}
 				</Fab>
-				<div className={classes.hier_container}>
+				<div className={classes.hier_container} style={contStyle}>
 					{initFold && renderRows.current.reduce((acc, row, idx) => {
-						if (idx !== 0 && idx <= 5) {
+						if (idx !== 0) {
 							acc.push(
 								<div className={classes.hier_node_container}>
 									{row}

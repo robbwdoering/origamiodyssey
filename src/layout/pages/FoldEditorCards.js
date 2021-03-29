@@ -164,7 +164,7 @@ export const FoldEditorCards = props => {
 				</Typography>
 				<Grid container>
 					<ControlRow name="Selected Level" text={foldState.selectedLevel} width={6} />
-					<ControlRow name="Step Index" text={`${foldState.stepIndex}/${foldState.maxSteps - 1}`} width={6} />
+					<ControlRow name="Step Index" text={`${foldState.stepIdx + 2}/${foldState.maxSteps + 1}`} width={6} />
 				</Grid>
 			</Card>
 

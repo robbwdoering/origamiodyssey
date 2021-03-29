@@ -75,7 +75,7 @@ export const FoldControls = props => {
 						disabled={foldState.stepIdx < 0}
 					>
 						<SkipPrevious className={classes.fold_controls_button_icon} />
-						Prev	
+						Prev
 					</Button>
 					<Button
 						classes={buttonClasses}
@@ -83,7 +83,7 @@ export const FoldControls = props => {
 						disabled={foldState.stepIdx >= foldState.maxSteps - 1}
 					>
 						<SkipNext className={classes.fold_controls_button_icon} />
-						Next	
+						Next
 					</Button>
 				</ButtonGroup>
     		</Card>
