@@ -244,7 +244,10 @@ export const useStyles = makeStyles(theme => ({
 	// Instructional Hierarchy
 	hier_card: {
 		position: 'absolute',
-		zIndex: 3001,
+		height: "52%",
+		top: "25%",
+		left: "435px",
+		zIndex: 3001
 	},
 	hier_expandCtrl: {
 		position: 'absolute !important',
@@ -252,24 +255,28 @@ export const useStyles = makeStyles(theme => ({
 		top: '0.5rem'
 	},
 	hier_container: {
-		height: "100%",
+		width: "100%",
 		verticalAlign: "top",
-		padding: "0.5rem"
+		padding: "7px",
+		display: 'inline-flex'
 	},
 	hier_node_container: {
 		display: 'inline-flex',
-		flexDirection: 'row',
+		flexDirection: 'column',
 		justifyContent: 'space-evenly',
 		alignItems: 'stretch',
-		height: "1.5rem",
-		width: "100%"	
+		width: "20px",
+		height: "100%"	
+	},
+	hier_node_anchor: {
 	},
 	hier_node: {
-		border: "2px solid white",
-		borderRadius: "10px !important"
+		borderRadius: '10px',
+		width: '16px',
+		margin: '2px'
 	},
 	hier_node_spacer: {
-		border: "2px solid white"
+		height: '16px'
 	},
 	hier_node__default: {
 		backgroundColor: 'rgb(0, 0, 0, 0.05)',

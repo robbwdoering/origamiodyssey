@@ -19,6 +19,7 @@ export const collectStepsForLevel = (fold, level, isDefault) => {
  * Recursive function to build the "step array" for a tree.
  * The basic concept here is that the user will choose a depth, then this will build an array
  * of sequential steps "at" that depth.
+ * @returns: a 2D array of step objects
  */
 export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault) => {
 	if (!inst.children && !inst.length) {
@@ -27,52 +28,41 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault) => {
 	}
 
 	const isDefaultNode = isDefault && inst.default;
-	console.log("[calcStepsForLevel]", curLevel, targetLevel, isDefaultNode, inst.desc);
 
-	// Leaf nodes
+	// Leaf node / base case - return this as one step
 	if (Array.isArray(inst.children[0])) {
-		return curLevel >= targetLevel ? [inst] : [];
+		return [[...inst.children]];
 
-		// Ancestor nodes
+	// Ancestor nodes - return a list of steps
 	} else {
 		if (curLevel === targetLevel || isDefaultNode) {
-			// Recursive case: This is target, so COMBINE children to one array
-			return inst.children.reduce((acc, childInst) => {
-				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault);
-				console.log("target", curLevel, targetLevel,  ret);
-				if (ret) {
-					acc.push(ret);
-				}
-				return acc;
-			}, []);
-		} else if (curLevel > targetLevel) {
-			// Recursive case: past target level, so COLLECT children into one array
-			return inst.children.reduce((acc, childInst) => {
-				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault);
-				console.log("past", curLevel, targetLevel,  ret);
-				if (ret) {
-					return acc.concat(ret);
-				}
-				return acc;
-			}, []);
+			// Recursive case: This is target, so return all leaves below this as one step
+			return [concatDescendants(inst, curLevel)];
 		} else if (curLevel < targetLevel) {
 			// Recursive case: still above target level, so keep drilling down
-			if (curLevel === targetLevel - 1) {
-				// If we're right before the target, return all children
-				console.log("JUST before", inst.children);
-				return inst.children.map(childInst => calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault));
-			} else {
-				// Else COLLECT children into one array
-				return inst.children.reduce((acc, childInst) => {
-					let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault);
-					console.log("before", curLevel, targetLevel, ret);
-					if (ret) {
-						acc.push(ret);
-					}
-					return acc;
-				}, []);
-			}
+			// COLLECT steps returned from children into one array of steps
+			return inst.children.reduce((acc, childInst) => {
+				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault);
+				return ret ? acc.concat(ret) : acc;
+			}, []);
 		}
+	}
+
+	return null;
+};
+
+/**
+ * @returns: a 1D array that contains every step below this one, all together.
+ */
+export const concatDescendants = (inst, curLevel) => {
+	if (Array.isArray(inst.children[0])) {
+		return [...inst.children];
+	} else {
+		// turn many 1d arrs into one - concat
+		return inst.children.reduce((acc, childInst) => {
+			let ret = concatDescendants(childInst, curLevel + 1);
+			return ret ? acc.concat(ret) : acc;
+		}, []);
 	}
 };
 

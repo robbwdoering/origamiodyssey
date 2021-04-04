@@ -99,14 +99,18 @@ export const Paper = props => {
 	 * This task is greatly simplified by mandating that any one node of the instructional tree
 	 * contain EITHER two integer values, or 1+ subnodes. Any node with subnodes may not have integer values.
 	 */
-	const readInstructionsIntoState = inst => {
-		const maxLevel = calcMaxLevel(inst);
-		return {
-			maxLevel: maxLevel,
-			selectedLevel: maxLevel - 1,
-			stepIdx: -1,
-			maxSteps: stepArray.length
-		};
+	const readInstructionsIntoState = () => {
+		if (fold.current.instructions) {
+			const maxLevel = calcMaxLevel(fold.current.instructions);
+			setFoldState(
+				{
+					maxLevel: maxLevel,
+					selectedLevel: maxLevel - 1,
+					stepIdx: -1,
+					maxSteps: stepArray.length
+				}
+			)
+		}
 	};
 
 	const refreshFaceVertices = () => {
@@ -183,10 +187,6 @@ export const Paper = props => {
 		faceGeometry.current.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
 		faceGeometry.current.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
 		faceGeometry.current.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-
-		if (fold.current.instructions) {
-			setFoldState(readInstructionsIntoState(fold.current.instructions));
-		}
 	};
 
 	const createMaterial = () => {
@@ -534,6 +534,7 @@ export const Paper = props => {
 	]);
 	useEffect(performInstructions, [foldState.stepIdx]);
 	useEffect(initFoldState, [foldKey]);
+	useEffect(readInstructionsIntoState, [foldKey, stepArray.length]);
 
 	console.log('[Paper]', { stepArray });
 
