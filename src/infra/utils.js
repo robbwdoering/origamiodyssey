@@ -21,7 +21,7 @@ export const collectStepsForLevel = (fold, level, isDefault) => {
  * of sequential steps "at" that depth.
  * @returns: a 2D array of step objects
  */
-export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault) => {
+export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path="0") => {
 	if (!inst.children && !inst.length) {
 		// Error case
 		return null;
@@ -31,18 +31,23 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault) => {
 
 	// Leaf node / base case - return this as one step
 	if (Array.isArray(inst.children[0])) {
-		return [[...inst.children]];
+		return [[path, ...inst.children]];
 
 	// Ancestor nodes - return a list of steps
 	} else {
 		if (curLevel === targetLevel || isDefaultNode) {
 			// Recursive case: This is target, so return all leaves below this as one step
-			return [concatDescendants(inst, curLevel)];
+			let allLeafDescendants = concatDescendants(inst, curLevel);
+			// If we just found one leaf node, treat this as a normal step w/ a 2D arr
+			if (allLeafDescendants.length === 1) {
+				allLeafDescendants = allLeafDescendants[0];
+			}
+			return [[path, ...allLeafDescendants]];
 		} else if (curLevel < targetLevel) {
 			// Recursive case: still above target level, so keep drilling down
 			// COLLECT steps returned from children into one array of steps
-			return inst.children.reduce((acc, childInst) => {
-				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault);
+			return inst.children.reduce((acc, childInst, childIdx) => {
+				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault, path + "," + childIdx);
 				return ret ? acc.concat(ret) : acc;
 			}, []);
 		}
@@ -83,3 +88,6 @@ export const calcMaxLevel = inst => {
 	}
 };
 
+export const printPath = path => path.reduce((acc, idx, i) => (i ? "," : "") + idx, "");
+
+export const stepIs3D = step => step.length && step[0].length && Array.isArray(step[0][0]);

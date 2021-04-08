@@ -18,7 +18,7 @@ import { a, useSpring } from '@react-spring/three';
 import { Chip } from '@material-ui/core';
 
 import useStyles from './../style/theme';
-import { collectStepsForLevel, calcMaxLevel } from './../infra/utils';
+import { collectStepsForLevel, calcMaxLevel, stepIs3D } from './../infra/utils';
 
 export const Paper = props => {
 	const {
@@ -209,36 +209,19 @@ export const Paper = props => {
 		console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`);
 
 		if (diff > 0) {
-			for (let i = 1; i <= diff; i++) {
-				performCommands(fold.current, stepArray[prevStep + i]);
+			for (let i = 1; i <= diff && stepArray[prevStep + i]; i++) {
+				console.log("HITTING! ", i, diff)
+				// The first item in the stepArray is the path, not a cmd
+				performCommands(fold.current, stepArray[prevStep + i].slice(1));
 			}
-		} else {
+		} else if (diff < 0) {
 			// To do reverse steps, we're just performing fold commands with whatever the prev val was
-			for (let i = 0; i > diff && prevStep + i >= 0; i--) {
-				// This tracks the edges that we still need to find an angle for
-				const vertsToDo = stepArray[prevStep + i].map(arr => [arr[0], arr[1]]);
-				let cmds = [];
-				// Check every step before this one for previous fold values
-				for (let j = prevStep + i - 1; j >= 0 && vertsToDo.length; j--) {
-					stepArray[j].forEach(cmd => {
-						const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
-						if (foundIdx !== -1) {
-							// Mark this angle for use 
-							cmds.push([...vertsToDo[foundIdx], cmd[2]]);
-
-							// Don't keep checking for this fold
-							vertsToDo.splice(foundIdx, 1);
-						}
-					})
+			for (let i = 0; i > diff && stepArray[prevStep + i]; i--) {
+				console.log("REVERSING!", i, diff)
+				if (stepIs3D(stepArray[prevStep + i])) {
+				} else {
+					performReverseCommands(prevStep, i);
 				}
-
-				// Any remaining toDo folds should be flattened out
-				if (vertsToDo.length) {
-					cmds = cmds.concat(vertsToDo.map(pair => [...pair, 180]));
-				}
-
-				// Perform the reversed instructions for this step
-				performCommands(fold.current, cmds, new Set());
 			}
 		}
 
@@ -246,6 +229,42 @@ export const Paper = props => {
 
 		setPrevStep(curStep);
 	};
+
+	const performReverseCommands = () => {
+		// This tracks the edges that we still need to find an angle for
+		const vertsToDo = stepArray[prevStep + i].slice(1).map(arr => [arr[0], arr[1]]);
+		let cmds = [];
+
+		// Check every step before this one for previous fold values
+		for (let j = prevStep + i - 1; j >= 0 && vertsToDo.length; j--) {
+			stepArray[j].slice(1).forEach(cmd => {
+				if (stepIs3D(cmd)) {
+					cmd.forEach(subCmd => findReverseCmds(subCmd, vertsToDo, cmds));
+				} else {
+					findReverseCmds(cmd, vertsToDo, cmds);
+				}
+			})
+		}
+
+		// Any remaining toDo folds should be flattened out
+		if (vertsToDo.length) {
+			cmds = cmds.concat(vertsToDo.map(pair => [...pair, 180]));
+		}
+
+		// Perform the reversed instructions for this step
+		performCommands(fold.current, cmds, new Set());
+	};
+
+	const findReverseCmds = (cmd, vertsToDo, cmds) => {
+		const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
+		if (foundIdx !== -1) {
+			// Mark this angle for use 
+			cmds.push([...vertsToDo[foundIdx], cmd[2]]);
+
+			// Don't keep checking for this fold
+			vertsToDo.splice(foundIdx, 1);
+		}
+	}
 
 	const degToRad = degree => {
 		return (degree * Math.PI) / 180;
@@ -319,8 +338,8 @@ export const Paper = props => {
 		// const planeOrigin = new THREE.Vector3().copy(plane.normal).multiplyScalar(Math.abs(plane.constant));
 		const norm = new THREE.Vector3().copy(plane.normal);
 		const normLine = new THREE.Line3(norm.clone().multiplyScalar(-1), norm);
-		const planeOrigin = new THREE.Vector3();
-		plane.intersectLine(normLine, planeOrigin);
+		// const planeOrigin = new THREE.Vector3();
+		// plane.intersectLine(normLine, planeOrigin);
 
 		// Get the translation vector from the original plane (i.e. 0,1,0)
 		const initStart = new THREE.Vector3(...initFold.vertices_coords[edge[0]]);
@@ -328,23 +347,24 @@ export const Paper = props => {
 		const initThird = new THREE.Vector3(...initFold.vertices_coords[vertIdx]);
 
 		// If we're starting at the origin, just use the end
-		const useStart = initStart.length() >= 0.0001;
-		const initVal = useStart ? initStart : initEnd;
-		const realVal = useStart ? start : end;
-		const diffInPlane = new THREE.Vector3().subVectors(initThird, initVal);
+		// const useStart = initStart.length() >= 0.0001;
+		// const initVal = useStart ? initStart : initEnd;
+		// const realVal = useStart ? start : end;
+		const diffInPlane = new THREE.Vector3().subVectors(initThird, initStart);
+		const edgeInPlane = new THREE.Vector3().subVectors(initEnd, initStart);
 
 		// Angle between the X axis ([1, 0, 0]) and the vector
-		let axisRotation = initVal.angleTo(actualXAxis);
+		let axisRotation = edgeInPlane.angleTo(actualXAxis);
 		// If it's in the back quadrants, `angleTo` gets lazy and measures the wrong direction (to the line, not the vector)
-		if (initVal.z < 0) {
+		if (edgeInPlane.z < 0) {
 			axisRotation = 2 * Math.PI - axisRotation;
 			// axisRotation = -axisRotation;
 		}
 
-		// We know the start is in the plane, so the x Axis starts as that
-		const xAxis = new THREE.Vector3().subVectors(realVal, planeOrigin).normalize();
+		// X axis starts as the real edge vector
+		const xAxis = new THREE.Vector3().subVectors(end, start).normalize();
 
-		// Use this fake x Axis to get a Z axis
+		// Use this fake x Axis to get a Z axis that's orthag to it and the normal
 		const zAxis = new THREE.Vector3().crossVectors(xAxis, plane.normal).normalize();
 
 		// Rotate both the X and Z axiis around the Y (the normal) to get "correct" vals
@@ -353,7 +373,10 @@ export const Paper = props => {
 
 		// We don't care about the y axis, since the paper is flat during this step
 
-		// Transform this translation vector to the new coordinate system
+		// Figure out where the origin would be, extrapolating from the existing face's position
+		// const planeOrigin = new THREE.Vector3().;
+
+		// Create the translation matrix b/w the plane's coords and real coords
 		const newCoords = new THREE.Matrix3().set(
 			xAxis.x,
 			plane.normal.x,
@@ -366,11 +389,11 @@ export const Paper = props => {
 			zAxis.z
 		);
 
-		// Add the transformed vector to the realVal point to
+		// Transform the diff vector to real coords 
 		const actualDiff = new THREE.Vector3().copy(diffInPlane).applyMatrix3(newCoords);
 
 		// The third point starts off assuming no rotation
-		const third = new THREE.Vector3().addVectors(realVal, actualDiff);
+		const third = new THREE.Vector3().addVectors(start, actualDiff);
 
 		// ----------------------------------------------------
 		// SECTION 2: Rotate an existing point around this edge
@@ -399,14 +422,14 @@ export const Paper = props => {
 		fold.vertices_coords[vertIdx] = targetVec;
 		console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
 		console.log('[rotateVertAroundEdge]', {
-			planeOrigin,
-			planeConstant: plane.constant,
+			// planeOrigin,
+			// planeConstant: plane.constant,
 			normLine,
 			initStart,
 			initThird,
-			initVal,
-			useStart,
-			realVal,
+			// initVal,
+			// useStart,
+			// realVal,
 			diffInPlane,
 			actualDiff,
 			axisRotation,
