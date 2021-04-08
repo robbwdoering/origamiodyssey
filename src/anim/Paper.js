@@ -217,11 +217,7 @@ export const Paper = props => {
 		} else if (diff < 0) {
 			// To do reverse steps, we're just performing fold commands with whatever the prev val was
 			for (let i = 0; i > diff && stepArray[prevStep + i]; i--) {
-				console.log("REVERSING!", i, diff)
-				if (stepIs3D(stepArray[prevStep + i])) {
-				} else {
-					performReverseCommands(prevStep, i);
-				}
+				performReverseCommands(stepArray[prevStep + i].slice(1), prevStep + i);
 			}
 		}
 
@@ -230,36 +226,60 @@ export const Paper = props => {
 		setPrevStep(curStep);
 	};
 
-	const performReverseCommands = () => {
+	/**
+	 * This is a wrapper for performCommands that instead of performing a command, figured out
+	 * what would need to be done to "undo" that command, then does that.
+	 * This is done dyanimcally - this is an obvious target for future performance improvements,
+	 * since this could be calculated on an going basis and stored. It helps that these arrs are short.
+	 * @param step the object for the step to reverse. 2D or 3D array.
+	 * @param idx the index of this step in the stepArray
+	 * @param inSubIdx the inner index for a substep, i.e. child of a 3D array - usually N/A 
+	 */
+	const performReverseCommands = (step, idx, inSubIdx) => {
+		console.log("[performReverseCommands]", {step, idx, inSubIdx});
+		// If this is a 3D object, just perform this on all subobjects & exit
+		if (stepIs3D(step)) {
+			step.reverse().forEach((subCmd, revIdx) => performReverseCommands(subCmd, idx, step.length - (revIdx + 1)));
+			return;
+		}
+
 		// This tracks the edges that we still need to find an angle for
-		const vertsToDo = stepArray[prevStep + i].slice(1).map(arr => [arr[0], arr[1]]);
-		let cmds = [];
+		const vertsToDo = step.map(arr => [arr[0], arr[1]]);
+		let newCmds = [];
+
+		// Check all the previous substeps in this step for previous fold values
+		if (inSubIdx !== undefined) {
+			for (let j = inSubIdx - 1; j >= 0 && vertsToDo.length; j--) {
+				// We know these are 2D (could never have substeps)
+				stepArray[idx][j + 1].forEach(cmd => findLastUsedAngles(cmd, vertsToDo, newCmds));
+			}
+		}
 
 		// Check every step before this one for previous fold values
-		for (let j = prevStep + i - 1; j >= 0 && vertsToDo.length; j--) {
+		for (let j = idx - 1; j >= 0 && vertsToDo.length; j--) {
 			stepArray[j].slice(1).forEach(cmd => {
 				if (stepIs3D(cmd)) {
-					cmd.forEach(subCmd => findReverseCmds(subCmd, vertsToDo, cmds));
+					cmd.forEach(subCmd => findLastUsedAngles(subCmd, vertsToDo, newCmds));
 				} else {
-					findReverseCmds(cmd, vertsToDo, cmds);
+					findLastUsedAngles(cmd, vertsToDo, newCmds);
 				}
 			})
 		}
 
 		// Any remaining toDo folds should be flattened out
 		if (vertsToDo.length) {
-			cmds = cmds.concat(vertsToDo.map(pair => [...pair, 180]));
+			newCmds = newCmds.concat(vertsToDo.map(pair => [...pair, 180]));
 		}
 
 		// Perform the reversed instructions for this step
-		performCommands(fold.current, cmds, new Set());
+		performCommands(fold.current, newCmds, new Set());
 	};
 
-	const findReverseCmds = (cmd, vertsToDo, cmds) => {
+	const findLastUsedAngles = (cmd, vertsToDo, newCmds) => {
 		const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
 		if (foundIdx !== -1) {
 			// Mark this angle for use 
-			cmds.push([...vertsToDo[foundIdx], cmd[2]]);
+			newCmds.push([...vertsToDo[foundIdx], cmd[2]]);
 
 			// Don't keep checking for this fold
 			vertsToDo.splice(foundIdx, 1);
@@ -330,7 +350,7 @@ export const Paper = props => {
 		);
 		const otherVert = otherFace.find(otherVertIdx => !edge.includes(otherVertIdx));
 		if (otherFace === null || otherVert === null) {
-			console.log("[rotateVertAroundEdge] ERR: Couldn't find other plane to base rotation in.");
+			// console.log("[rotateVertAroundEdge] ERR: Couldn't find other plane to base rotation in.");
 			return;
 		}
 		const plane = new THREE.Plane().setFromCoplanarPoints(start, end, fold.vertices_coords[otherVert]);
@@ -409,7 +429,7 @@ export const Paper = props => {
 			edgeDirection.normalize();
 			targetVec = new THREE.Vector3().subVectors(third, start);
 
-			console.log('Applying angle to edge', edgeDirection);
+			// console.log('Applying angle to edge', edgeDirection);
 
 			// Rotate the target vector around the edge
 			targetVec.applyAxisAngle(edgeDirection, degToRad(180 - angle));
@@ -421,27 +441,27 @@ export const Paper = props => {
 		// Store the vertex coords for edges + vertices
 		fold.vertices_coords[vertIdx] = targetVec;
 		console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
-		console.log('[rotateVertAroundEdge]', {
-			// planeOrigin,
-			// planeConstant: plane.constant,
-			normLine,
-			initStart,
-			initThird,
-			// initVal,
-			// useStart,
-			// realVal,
-			diffInPlane,
-			actualDiff,
-			axisRotation,
-			xAxis,
-			zAxis,
-			newCoords,
-			norm,
-			third,
-			start,
-			end,
-			otherVert
-		});
+		// console.log('[rotateVertAroundEdge]', {
+		// 	// planeOrigin,
+		// 	// planeConstant: plane.constant,
+		// 	normLine,
+		// 	initStart,
+		// 	initThird,
+		// 	// initVal,
+		// 	// useStart,
+		// 	// realVal,
+		// 	diffInPlane,
+		// 	actualDiff,
+		// 	axisRotation,
+		// 	xAxis,
+		// 	zAxis,
+		// 	newCoords,
+		// 	norm,
+		// 	third,
+		// 	start,
+		// 	end,
+		// 	otherVert
+		// });
 	};
 
 	/*
