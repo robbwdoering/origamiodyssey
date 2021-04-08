@@ -52,11 +52,11 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault) => {
 };
 
 /**
- * @returns: a 1D array that contains every step below this one, all together.
+ * @returns: a 2D array of every leaf node found below this node 
  */
 export const concatDescendants = (inst, curLevel) => {
 	if (Array.isArray(inst.children[0])) {
-		return [...inst.children];
+		return [[...inst.children]];
 	} else {
 		// turn many 1d arrs into one - concat
 		return inst.children.reduce((acc, childInst) => {
