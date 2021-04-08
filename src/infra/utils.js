@@ -1,7 +1,7 @@
 /**
- * FILENAME: Constants.js 
+ * FILENAME: Constants.js
  *
- * DESCRIPTION: Contains constants for use accross the app. 
+ * DESCRIPTION: Contains constants for use accross the app.
  */
 
 /*
@@ -21,7 +21,7 @@ export const collectStepsForLevel = (fold, level, isDefault) => {
  * of sequential steps "at" that depth.
  * @returns: a 2D array of step objects
  */
-export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path="0") => {
+export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path = '0') => {
 	if (!inst.children && !inst.length) {
 		// Error case
 		return null;
@@ -33,7 +33,7 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path="
 	if (Array.isArray(inst.children[0])) {
 		return [[path, ...inst.children]];
 
-	// Ancestor nodes - return a list of steps
+		// Ancestor nodes - return a list of steps
 	} else {
 		if (curLevel === targetLevel || isDefaultNode) {
 			// Recursive case: This is target, so return all leaves below this as one step
@@ -47,7 +47,7 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path="
 			// Recursive case: still above target level, so keep drilling down
 			// COLLECT steps returned from children into one array of steps
 			return inst.children.reduce((acc, childInst, childIdx) => {
-				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault, path + "," + childIdx);
+				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault, path + ',' + childIdx);
 				return ret ? acc.concat(ret) : acc;
 			}, []);
 		}
@@ -57,7 +57,7 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path="
 };
 
 /**
- * @returns: a 2D array of every leaf node found below this node 
+ * @returns: a 2D array of every leaf node found below this node
  */
 export const concatDescendants = (inst, curLevel) => {
 	if (Array.isArray(inst.children[0])) {
@@ -88,6 +88,13 @@ export const calcMaxLevel = inst => {
 	}
 };
 
-export const printPath = path => path.reduce((acc, idx, i) => (i ? "," : "") + idx, "");
+export const findInUseFamilyNode = (stepArr, path) => {
+	return stepArr.findIndex(step => {
+		// True if inUse step is an ancestor or descendant of this step
+		return path.startsWith(step[0]) || step[0].startsWith(path);
+	});
+};
+
+export const printPath = path => path.reduce((acc, idx, i) => (i ? ',' : '') + idx, '');
 
 export const stepIs3D = step => step.length && step[0].length && Array.isArray(step[0][0]);

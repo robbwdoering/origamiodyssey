@@ -210,7 +210,7 @@ export const Paper = props => {
 
 		if (diff > 0) {
 			for (let i = 1; i <= diff && stepArray[prevStep + i]; i++) {
-				console.log("HITTING! ", i, diff)
+				console.log('HITTING! ', i, diff);
 				// The first item in the stepArray is the path, not a cmd
 				performCommands(fold.current, stepArray[prevStep + i].slice(1));
 			}
@@ -233,10 +233,10 @@ export const Paper = props => {
 	 * since this could be calculated on an going basis and stored. It helps that these arrs are short.
 	 * @param step the object for the step to reverse. 2D or 3D array.
 	 * @param idx the index of this step in the stepArray
-	 * @param inSubIdx the inner index for a substep, i.e. child of a 3D array - usually N/A 
+	 * @param inSubIdx the inner index for a substep, i.e. child of a 3D array - usually N/A
 	 */
 	const performReverseCommands = (step, idx, inSubIdx) => {
-		console.log("[performReverseCommands]", {step, idx, inSubIdx});
+		console.log('[performReverseCommands]', { step, idx, inSubIdx });
 		// If this is a 3D object, just perform this on all subobjects & exit
 		if (stepIs3D(step)) {
 			step.reverse().forEach((subCmd, revIdx) => performReverseCommands(subCmd, idx, step.length - (revIdx + 1)));
@@ -263,7 +263,7 @@ export const Paper = props => {
 				} else {
 					findLastUsedAngles(cmd, vertsToDo, newCmds);
 				}
-			})
+			});
 		}
 
 		// Any remaining toDo folds should be flattened out
@@ -278,13 +278,13 @@ export const Paper = props => {
 	const findLastUsedAngles = (cmd, vertsToDo, newCmds) => {
 		const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
 		if (foundIdx !== -1) {
-			// Mark this angle for use 
+			// Mark this angle for use
 			newCmds.push([...vertsToDo[foundIdx], cmd[2]]);
 
 			// Don't keep checking for this fold
 			vertsToDo.splice(foundIdx, 1);
 		}
-	}
+	};
 
 	const degToRad = degree => {
 		return (degree * Math.PI) / 180;
@@ -409,7 +409,7 @@ export const Paper = props => {
 			zAxis.z
 		);
 
-		// Transform the diff vector to real coords 
+		// Transform the diff vector to real coords
 		const actualDiff = new THREE.Vector3().copy(diffInPlane).applyMatrix3(newCoords);
 
 		// The third point starts off assuming no rotation
@@ -483,7 +483,7 @@ export const Paper = props => {
 
 		// If this is a 3D array, perform substeps in sequence
 		if (cmds.length && cmds[0].length && Array.isArray(cmds[0][0])) {
-			console.log("PERFORMING NESTED COMMANDS: ", cmds);
+			console.log('PERFORMING NESTED COMMANDS: ', cmds);
 			cmds.forEach(cmdArr => performCommands(fold, cmdArr));
 			return;
 		}

@@ -104,7 +104,7 @@ export const Body = props => {
 	};
 
 	const selectFold = () => {
-		console.log("selectFold", layoutState, Folds);
+		console.log('selectFold', layoutState, Folds);
 		fold.current = {
 			json:
 				layoutState.curFold && Folds[layoutState.curFold]
@@ -117,7 +117,7 @@ export const Body = props => {
 	};
 
 	const foldOverrideCallback = newFold => {
-		console.log("[foldOverrideCallback] ", newFold);
+		console.log('[foldOverrideCallback] ', newFold);
 		Object.assign(fold.current.json, newFold);
 
 		// Reset fold state
@@ -130,7 +130,7 @@ export const Body = props => {
 
 	const saveStateToCookies = () => {
 		const finalEditorState = Object.assign({}, editorState, { stepIndex: -1 });
-		setCookies('origamiodyssey_state', { layoutState, foldState,  editorState: finalEditorState }, { path: '/' });
+		setCookies('origamiodyssey_state', { layoutState, foldState, editorState: finalEditorState }, { path: '/' });
 	};
 
 	const fetchStateFromCookies = () => {
@@ -140,7 +140,7 @@ export const Body = props => {
 			setFoldState(cookies.origamiodyssey_state.foldState);
 			setEditorState(cookies.origamiodyssey_state.editorState);
 		} else {
-			console.log("cannot apply cookies... :(", cookies)
+			console.log('cannot apply cookies... :(', cookies);
 		}
 	};
 
@@ -171,12 +171,16 @@ export const Body = props => {
 	const page = useMemo(renderPage, [layoutState.page]);
 	const piecemeal = useMemo(renderPiecemeal, [layoutState.page, windowHeight]);
 
-	console.log("[body]", fold.current);
+	console.log('[body]', fold.current);
 
 	return (
 		<div className={classes.bodyContainer} ref={containerRef}>
 			<div className={classes.sceneContainer} style={{ height: windowHeight + 'px' }}>
-				<Scene paperSize={windowHeight} initFold={fold.current.json} foldLastUpdated={fold.current.lastUpdated} />
+				<Scene
+					paperSize={windowHeight}
+					initFold={fold.current.json}
+					foldLastUpdated={fold.current.lastUpdated}
+				/>
 			</div>
 			{page && (
 				<div className={classes.centerColumn} style={{ height: windowHeight + 'px' }}>
