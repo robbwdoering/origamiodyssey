@@ -18,13 +18,14 @@ import { a, useSpring } from '@react-spring/three';
 import { Chip } from '@material-ui/core';
 
 import useStyles from './../style/theme';
-import { collectStepsForLevel, calcMaxLevel, stepIs3D } from './../infra/utils';
+import { collectStepsForLevel, calcMaxLevel, stepIs2D, stepIs3D } from './../infra/utils';
 
 export const Paper = props => {
 	const {
 		position,
 		scale,
 		ctrlOverlay,
+		overlayItems,
 		initStep,
 		initFold,
 		foldLastUpdated,
@@ -47,6 +48,11 @@ export const Paper = props => {
 	const creasedEdges = useRef(new Set());
 	const fold = useRef(null);
 	const classes = useStyles();
+
+	const {
+		camera,
+		gl: { domElement }
+	} = useThree();
 
 	// ----------------
 	// MEMBER FUNCTIONS
@@ -99,7 +105,7 @@ export const Paper = props => {
 	 * contain EITHER two integer values, or 1+ subnodes. Any node with subnodes may not have integer values.
 	 */
 	const readInstructionsIntoState = () => {
-		if (fold.current.instructions) {
+		if (fold.current && fold.current.instructions) {
 			const maxLevel = calcMaxLevel(fold.current.instructions);
 			setFoldState({
 				maxLevel: maxLevel,
@@ -210,7 +216,6 @@ export const Paper = props => {
 
 		if (diff > 0) {
 			for (let i = 1; i <= diff && stepArray[prevStep + i]; i++) {
-				console.log('HITTING! ', i, diff);
 				// The first item in the stepArray is the path, not a cmd
 				performCommands(fold.current, stepArray[prevStep + i].slice(1));
 			}
@@ -236,7 +241,7 @@ export const Paper = props => {
 	 * @param inSubIdx the inner index for a substep, i.e. child of a 3D array - usually N/A
 	 */
 	const performReverseCommands = (step, idx, inSubIdx) => {
-		console.log('[performReverseCommands]', { step, idx, inSubIdx });
+		// console.log('[performReverseCommands]', { step, idx, inSubIdx });
 		// If this is a 3D object, just perform this on all subobjects & exit
 		if (stepIs3D(step)) {
 			step.reverse().forEach((subCmd, revIdx) => performReverseCommands(subCmd, idx, step.length - (revIdx + 1)));
@@ -255,10 +260,12 @@ export const Paper = props => {
 			}
 		}
 
+		// console.log("[performReverseCommands] Finished previous substeps.");
+
 		// Check every step before this one for previous fold values
 		for (let j = idx - 1; j >= 0 && vertsToDo.length; j--) {
 			stepArray[j].slice(1).forEach(cmd => {
-				if (stepIs3D(cmd)) {
+				if (stepIs2D(cmd)) {
 					cmd.reverse().forEach(subCmd => findLastUsedAngles(subCmd, vertsToDo, newCmds, step));
 				} else {
 					findLastUsedAngles(cmd, vertsToDo, newCmds, step);
@@ -269,6 +276,7 @@ export const Paper = props => {
 		// Any remaining toDo folds should be flattened out
 		if (vertsToDo.length) {
 			const dummyDefaults = vertsToDo.map(pair => [...pair, 180]);
+			// console.log("dummyDefaults: ", dummyDefaults, step)
 			dummyDefaults.forEach(cmd => findLastUsedAngles(cmd, vertsToDo, newCmds, step));
 		}
 
@@ -280,15 +288,16 @@ export const Paper = props => {
 		const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
 		if (foundIdx !== -1) {
 			// Figure out the index of this edge in the original step 
-			const origIndex = origStep.findIndex(cmpCmd => cmpCmd.includes(cmd[0]) && cmpCmd.includes(cmd[1]));
-
-			console.log("")
+			const origIndex = origStep
+				.map(cmpCmd => cmpCmd.slice(0, 2))
+				.findIndex(cmpCmd => cmpCmd.includes(cmd[0]) && cmpCmd.includes(cmd[1]));
 
 			// Mark this angle for use
 			newCmds[origIndex] = [...vertsToDo[foundIdx], cmd[2]];
 
 			// Don't keep checking for this fold
 			vertsToDo.splice(foundIdx, 1);
+			// console.log("[findLastUsedAngles] ", foundIdx, origIndex, newCmds[origIndex])
 		}
 	};
 
@@ -446,7 +455,7 @@ export const Paper = props => {
 
 		// Store the vertex coords for edges + vertices
 		fold.vertices_coords[vertIdx] = targetVec;
-		console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
+		// console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
 		// console.log('[rotateVertAroundEdge]', {
 		// 	// planeOrigin,
 		// 	// planeConstant: plane.constant,
@@ -476,7 +485,7 @@ export const Paper = props => {
 	 * @param steps - array of instructions
 	 */
 	const performCommands = (fold, cmds, vertsMoved = new Set(), edgesMoved = new Set(), level = 0) => {
-		console.log('[performCommands] RUN: ', fold && fold.vertices_coords, cmds, level);
+		// console.log('[performCommands] RUN: ', fold && fold.vertices_coords, cmds, level);
 		if (!fold || cmds === undefined || level > 5) {
 			return null;
 		}
@@ -489,7 +498,6 @@ export const Paper = props => {
 
 		// If this is a 3D array, perform substeps in sequence
 		if (cmds.length && cmds[0].length && Array.isArray(cmds[0][0])) {
-			console.log('PERFORMING NESTED COMMANDS: ', cmds);
 			cmds.forEach(cmdArr => performCommands(fold, cmdArr));
 			return;
 		}
@@ -560,12 +568,10 @@ export const Paper = props => {
 
 			// Check if we've already pocessed this edge
 			if (faceIdx === -1 || edgesMoved.has(edgeIdx)) {
-				// console.log(`Edge (${edgeVerts[0]}, ${edgeVerts[1]}) already moved`);
 				return;
 			}
 			edgesMoved.add(edgeIdx);
 			if (vertsMoved.has(thirdIdx)) {
-				// console.log(`Vert ${thirdIdx} already moved.`);
 				return;
 			}
 			vertsMoved.add(thirdIdx);
@@ -576,7 +582,7 @@ export const Paper = props => {
 
 			// Rotate the third vertex around this edge
 			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, -cmd[2]);
-			console.log('[performCommands]', { newCmds });
+			// console.log('[performCommands]', { newCmds });
 		});
 
 		// Do recursive call for every edge in the todo list
@@ -622,26 +628,92 @@ export const Paper = props => {
 	const printVect = vect => `${vect.x.toFixed(2)}, ${vect.y.toFixed(2)}, ${vect.z.toFixed(2)}`;
 
 	const hoverVert = (idx, event, show) => {
-		ctrlOverlay({
+		ctrlOverlay([{
 			show,
 			name: 'vert_' + idx,
-			component: (
+			pos: fold.current.vertices_coords[idx],
+			component: show && (
 				<Chip
 					className={classes.vertLabel}
 					style={{ left: event.pageX + 10, top: event.pageY + 10 + 64 }}
-					label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
+					// label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
+					label={idx}
 				/>
 			)
-		});
+		}]);
 	};
 
 	const buildStepArray = () => collectStepsForLevel(fold.current, foldState.selectedLevel, foldState.usingDefaults);
+
+	const getXYForPos = pos => {
+    	let pixelVec = new THREE.Vector3().copy(pos);
+    	pixelVec.project(camera);
+
+    	return {
+	    	x: Math.round((0.5 + pixelVec.x / 2) * domElement.width),
+	    	y: Math.round((0.5 - pixelVec.y / 2) * domElement.height)
+    	}
+	}
+
+	const updateScreenPosition = () => {
+		if (!fold.current || !overlayItems.length) {
+			return null;
+		}
+
+		let retArr = [];
+
+		fold.current.vertices_coords.forEach((vert, idx) => {
+			const {x, y} = getXYForPos(vert);
+	    	retArr.push({
+				name: 'vert_' + idx,
+				show: true,
+				component: (
+					<Chip
+						className={classes.vertLabel}
+						style={{ left: `${x}px`, top: `${y}px` }}
+						// label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
+						label={idx}
+					/>
+				)
+	    	});
+	    });
+
+
+	    if (retArr.length) {
+			ctrlOverlay(retArr);
+	    }
+	};
+
+	const toggleLabels = () => {
+		console.log("[toggleLabels]", camera, domElement);
+		camera.updateMatrixWorld();
+
+		if (!fold.current) {
+			return;
+		}
+
+		ctrlOverlay(fold.current.vertices_coords.map((vert, idx) => {
+			const { x, y } = getXYForPos(vert);
+			console.log("[Label]", x, y);
+
+			return ({
+				name: 'vert_' + idx,
+				show: editorState.showLabels,
+				component: (
+					<Chip
+						className={classes.vertLabel}
+						style={{ left: `${x}px`, top: `${y}px` }}
+						label={idx}
+					/>
+				)
+			});
+		}));
+	};
 
 	// ---------
 	// LIFECYCLE
 	// ---------
 	useFrame(() => {
-		// rotation.current = [0, rotation.current[1] + 1, 0];
 	});
 
 	const material = useMemo(createMaterial, []);
@@ -654,8 +726,9 @@ export const Paper = props => {
 	useEffect(performInstructions, [foldState.stepIdx]);
 	useEffect(initFoldState, [foldKey]);
 	useEffect(readInstructionsIntoState, [foldKey, stepArray.length]);
+	useEffect(toggleLabels, [editorState.showLabels]);
 
-	console.log('[Paper]', { stepArray });
+	// console.log('[Paper]', { stepArray });
 
 	if (!initFold) {
 		return null;

@@ -285,11 +285,19 @@ export const FoldEditorCards = props => {
 							onChange={() => handleEditorFormChange('showFaces', !editorState.showFaces)}
 						/>
 					</ControlRow>
-					<ControlRow name="Show Triangulations" width={4}>
+					<ControlRow name="Show Tri" width={4}>
 						<ToggleButton
 							selected={editorState.showTriangulations}
 							onChange={() =>
 								handleEditorFormChange('showTriangulations', !editorState.showTriangulations)
+							}
+						/>
+					</ControlRow>
+					<ControlRow name="Show Labels" width={4}>
+						<ToggleButton
+							selected={editorState.showLabels}
+							onChange={() =>
+								handleEditorFormChange('showLabels', !editorState.showLabels)
 							}
 						/>
 					</ControlRow>

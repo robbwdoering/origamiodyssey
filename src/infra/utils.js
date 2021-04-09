@@ -98,3 +98,7 @@ export const findInUseFamilyNode = (stepArr, path) => {
 export const printPath = path => path.reduce((acc, idx, i) => (i ? ',' : '') + idx, '');
 
 export const stepIs3D = step => step.length && step[0].length && Array.isArray(step[0][0]);
+
+export const stepIs2D = step => step.length && Array.isArray(step[0]);
+
+export const stepIs1D = step => step.length && !Array.isArray(step[0]);

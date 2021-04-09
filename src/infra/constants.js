@@ -15,6 +15,7 @@ import GroupAddIcon from "@material-ui/icons/GroupAdd";
 import BirdBase from "./../folds/BirdBase.json";
 import BoatBase from "./../folds/BoatBase.json";
 import FrogBase from "./../folds/FrogBase.json";
+import SailBoat from "./../folds/SailBoat.json";
 
 export const Pages = {
 	Splash: "Splash",
@@ -29,27 +30,53 @@ export const Pages = {
 	TeachDashboard: "TeachDashboard"
 };
 
+export const Tags = {
+	base: {
+		text: "Base",
+		category: "family"
+	},
+	bird: {
+		text: "Bird",
+		category: "counterpart",
+	},
+	boat: {
+		text: "Boat",
+		category: "counterpart"
+	},
+	flower: {
+		text: "Flower",
+		category: "counterpart"
+	}
+};
+
 export const Folds = {
 	BirdBase: {
 		name: "Bird Base",
 		description: "The first base many learn, this is perfect for winged creations such as birds and dragons.",
-		tags: [],
+		tags: ["base"],
 		author: "Traditional",
 		json: BirdBase
 	},
 	BoatBase: {
 		name: "Boat Base",
 		description: "A more specific base for blocky models, such as boats and frames.",
-		tags: [],
+		tags: ["base"],
 		author: "Traditional",
 		json: BoatBase
 	},
 	FrogBase: {
 		name: "Frog Base",
 		description: "A complex base used for models with length-wise asymmetry, like flowers and animals.",
-		tags: [],
+		tags: ["base"],
 		author: "Traditional",
 		json: FrogBase 
+	},
+	SailBoat: {
+		name: "Sail Boat",
+		description: "An assymetrical sailboat with a built in kickstand - perfect for display.",
+		tags: ["boat"],
+		author: "Traditional",
+		json: SailBoat 
 	}
 };
 
@@ -78,7 +105,8 @@ export const initAppReducerState = {
 		showEdges: true,
 		showVertices: true,
 		showFaces: true,
-		showTriangulations: false
+		showTriangulations: false,
+		showLables: false
 	},
 	showNavDrawer: false
 

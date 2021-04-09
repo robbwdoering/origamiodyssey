@@ -64,16 +64,27 @@ const CameraControls = () => {
 export const Scene = props => {
 	const { initFold, foldLastUpdated, paperSize, layoutState, layoutStateHash, foldState, foldStateHash, setFoldState, editorState, editorStateHash } = props;
 	const [overlays, setOverlays] = useState({});
+	const [overlayPos, setOverlayPos] = useState({});
 
-	const ctrlOverlay = ({ show, name, component }) => {
-		const newObj = Object.assign({}, overlays);
-		if (show && !newObj[name]) {
-			newObj[name] = component;
-		} else if (!show && newObj[name]) {
-			delete newObj[name];
-		}
+	const ctrlOverlay = inArr => {
+		const newOverlays = Object.assign({}, overlays);
+		const newOverlayPos = Object.assign({}, overlayPos);
 
-		setOverlays(newObj);
+		inArr.forEach(({ show, name, component, pos }) => {
+			if (show) {
+				newOverlays[name] = component;
+
+				if (pos) {
+					overlayPos[name] = pos;
+				}
+			} else if (!show && newOverlays[name]) {
+				delete newOverlays[name];
+				delete overlayPos[name];
+			}
+		})
+
+		setOverlays(newOverlays);
+		setOverlayPos(overlayPos)
 	}
 
 	return (
@@ -95,6 +106,7 @@ export const Scene = props => {
 					setFoldState={setFoldState}
 					initStep={-1}
 					ctrlOverlay={ctrlOverlay}
+					overlayPos={overlayPos}
 				/>
 			</Canvas>
 			{Object.values(overlays)}
