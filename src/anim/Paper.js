@@ -245,13 +245,13 @@ export const Paper = props => {
 
 		// This tracks the edges that we still need to find an angle for
 		const vertsToDo = step.map(arr => [arr[0], arr[1]]);
-		let newCmds = [];
+		let newCmds = vertsToDo.map(() => null);
 
 		// Check all the previous substeps in this step for previous fold values
 		if (inSubIdx !== undefined) {
 			for (let j = inSubIdx - 1; j >= 0 && vertsToDo.length; j--) {
 				// We know these are 2D (could never have substeps)
-				stepArray[idx][j + 1].forEach(cmd => findLastUsedAngles(cmd, vertsToDo, newCmds));
+				stepArray[idx][j + 1].forEach(cmd => findLastUsedAngles(cmd, vertsToDo, newCmds, step));
 			}
 		}
 
@@ -259,27 +259,33 @@ export const Paper = props => {
 		for (let j = idx - 1; j >= 0 && vertsToDo.length; j--) {
 			stepArray[j].slice(1).forEach(cmd => {
 				if (stepIs3D(cmd)) {
-					cmd.forEach(subCmd => findLastUsedAngles(subCmd, vertsToDo, newCmds));
+					cmd.reverse().forEach(subCmd => findLastUsedAngles(subCmd, vertsToDo, newCmds, step));
 				} else {
-					findLastUsedAngles(cmd, vertsToDo, newCmds);
+					findLastUsedAngles(cmd, vertsToDo, newCmds, step);
 				}
 			});
 		}
 
 		// Any remaining toDo folds should be flattened out
 		if (vertsToDo.length) {
-			newCmds = newCmds.concat(vertsToDo.map(pair => [...pair, 180]));
+			const dummyDefaults = vertsToDo.map(pair => [...pair, 180]);
+			dummyDefaults.forEach(cmd => findLastUsedAngles(cmd, vertsToDo, newCmds, step));
 		}
 
 		// Perform the reversed instructions for this step
 		performCommands(fold.current, newCmds, new Set());
 	};
 
-	const findLastUsedAngles = (cmd, vertsToDo, newCmds) => {
+	const findLastUsedAngles = (cmd, vertsToDo, newCmds, origStep) => {
 		const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
 		if (foundIdx !== -1) {
+			// Figure out the index of this edge in the original step 
+			const origIndex = origStep.findIndex(cmpCmd => cmpCmd.includes(cmd[0]) && cmpCmd.includes(cmd[1]));
+
+			console.log("")
+
 			// Mark this angle for use
-			newCmds.push([...vertsToDo[foundIdx], cmd[2]]);
+			newCmds[origIndex] = [...vertsToDo[foundIdx], cmd[2]];
 
 			// Don't keep checking for this fold
 			vertsToDo.splice(foundIdx, 1);
