@@ -273,7 +273,8 @@ export const useStyles = makeStyles(theme => ({
 	hier_node: {
 		borderRadius: '10px',
 		width: '16px',
-		margin: '2px'
+		margin: '2px',
+		cursor: 'pointer'
 	},
 	hier_node_spacer: {
 		height: '16px'

@@ -57,12 +57,13 @@ export const Paper = props => {
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
+
 	const recursiveTriangulation = (curFace, foldObj) => {
-		// If this is a triangle (or invalid...), just push it as is
 		if (curFace.length <= 3) {
+			// If this is a triangle (or invalid...), just push it as is
 			foldObj.faces_vertices.push(curFace);
-			// Else push a new triangle, and call this function again on the new shape
 		} else {
+			// Else push a new triangle, and call this function again on the new shape
 			const [cutIdx] = curFace.splice(1, 1);
 			foldObj.faces_vertices.push([curFace[0], cutIdx, curFace[1]]);
 			foldObj.edges_vertices.push([curFace[0], curFace[1]]);
@@ -84,8 +85,6 @@ export const Paper = props => {
 
 		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 180);
 
-		// TODO: Validate that all the angles in every face are acute
-
 		// Triangulate all faces
 		foldObj.faces_vertices = [];
 		newFold.faces_vertices.forEach((face, faceIdx) => {
@@ -98,6 +97,8 @@ export const Paper = props => {
 		console.log('[setFoldObj]', { maxes, foldObj });
 		fold.current = foldObj;
 	};
+
+	const edgeIsTriangulation = (edgeIdx, fold) => !fold.edges_foldAngle || edgeIdx >= fold.edges_foldAngle.length || edgeIdx < 0;
 
 	/*
 	 * Reads the hierarchical instructions, collecting some descriptive values and initializing state.
@@ -176,8 +177,6 @@ export const Paper = props => {
 			});
 		});
 
-		console.log({ vertices, normals, colors });
-
 		// OPTIONALL DEBUGS
 		// for (let i = 0; i < vertices.length; i += 9) {
 		// 	console.log(
@@ -212,7 +211,7 @@ export const Paper = props => {
 			curStep = -1;
 		}
 		const diff = curStep - prevStep;
-		console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`);
+		// console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`);
 
 		if (diff > 0) {
 			for (let i = 1; i <= diff && stepArray[prevStep + i]; i++) {
@@ -281,7 +280,7 @@ export const Paper = props => {
 		}
 
 		// Perform the reversed instructions for this step
-		performCommands(fold.current, newCmds, new Set());
+		performCommands(fold.current, newCmds);
 	};
 
 	const findLastUsedAngles = (cmd, vertsToDo, newCmds, origStep) => {
@@ -373,8 +372,6 @@ export const Paper = props => {
 		// const planeOrigin = new THREE.Vector3().copy(plane.normal).multiplyScalar(Math.abs(plane.constant));
 		const norm = new THREE.Vector3().copy(plane.normal);
 		const normLine = new THREE.Line3(norm.clone().multiplyScalar(-1), norm);
-		// const planeOrigin = new THREE.Vector3();
-		// plane.intersectLine(normLine, planeOrigin);
 
 		// Get the translation vector from the original plane (i.e. 0,1,0)
 		const initStart = new THREE.Vector3(...initFold.vertices_coords[edge[0]]);
@@ -382,9 +379,6 @@ export const Paper = props => {
 		const initThird = new THREE.Vector3(...initFold.vertices_coords[vertIdx]);
 
 		// If we're starting at the origin, just use the end
-		// const useStart = initStart.length() >= 0.0001;
-		// const initVal = useStart ? initStart : initEnd;
-		// const realVal = useStart ? start : end;
 		const diffInPlane = new THREE.Vector3().subVectors(initThird, initStart);
 		const edgeInPlane = new THREE.Vector3().subVectors(initEnd, initStart);
 
@@ -393,7 +387,6 @@ export const Paper = props => {
 		// If it's in the back quadrants, `angleTo` gets lazy and measures the wrong direction (to the line, not the vector)
 		if (edgeInPlane.z < 0) {
 			axisRotation = 2 * Math.PI - axisRotation;
-			// axisRotation = -axisRotation;
 		}
 
 		// X axis starts as the real edge vector
@@ -407,9 +400,6 @@ export const Paper = props => {
 		zAxis.applyAxisAngle(plane.normal, axisRotation);
 
 		// We don't care about the y axis, since the paper is flat during this step
-
-		// Figure out where the origin would be, extrapolating from the existing face's position
-		// const planeOrigin = new THREE.Vector3().;
 
 		// Create the translation matrix b/w the plane's coords and real coords
 		const newCoords = new THREE.Matrix3().set(
@@ -457,14 +447,10 @@ export const Paper = props => {
 		fold.vertices_coords[vertIdx] = targetVec;
 		// console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
 		// console.log('[rotateVertAroundEdge]', {
-		// 	// planeOrigin,
 		// 	// planeConstant: plane.constant,
 		// 	normLine,
 		// 	initStart,
 		// 	initThird,
-		// 	// initVal,
-		// 	// useStart,
-		// 	// realVal,
 		// 	diffInPlane,
 		// 	actualDiff,
 		// 	axisRotation,
@@ -479,15 +465,29 @@ export const Paper = props => {
 		// });
 	};
 
+	/** 
+	 * Returns true if the origCmds array includes a non-flex command on an edge including this vert.
+	 * @param origCmds the array of the original commands to check against (i.e. the commands in the actual json file)
+	 * @param vertIdx the index of the vertex in question
+	 */
+	const cmdsInvolveVert = (origCmds, vertIdx) => {
+		// console.log("[cmdsInvolveVert]", origCmds)
+		return origCmds && origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (cmd[0] === vertIdx || cmd[1] === vertIdx));
+	}
+
 	/*
 	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
 	 * @param fold - the object to be modified
 	 * @param steps - array of instructions
 	 */
-	const performCommands = (fold, cmds, vertsMoved = new Set(), edgesMoved = new Set(), level = 0) => {
+	const performCommands = (fold, cmds, origCmds, vertsMoved = new Set(), edgesMoved = new Set(), level = 0) => {
 		// console.log('[performCommands] RUN: ', fold && fold.vertices_coords, cmds, level);
-		if (!fold || cmds === undefined || level > 5) {
+		if (!fold || cmds === undefined || level > 15) {
 			return null;
+		}
+
+		if (!origCmds && level === 0) {
+			origCmds = [...cmds];
 		}
 
 		let todoCmds = [];
@@ -507,6 +507,18 @@ export const Paper = props => {
 			const args = cmd.length === 4 ? cmd[3] : {};
 			const edgeVerts = [cmd[0], cmd[1]];
 			const edgeIdx = fold.edges_vertices.findIndex(edge => edge.includes(cmd[0]) && edge.includes(cmd[1]));
+
+			// Store the fold angle
+			if (!edgeIsTriangulation(edgeIdx, fold)) {
+				// console.log("storing angle", cmd[2], "for edge", edgeIdx);
+				fold.edges_foldAngle[edgeIdx] = cmd[2];
+			}
+
+			// If this is a "flex" cmd, stop here
+			if (level === 0 && args.flex) {
+				// console.log("exit: Skipping flex fold", cmd);
+				return;
+			}
 
 			// Get the face that includes this edge on the right or left hand side, depending on the cmd args
 			const faceIdx = faceToFoldForEdge(fold.faces_vertices, edgeVerts, args.lhs);
@@ -528,14 +540,8 @@ export const Paper = props => {
 			);
 
 			// Get the angle to rotate these edges (last used, or default to 180)
-			const foldAngleOne =
-				edgeIndices[0] < fold.edges_foldAngle.length && edgeIndices[0] > 0
-					? fold.edges_foldAngle[edgeIndices[0]]
-					: 180;
-			const foldAngleTwo =
-				edgeIndices[1] < fold.edges_foldAngle.length && edgeIndices[1] > 0
-					? fold.edges_foldAngle[edgeIndices[1]]
-					: 180;
+			const foldAngleOne = edgeIsTriangulation(edgeIndices[0], fold) ? 180 : fold.edges_foldAngle[edgeIndices[0]];
+			const foldAngleTwo = edgeIsTriangulation(edgeIndices[1], fold) ? 180 : fold.edges_foldAngle[edgeIndices[1]];
 
 			const newCmds = [
 				[edgeVerts[0], thirdIdx, foldAngleOne],
@@ -557,37 +563,41 @@ export const Paper = props => {
 					todoCmds.push(newCmds[triIdx]);
 				}
 			});
+			// console.log('[performCommands]', { cmd, newCmds, edgeIndices, isTri: [edgeIsTriangulation(edgeIndices[0], fold), edgeIsTriangulation(edgeIndices[1], fold)] });
 
-			// Store the fold angle
-			fold.edges_foldAngle[edgeIdx] = cmd[2];
+			// If this is the orig command (i.e. haven't recursed yet)
+			if (level === 0) {
+				// Remember not to move the verts of this edge
+				// vertsMoved.add(edgeVerts[0]);
+				// vertsMoved.add(edgeVerts[1]);
 
-			// Remember that we folded this edge, to simulate paper creases
-			if (cmd[2] !== 180) {
-				creasedEdges.current.add(edgeIdx);
+				// Remember that we folded this edge, to simulate paper creases
+				if (cmd[2] !== 180) {
+					creasedEdges.current.add(edgeIdx);
+				}
 			}
 
-			// Check if we've already pocessed this edge
+			// CAUTION - everything below this line is only executed for folds that will have a direct effect
+
+			// Check if we've already processed this edge or vertex
 			if (faceIdx === -1 || edgesMoved.has(edgeIdx)) {
+				// console.log("exit: edge already moved", thirdIdx, cmd, edgesMoved);
 				return;
 			}
 			edgesMoved.add(edgeIdx);
-			if (vertsMoved.has(thirdIdx)) {
+			if (vertsMoved.has(thirdIdx) || (level !== 0 && cmdsInvolveVert(origCmds, thirdIdx))) {
+				// console.log("exit: vert already moved", thirdIdx, cmd, vertsMoved);
 				return;
 			}
 			vertsMoved.add(thirdIdx);
-			if (level === 0) {
-				vertsMoved.add(edgeVerts[0]);
-				vertsMoved.add(edgeVerts[1]);
-			}
 
 			// Rotate the third vertex around this edge
 			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, -cmd[2]);
-			// console.log('[performCommands]', { newCmds });
 		});
 
 		// Do recursive call for every edge in the todo list
 		if (todoCmds.length) {
-			performCommands(fold, todoCmds, vertsMoved, edgesMoved, level + 1);
+			performCommands(fold, todoCmds, origCmds, vertsMoved, edgesMoved, level + 1);
 		}
 	};
 
@@ -685,7 +695,6 @@ export const Paper = props => {
 	};
 
 	const toggleLabels = () => {
-		console.log("[toggleLabels]", camera, domElement);
 		camera.updateMatrixWorld();
 
 		if (!fold.current) {
@@ -694,7 +703,6 @@ export const Paper = props => {
 
 		ctrlOverlay(fold.current.vertices_coords.map((vert, idx) => {
 			const { x, y } = getXYForPos(vert);
-			console.log("[Label]", x, y);
 
 			return ({
 				name: 'vert_' + idx,
