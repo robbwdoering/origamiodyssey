@@ -19,7 +19,6 @@ import { Pages, Folds, initNavTree } from './../infra/constants';
 import { setLayoutState, setFoldState, setEditorState } from './../infra/actions';
 import Splash from './pages/Splash';
 import ModelSelect from './pages/ModelSelect';
-import FoldControls from './pages/FoldControls';
 import FoldEditorCards from './pages/FoldEditorCards';
 import User from './pages/User';
 import InstructionalHierarchy from './pages/InstructionalHierarchy';
@@ -72,12 +71,6 @@ export const Body = props => {
 			case Pages.Fold:
 				return (
 					<React.Fragment>
-						<FoldControls
-							windowHeight={windowHeight}
-							initFold={fold.current.json}
-							foldLastUpdated={fold.current.lastUpdated}
-						/>
-
 						<InstructionalHierarchy
 							windowHeight={windowHeight}
 							initFold={fold.current.json}
@@ -129,8 +122,8 @@ export const Body = props => {
 	};
 
 	const saveStateToCookies = () => {
-		const finalEditorState = Object.assign({}, editorState, { stepIndex: -1 });
-		setCookies('origamiodyssey_state', { layoutState, foldState, editorState: finalEditorState }, { path: '/' });
+		const finalFoldState = Object.assign({}, foldState, { stepIdx: -1 });
+		setCookies('origamiodyssey_state', { layoutState, foldState: finalFoldState, editorState }, { path: '/' });
 	};
 
 	const fetchStateFromCookies = () => {

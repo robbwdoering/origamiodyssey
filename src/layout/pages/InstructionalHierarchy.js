@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 
 import { useUpdate, useSpring, useSprings, animated, config } from 'react-spring';
 
-import { SwipeableDrawer, Tooltip, Fab, ButtonGroup, List, Divider, ListItem, Card } from '@material-ui/core';
+import { SwipeableDrawer, Tooltip, Typography, Fab, ButtonGroup, List, Divider, ListItem, Card } from '@material-ui/core';
 import SkipPrevious from '@material-ui/icons/SkipPrevious';
 import SkipNext from '@material-ui/icons/SkipNext';
 import ExpandMore from '@material-ui/icons/ExpandMore';
@@ -19,7 +19,7 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import useStyles from './../../style/theme';
 import { Folds } from './../../infra/constants';
 import { setFoldState, setLayoutState } from './../../infra/actions';
-import { collectStepsForLevel, calcMaxLevel, printPath, findInUseFamilyNode } from './../../infra/utils';
+import { collectStepsForLevel, calcMaxLevel, printPath, findInUseFamilyNode, getHierNode } from './../../infra/utils';
 
 const HIER_PX_SIZE = 20;
 
@@ -159,7 +159,7 @@ export const InstructionalHierarchy = props => {
 
 		const pxHeight = HIER_PX_SIZE * style.flexGrow - 4;
 
-		console.log('[renderNode]', stepArray, levelIdx, path, stepIdx, foldState.stepIdx, type, isSelectedLevel);
+		// console.log('[renderNode]', stepArray, levelIdx, path, stepIdx, foldState.stepIdx, type, isSelectedLevel);
 		renderRows[levelIdx].push(
 			<Tooltip
 				title={inst.desc}
@@ -201,6 +201,16 @@ export const InstructionalHierarchy = props => {
 		);
 	};
 
+	const jumpToEnd = () => setFoldState({ stepIdx: foldState.maxSteps - 1 });
+
+	const getDescForNode = (stepIdx) => {
+		const step = stepArray[foldState.stepIdx + 1]
+		const path = step[0].split(",").slice(1)
+		let node = getHierNode(initFold.instructions, path);
+		console.log("[getDescForNode]", stepArray, foldState.stepIdx, step, path, node);
+		return node.desc;
+	}
+
 	// ---------
 	// LIFECYCLE
 	// ---------
@@ -227,12 +237,14 @@ export const InstructionalHierarchy = props => {
 
 	useEffect(() => refreshRenderRows(maxLevel), [foldState.selectedLevel, foldLastUpdated, foldState.stepIdx]);
 
-	console.log('[InstructionalHierarchy]', renderRows.current);
+	// console.log('[InstructionalHierarchy]', renderRows.current);
+
+	const ctrlCardLeftPx = `${435 + parseInt(cardStyle.width) + 10}px`;
 
 	return (
 		<React.Fragment>
 			{/* The card contains the timeline, which contains most actions here */}
-			<Card className={classes.hier_card} style={cardStyle} ref={cardRef}>
+			<div className={classes.hier_card} style={cardStyle} ref={cardRef}>
 				{/* The timeline */}
 				<div className={classes.hier_container} style={contStyle}>
 					{initFold &&
@@ -242,12 +254,50 @@ export const InstructionalHierarchy = props => {
 							}
 							return acc;
 						}, [])}
+					<div className={classes.hier_node_anchor} onClick={jumpToEnd}>
+						<div
+							className={`${classes.hier_node} ${classes.hier_node_bookend}`}
+						/>
+					</div>
 				</div>
 
 				{/* The "current Time" line */}
-			</Card>
+			</div>
 
 			{/* Text box shows details on the current step */}
+			{initFold && initFold.instructions && (
+				<Card className={classes.hier_desc_card} style={{left: ctrlCardLeftPx}}> 
+					<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
+					<Typography>
+						{(foldState.stepIdx < foldState.maxSteps - 1) ?
+								getDescForNode(foldState.stepIdx) :
+								// "text" :
+								"Congratulations - your model is complete!"
+						}
+					</Typography>
+				</Card>
+			)}
+
+			<div className={classes.hier_controls} style={{left: ctrlCardLeftPx}}>
+				<Fab
+					classes={buttonClasses}
+					onClick={() => changeStep(-1)}
+					disabled={foldState.stepIdx < 0}
+					color="primary"
+					size="large"
+				>
+					<SkipPrevious className={classes.fold_controls_button_icon} />
+				</Fab>
+				<Fab
+					classes={buttonClasses}
+					onClick={() => changeStep(1)}
+					disabled={foldState.stepIdx >= foldState.maxSteps - 1}
+					color="primary"
+					size="large"
+				>
+					<SkipNext className={classes.fold_controls_button_icon} />
+				</Fab>
+			</div>
 
 			{/* Annotations provide additional details on timeline items */}
 		</React.Fragment>

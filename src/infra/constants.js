@@ -16,6 +16,7 @@ import BirdBase from "./../folds/BirdBase.json";
 import BoatBase from "./../folds/BoatBase.json";
 import FrogBase from "./../folds/FrogBase.json";
 import SailBoat from "./../folds/SailBoat.json";
+import Heart from "./../folds/Heart.json";
 
 export const Pages = {
 	Splash: "Splash",
@@ -46,6 +47,22 @@ export const Tags = {
 	flower: {
 		text: "Flower",
 		category: "counterpart"
+	},
+	five_mins: {
+		text: "5 Mins",
+		category: "duration"
+	},
+	fifteen_mins: {
+		text: "15 Mins",
+		category: "duration"
+	},
+	thirty_mins: {
+		text: "30 Mins",
+		category: "duration"
+	},
+	hour_plus: {
+		text: "1+ hours",
+		category: "duration"
 	}
 };
 
@@ -77,7 +94,14 @@ export const Folds = {
 		tags: ["boat"],
 		author: "Traditional",
 		json: SailBoat 
-	}
+	},
+	Heart: {
+		name: "Heart",
+		description: "A flat heart that's particularly easy to fold - a great place to start.",
+		tags: ["5_mins"],
+		author: "Traditional",
+		json: Heart 
+	},
 };
 
 export const initAppReducerState = {

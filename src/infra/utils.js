@@ -95,6 +95,20 @@ export const findInUseFamilyNode = (stepArr, path) => {
 	});
 };
 
+export const getHierNode = (instructions, path) => {
+	console.log("getHierNode", instructions, path);
+	if ((!path || !path.length) && instructions.desc) {
+		// Base case: If we were passed an empty path, then this is the target node
+		return instructions;
+	} else if (path && path.length && instructions.children) {
+		// Recurse Case: Else keep drilling down
+		return getHierNode(instructions.children[parseInt(path[0])], path.slice(1));
+	} else {
+		// Error case: Return an error
+		return null;
+	}
+};
+
 export const printPath = path => path.reduce((acc, idx, i) => (i ? ',' : '') + idx, '');
 
 export const stepIs3D = step => step.length && step[0].length && Array.isArray(step[0][0]);
@@ -102,3 +116,16 @@ export const stepIs3D = step => step.length && step[0].length && Array.isArray(s
 export const stepIs2D = step => step.length && Array.isArray(step[0]);
 
 export const stepIs1D = step => step.length && !Array.isArray(step[0]);
+
+export const stepHasArgs = step => step.length > 3 && step[3];
+
+/**
+ * A comparison function for use in sorting lists of cmds (i.e. a step). 
+ * Right now just puts flex items first - this is because they don't initiate movement,
+ * but need to be processed in full before any movement begins.
+ */
+export const cmdOrderingComparator = (lhs, rhs) => {
+	const lhsFlex = stepHasArgs(lhs) && lhs[3].flex;
+	const rhsFlex = stepHasArgs(lhs) && lhs[3].flex;
+	return (lhsFlex && !rhsFlex) ? 1 : (rhsFlex ? -1 : 0);
+};

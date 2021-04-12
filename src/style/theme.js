@@ -168,18 +168,16 @@ export const useStyles = makeStyles(theme => ({
 		bottom: '64px'
 	},
 	fold_controls_button: {
-		height: '64px',
-		width: '64px',
-		alignItems: 'center'
+		// height: '64px',
+		// width: '64px',
+		alignItems: 'center',
+		verticalAlign: 'middle',
+		margin: '0.5rem !important'
 	},
 	fold_controls_button_label: {
-		flexDirection: 'column'
+		// flexDirection: 'column'
 	},
 	fold_controls_button_container: {},
-	fold_controls_button_icon: {
-		fontSize: '32px !important',
-		marginBottom: theme.spacing.unit
-	},
 	fold_diagrams_container: {
 		width: '100%',
 		border: '1px solid blue'
@@ -244,8 +242,7 @@ export const useStyles = makeStyles(theme => ({
 	// Instructional Hierarchy
 	hier_card: {
 		position: 'absolute',
-		height: "52%",
-		top: "25%",
+		bottom: "64px",
 		left: "435px",
 		zIndex: 3001
 	},
@@ -290,6 +287,22 @@ export const useStyles = makeStyles(theme => ({
 	},
 	hier_node_tooltip: {
 		zIndex: "8001 !important"
+	},
+	hier_node_bookend: {
+		width: "100%",
+		height: '16px'
+	},
+	hier_desc_card: {
+		position: 'absolute',
+		height: "200px",
+		width: "400px",
+		bottom: "64px",
+		zIndex: 3001
+	},
+	hier_controls: {
+		position: 'absolute',
+		bottom: "274px",
+		zIndex: 3001
 	}
 }));
 

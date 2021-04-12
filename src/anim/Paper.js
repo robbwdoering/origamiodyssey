@@ -18,7 +18,14 @@ import { a, useSpring } from '@react-spring/three';
 import { Chip } from '@material-ui/core';
 
 import useStyles from './../style/theme';
-import { collectStepsForLevel, calcMaxLevel, stepIs2D, stepIs3D } from './../infra/utils';
+import {
+	collectStepsForLevel,
+	calcMaxLevel,
+	stepIs2D,
+	stepIs3D,
+	stepHasArgs,
+	cmdOrderingComparator
+} from './../infra/utils';
 
 export const Paper = props => {
 	const {
@@ -98,7 +105,8 @@ export const Paper = props => {
 		fold.current = foldObj;
 	};
 
-	const edgeIsTriangulation = (edgeIdx, fold) => !fold.edges_foldAngle || edgeIdx >= fold.edges_foldAngle.length || edgeIdx < 0;
+	const edgeIsTriangulation = (edgeIdx, fold) =>
+		!fold.edges_foldAngle || edgeIdx >= fold.edges_foldAngle.length || edgeIdx < 0;
 
 	/*
 	 * Reads the hierarchical instructions, collecting some descriptive values and initializing state.
@@ -171,7 +179,7 @@ export const Paper = props => {
 				normals[startIdx + 1] = -1;
 				normals[startIdx + 2] = 0;
 
-				colors[startIdx] = 300;
+				colors[startIdx] = 200;
 				colors[startIdx + 1] = 100;
 				colors[startIdx + 2] = 100;
 			});
@@ -191,14 +199,31 @@ export const Paper = props => {
 		faceGeometry.current.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
 	};
 
+	/**
+	 * This is the materials used for the paper.
+	 */
 	const createMaterial = () => {
-		return new THREE.MeshNormalMaterial({
-			flatShading: true,
-			// roughness: 1,
-			attach: 'material',
-			// color: '#ef626c',
-			side: THREE.DoubleSide
-		});
+		let ret = [
+			new THREE.MeshBasicMaterial({
+				flatShading: true,
+				roughness: 1,
+				attach: 'material',
+				color: 0xcccccc,
+				// side: THREE.DoubleSide
+			}),
+			new THREE.MeshNormalMaterial({
+				flatShading: true,
+				roughness: 1,
+				attach: 'material',
+				color: '#0000ff',
+				// color: new THREE.Color(0xff0000),
+				side: THREE.BackSide
+			})
+		];
+
+		// ret[0].color.set(new THREE.Color('#0000ff'));
+
+		return ret;
 	};
 
 	/**
@@ -279,6 +304,9 @@ export const Paper = props => {
 			dummyDefaults.forEach(cmd => findLastUsedAngles(cmd, vertsToDo, newCmds, step));
 		}
 
+		// Ensure that any "flex" commands are executed first
+		newCmds.sort(cmdOrderingComparator);
+
 		// Perform the reversed instructions for this step
 		performCommands(fold.current, newCmds);
 	};
@@ -286,13 +314,18 @@ export const Paper = props => {
 	const findLastUsedAngles = (cmd, vertsToDo, newCmds, origStep) => {
 		const foundIdx = vertsToDo.findIndex(pair => pair.includes(cmd[0]) && pair.includes(cmd[1]));
 		if (foundIdx !== -1) {
-			// Figure out the index of this edge in the original step 
+			// Figure out the index of this edge in the original step
 			const origIndex = origStep
 				.map(cmpCmd => cmpCmd.slice(0, 2))
 				.findIndex(cmpCmd => cmpCmd.includes(cmd[0]) && cmpCmd.includes(cmd[1]));
 
 			// Mark this angle for use
 			newCmds[origIndex] = [...vertsToDo[foundIdx], cmd[2]];
+
+			// If the original command had arguments, carry those over
+			if (stepHasArgs(origStep[origIndex])) {
+				newCmds[origIndex].push(Object.assign({}, origStep[origIndex][3]));
+			}
 
 			// Don't keep checking for this fold
 			vertsToDo.splice(foundIdx, 1);
@@ -447,33 +480,33 @@ export const Paper = props => {
 		fold.vertices_coords[vertIdx] = targetVec;
 		// console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
 		// console.log('[rotateVertAroundEdge]', {
-		// 	// planeConstant: plane.constant,
-		// 	normLine,
 		// 	initStart,
 		// 	initThird,
-		// 	diffInPlane,
-		// 	actualDiff,
+		// diffInPlane,
+		// actualDiff,
 		// 	axisRotation,
 		// 	xAxis,
 		// 	zAxis,
 		// 	newCoords,
-		// 	norm,
-		// 	third,
-		// 	start,
-		// 	end,
-		// 	otherVert
+		// norm,
+		// third,
+		// start,
+		// end
 		// });
 	};
 
-	/** 
+	/**
 	 * Returns true if the origCmds array includes a non-flex command on an edge including this vert.
 	 * @param origCmds the array of the original commands to check against (i.e. the commands in the actual json file)
 	 * @param vertIdx the index of the vertex in question
 	 */
 	const cmdsInvolveVert = (origCmds, vertIdx) => {
 		// console.log("[cmdsInvolveVert]", origCmds)
-		return origCmds && origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (cmd[0] === vertIdx || cmd[1] === vertIdx));
-	}
+		return (
+			origCmds &&
+			origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (cmd[0] === vertIdx || cmd[1] === vertIdx))
+		);
+	};
 
 	/*
 	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
@@ -503,6 +536,7 @@ export const Paper = props => {
 		}
 
 		cmds.forEach((cmd, cmdIdx) => {
+			// console.log("[cmd]", cmd);
 			// Parse the command - 0 & 1 are verts, 2 is foldAngle, and 3 is optional args
 			const args = cmd.length === 4 ? cmd[3] : {};
 			const edgeVerts = [cmd[0], cmd[1]];
@@ -638,32 +672,34 @@ export const Paper = props => {
 	const printVect = vect => `${vect.x.toFixed(2)}, ${vect.y.toFixed(2)}, ${vect.z.toFixed(2)}`;
 
 	const hoverVert = (idx, event, show) => {
-		ctrlOverlay([{
-			show,
-			name: 'vert_' + idx,
-			pos: fold.current.vertices_coords[idx],
-			component: show && (
-				<Chip
-					className={classes.vertLabel}
-					style={{ left: event.pageX + 10, top: event.pageY + 10 + 64 }}
-					// label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
-					label={idx}
-				/>
-			)
-		}]);
+		ctrlOverlay([
+			{
+				show,
+				name: 'vert_' + idx,
+				pos: fold.current.vertices_coords[idx],
+				component: show && (
+					<Chip
+						className={classes.vertLabel}
+						style={{ left: event.pageX + 10, top: event.pageY + 10 + 64 }}
+						// label={fold.current && `${idx}: ${printVect(fold.current.vertices_coords[idx])}`}
+						label={idx}
+					/>
+				)
+			}
+		]);
 	};
 
 	const buildStepArray = () => collectStepsForLevel(fold.current, foldState.selectedLevel, foldState.usingDefaults);
 
 	const getXYForPos = pos => {
-    	let pixelVec = new THREE.Vector3().copy(pos);
-    	pixelVec.project(camera);
+		let pixelVec = new THREE.Vector3().copy(pos);
+		pixelVec.project(camera);
 
-    	return {
-	    	x: Math.round((0.5 + pixelVec.x / 2) * domElement.width),
-	    	y: Math.round((0.5 - pixelVec.y / 2) * domElement.height)
-    	}
-	}
+		return {
+			x: Math.round((0.5 + pixelVec.x / 2) * domElement.width),
+			y: Math.round((0.5 - pixelVec.y / 2) * domElement.height)
+		};
+	};
 
 	const updateScreenPosition = () => {
 		if (!fold.current || !overlayItems.length) {
@@ -673,8 +709,8 @@ export const Paper = props => {
 		let retArr = [];
 
 		fold.current.vertices_coords.forEach((vert, idx) => {
-			const {x, y} = getXYForPos(vert);
-	    	retArr.push({
+			const { x, y } = getXYForPos(vert);
+			retArr.push({
 				name: 'vert_' + idx,
 				show: true,
 				component: (
@@ -685,13 +721,12 @@ export const Paper = props => {
 						label={idx}
 					/>
 				)
-	    	});
-	    });
+			});
+		});
 
-
-	    if (retArr.length) {
+		if (retArr.length) {
 			ctrlOverlay(retArr);
-	    }
+		}
 	};
 
 	const toggleLabels = () => {
@@ -701,30 +736,77 @@ export const Paper = props => {
 			return;
 		}
 
-		ctrlOverlay(fold.current.vertices_coords.map((vert, idx) => {
-			const { x, y } = getXYForPos(vert);
+		ctrlOverlay(
+			fold.current.vertices_coords.map((vert, idx) => {
+				const { x, y } = getXYForPos(vert);
 
-			return ({
-				name: 'vert_' + idx,
-				show: editorState.showLabels,
-				component: (
-					<Chip
-						className={classes.vertLabel}
-						style={{ left: `${x}px`, top: `${y}px` }}
-						label={idx}
-					/>
-				)
-			});
-		}));
+				return {
+					name: 'vert_' + idx,
+					show: editorState.showLabels,
+					component: (
+						<Chip className={classes.vertLabel} style={{ left: `${x}px`, top: `${y}px` }} label={idx} />
+					)
+				};
+			})
+		);
+	};
+
+	const renderVert = (vert, idx) => (
+		<a.mesh
+			position={vert}
+			onPointerEnter={e => hoverVert(idx, e, true)}
+			onPointerLeave={e => hoverVert(idx, e, false)}
+		>
+			<sphereBufferGeometry attach="geometry" args={[0.02, 8, 8]} />
+			<meshStandardMaterial
+				attach="material"
+				roughness={0.5}
+				color={editorState.vertexHighlights.includes(idx) ? 'red' : 'black'}
+			/>
+		</a.mesh>
+	);
+
+	const renderEdge = (edge, edgeIdx, color) =>
+		edgeIdx >= initFold.edges_vertices.length && !editorState.showTriangulations ? null : (
+			<Line
+				points={edge.map(index => fold.current.vertices_coords[index])}
+				color={
+					color ||
+					(edgeIdx < initFold.edges_vertices.length
+						? editorState.edgeHighlights.includes(edgeIdx)
+							? 'red'
+							: 'black'
+						: 'yellow')
+				}
+				lineWidth={1}
+				dashed={edgeIdx >= initFold.edges_vertices.length}
+				// material={material}
+				dashSize={0.1}
+				gapSize={0.1}
+				key={edgeIdx}
+			/>
+		);
+
+	const renderInstructionalEdges = () => {
+		if (!fold.current) {
+			return;
+		}
+
+		return fold.current.edges_vertices.reduce((acc, edge, edgeIdx) => {
+			if (creasedEdges.current.has(edgeIdx)) {
+				acc.push(renderEdge(edge, edgeIdx, '#bbb'));
+			}
+
+			return acc;
+		}, []);
 	};
 
 	// ---------
 	// LIFECYCLE
 	// ---------
-	useFrame(() => {
-	});
+	useFrame(() => {});
 
-	const material = useMemo(createMaterial, []);
+	const [frontMat, backMat] = useMemo(createMaterial, []);
 	const stepArray = useMemo(buildStepArray, [
 		!fold.current || !fold.current.instructions,
 		foldKey,
@@ -744,47 +826,15 @@ export const Paper = props => {
 
 	return (
 		<group>
-			{editorState.showEdges &&
-				fold.current &&
-				fold.current.edges_vertices.map((line, idx) =>
-					(idx >= initFold.edges_vertices.length && !editorState.showTriangulations) ||
-					(creasedEdges.current.length > 0 && !creasedEdges.current.has(idx)) ? null : (
-						<Line
-							points={line.map(index => fold.current.vertices_coords[index])}
-							color={
-								idx < initFold.edges_vertices.length
-									? editorState.edgeHighlights.includes(idx)
-										? 'red'
-										: 'black'
-									: 'yellow'
-							}
-							lineWidth={1}
-							dashed={idx >= initFold.edges_vertices.length}
-							material={material}
-							dashSize={0.1}
-							gapSize={0.1}
-							key={idx}
-						/>
-					)
-				)}
-			{editorState.showVertices &&
-				fold.current &&
-				fold.current.vertices_coords.map((vert, idx) => (
-					<a.mesh
-						position={vert}
-						onPointerEnter={e => hoverVert(idx, e, true)}
-						onPointerLeave={e => hoverVert(idx, e, false)}
-					>
-						<sphereBufferGeometry attach="geometry" args={[0.02, 8, 8]} />
-						<meshStandardMaterial
-							attach="material"
-							roughness={0.5}
-							color={editorState.vertexHighlights.includes(idx) ? 'red' : 'black'}
-						/>
-					</a.mesh>
-				))}
+			{editorState.showEdges && fold.current && fold.current.edges_vertices.map(renderEdge)}
+
+			{!editorState.showEdges && fold.current && renderInstructionalEdges()}
+			{editorState.showVertices && fold.current && fold.current.vertices_coords.map(renderVert)}
 			{editorState.showFaces && fold.current && faceGeometry.current && (
-				<a.mesh geometry={faceGeometry.current} material={material}></a.mesh>
+				<group>
+					<a.mesh geometry={faceGeometry.current} material={backMat}></a.mesh>
+					<a.mesh geometry={faceGeometry.current} material={frontMat}></a.mesh>
+				</group>
 			)}
 		</group>
 	);

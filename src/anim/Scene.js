@@ -44,11 +44,12 @@ const CameraControls = () => {
 		<orbitControls
 			ref={controls}
 			args={[camera, domElement]}
-			enableZoom={false}
+			enableZoom={true}
 			enableRotate={true}
 			enableDolly={false}
 			mouseButtons={{
-				RIGHT: THREE.MOUSE.ROTATE
+				RIGHT: THREE.MOUSE.ROTATE,
+				LEFT: THREE.MOUSE.ROTATE
 			}}
 			// maxAzimuthAngle={Math.PI / 4}
 			maxPolarAngle={Math.PI * 3 / 4}
