@@ -178,6 +178,9 @@ export const useStyles = makeStyles(theme => ({
 		// flexDirection: 'column'
 	},
 	fold_controls_button_container: {},
+	fold_controls_button_icon: {
+		fontSize: '32px !important',
+	},
 	fold_diagrams_container: {
 		width: '100%',
 		border: '1px solid blue'

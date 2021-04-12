@@ -96,7 +96,6 @@ export const findInUseFamilyNode = (stepArr, path) => {
 };
 
 export const getHierNode = (instructions, path) => {
-	console.log("getHierNode", instructions, path);
 	if ((!path || !path.length) && instructions.desc) {
 		// Base case: If we were passed an empty path, then this is the target node
 		return instructions;
@@ -107,6 +106,36 @@ export const getHierNode = (instructions, path) => {
 		// Error case: Return an error
 		return null;
 	}
+};
+
+/**
+ * Returns true if the origCmds array includes a non-flex command on an edge including this vert.
+ * @param origCmds the array of the original commands to check against (i.e. the commands in the actual json file)
+ * @param vertIdx the index of the vertex in question
+ */
+export const cmdsInvolveVert = (origCmds, vertIdx) => {
+	// console.log("[cmdsInvolveVert]", origCmds)
+	return (
+		origCmds &&
+		origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (cmd[0] === vertIdx || cmd[1] === vertIdx))
+	);
+};
+
+/**
+ * Returns true if the origCmds array includes a non-flex command on an edge including this vert.
+ * @param origCmds the array of the original commands to check against (i.e. the commands in the actual json file)
+ * @param vertIdx the index of the vertex in question
+ */
+export const cmdsInvolveEdge = (origCmds, edge) => {
+	// console.log("[cmdsInvolveEdge]", origCmds)
+	if (stepIs3D(origCmds)) {
+		return origCmds.find(subCmds => cmdsInvolveEdge(subCmds, edge));
+	}
+
+	return (
+		origCmds &&
+		origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (edge.includes(cmd[0]) && edge.includes(cmd[1])))
+	);
 };
 
 export const printPath = path => path.reduce((acc, idx, i) => (i ? ',' : '') + idx, '');

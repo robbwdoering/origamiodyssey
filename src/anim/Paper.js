@@ -24,8 +24,12 @@ import {
 	stepIs2D,
 	stepIs3D,
 	stepHasArgs,
-	cmdOrderingComparator
+	cmdOrderingComparator,
+	cmdsInvolveEdge,
+	cmdsInvolveVert
 } from './../infra/utils';
+
+const edgeMat = new THREE.MeshBasicMaterial({attach: 'material'});
 
 export const Paper = props => {
 	const {
@@ -495,19 +499,6 @@ export const Paper = props => {
 		// });
 	};
 
-	/**
-	 * Returns true if the origCmds array includes a non-flex command on an edge including this vert.
-	 * @param origCmds the array of the original commands to check against (i.e. the commands in the actual json file)
-	 * @param vertIdx the index of the vertex in question
-	 */
-	const cmdsInvolveVert = (origCmds, vertIdx) => {
-		// console.log("[cmdsInvolveVert]", origCmds)
-		return (
-			origCmds &&
-			origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (cmd[0] === vertIdx || cmd[1] === vertIdx))
-		);
-	};
-
 	/*
 	 * Applies steps to fold the paper iteratively. The crux of this component - see Paper Engine design document.
 	 * @param fold - the object to be modified
@@ -766,39 +757,43 @@ export const Paper = props => {
 		</a.mesh>
 	);
 
-	const renderEdge = (edge, edgeIdx, color) =>
-		edgeIdx >= initFold.edges_vertices.length && !editorState.showTriangulations ? null : (
-			<Line
-				points={edge.map(index => fold.current.vertices_coords[index])}
-				color={
-					color ||
-					(edgeIdx < initFold.edges_vertices.length
-						? editorState.edgeHighlights.includes(edgeIdx)
-							? 'red'
-							: 'black'
-						: 'yellow')
-				}
-				lineWidth={1}
-				dashed={edgeIdx >= initFold.edges_vertices.length}
-				// material={material}
-				dashSize={0.1}
-				gapSize={0.1}
-				key={edgeIdx}
-			/>
-		);
-
-	const renderInstructionalEdges = () => {
-		if (!fold.current) {
-			return;
+	const renderEdge = (edge, edgeIdx) => {
+		if (edgeIdx >= initFold.edges_vertices.length && !editorState.showTriangulations) {
+			return null;
 		}
 
-		return fold.current.edges_vertices.reduce((acc, edge, edgeIdx) => {
-			if (creasedEdges.current.has(edgeIdx)) {
-				acc.push(renderEdge(edge, edgeIdx, '#bbb'));
+		let color = 'black';
+		let dashed = false;
+		if (edgeIdx >= initFold.edges_vertices.length) {
+			color = 'yellow';
+			dashed = true;
+		} else if (editorState.edgeHighlights.includes(edgeIdx)) {
+			color = 'red';
+		} else if (foldState.stepIdx < foldState.maxSteps - 1) {
+			const cmdInvolvingEdge = cmdsInvolveEdge(stepArray[foldState.stepIdx + 1], fold.current.edges_vertices[edgeIdx]);
+			if (cmdInvolvingEdge) {
+				color = 'red';
+				dashed = cmdInvolvingEdge[2] < 180;
 			}
+		}
 
-			return acc;
-		}, []);
+		if (creasedEdges.current.has(edgeIdx) && color !== 'red') {
+			color = '#bbb';
+		}
+
+		return (
+			<Line
+				points={edge.map(index => fold.current.vertices_coords[index])}
+				color={color}
+				lineWidth={1}
+				dashed={dashed}
+				material={edgeMat}
+				dashSize={0.1}
+				gapSize={0.1}
+				visible={editorState.showEdges || color === 'red' || color === '#bbb'}
+				key={edgeIdx}
+			/>
+		)
 	};
 
 	// ---------
@@ -824,11 +819,11 @@ export const Paper = props => {
 		return null;
 	}
 
+	console.log("[Paper]", fold.current && fold.current.edges_vertices);
+
 	return (
 		<group>
-			{editorState.showEdges && fold.current && fold.current.edges_vertices.map(renderEdge)}
-
-			{!editorState.showEdges && fold.current && renderInstructionalEdges()}
+			{fold.current && fold.current.edges_vertices.map(renderEdge)}
 			{editorState.showVertices && fold.current && fold.current.vertices_coords.map(renderVert)}
 			{editorState.showFaces && fold.current && faceGeometry.current && (
 				<group>

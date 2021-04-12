@@ -42,6 +42,7 @@ export const InstructionalHierarchy = props => {
 	const [contStyle, setContStyle] = useState({});
 	const classes = useStyles();
 	const cardRef = useRef();
+	const activeNodeRef = useRef();
 	const renderRows = useRef([]);
 	const [curHash, setHash] = useState(0);
 
@@ -167,7 +168,7 @@ export const InstructionalHierarchy = props => {
 				classes={{ popper: classes.hier_node_tooltip }}
 				key={path}
 			>
-				<div className={`${classes.hier_node_anchor}`} style={style} onClick={() => handleHierNodeClick(path)}>
+				<div className={`${classes.hier_node_anchor}`} ref={activeNodeRef} style={style} onClick={() => handleHierNodeClick(path)}>
 					<div
 						className={`${classes.hier_node} ${classes['hier_node__' + type]}`}
 						style={{ height: pxHeight }}
@@ -207,14 +208,13 @@ export const InstructionalHierarchy = props => {
 		const step = stepArray[foldState.stepIdx + 1]
 		const path = step[0].split(",").slice(1)
 		let node = getHierNode(initFold.instructions, path);
-		console.log("[getDescForNode]", stepArray, foldState.stepIdx, step, path, node);
 		return node.desc;
 	}
 
 	// ---------
 	// LIFECYCLE
 	// ---------
-	const cardStyle = useMemo(calcCardPos, [window.innerWidth, window.innerHeight, layoutState.expandHierarchy]);
+	const cardStyle = useMemo(calcCardPos, [window.innerWidth, window.innerHeight, layoutState.expandHierarchy, foldState.stepIdx]);
 
 	const buttonClasses = useMemo(
 		() => ({
@@ -239,7 +239,7 @@ export const InstructionalHierarchy = props => {
 
 	// console.log('[InstructionalHierarchy]', renderRows.current);
 
-	const ctrlCardLeftPx = `${435 + parseInt(cardStyle.width) + 10}px`;
+	const ctrlCardLeftPx = `${435 + (parseInt(cardStyle.width) || 32) + 10}px`;
 
 	return (
 		<React.Fragment>
