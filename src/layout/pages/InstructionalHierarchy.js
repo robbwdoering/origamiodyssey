@@ -239,7 +239,7 @@ export const InstructionalHierarchy = props => {
 
 	// console.log('[InstructionalHierarchy]', renderRows.current);
 
-	const ctrlCardLeftPx = `${435 + (parseInt(cardStyle.width) || 32) + 10}px`;
+	const ctrlCardLeftPx = `${435 + (parseInt(cardStyle.width) || 64) + 10}px`;
 
 	return (
 		<React.Fragment>

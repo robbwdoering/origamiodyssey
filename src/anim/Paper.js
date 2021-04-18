@@ -163,6 +163,8 @@ export const Paper = props => {
 
 		setFoldObj(initFold);
 
+		creasedEdges.current.clear();
+
 		// NOTE: 9 = 3 coords per vert * 3 vals per coord (such as x,y,z or r,g,b)
 		faceGeometry.current = new THREE.BufferGeometry();
 		let vertices = new Float32Array(9 * fold.current.faces_vertices.length);
@@ -482,7 +484,7 @@ export const Paper = props => {
 
 		// Store the vertex coords for edges + vertices
 		fold.vertices_coords[vertIdx] = targetVec;
-		// console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
+		console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
 		// console.log('[rotateVertAroundEdge]', {
 		// 	initStart,
 		// 	initThird,

@@ -17,6 +17,7 @@ import BoatBase from "./../folds/BoatBase.json";
 import FrogBase from "./../folds/FrogBase.json";
 import SailBoat from "./../folds/SailBoat.json";
 import Heart from "./../folds/Heart.json";
+import Crane from "./../folds/Crane.json";
 
 export const Pages = {
 	Splash: "Splash",
@@ -38,6 +39,10 @@ export const Tags = {
 	},
 	bird: {
 		text: "Bird",
+		category: "counterpart",
+	},
+	animal: {
+		text: "Animal",
 		category: "counterpart",
 	},
 	boat: {
@@ -101,6 +106,13 @@ export const Folds = {
 		tags: ["5_mins"],
 		author: "Traditional",
 		json: Heart 
+	},
+	Crane: {
+		name: "Crane",
+		description: "The quintessential origami model - fold 1000 of these!",
+		tags: ["15_mins", "bird", "animal"],
+		author: "Traditional",
+		json: Crane 
 	},
 };
 
