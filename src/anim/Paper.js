@@ -29,7 +29,7 @@ import {
 	cmdsInvolveVert
 } from './../infra/utils';
 
-const edgeMat = new THREE.MeshBasicMaterial({attach: 'material'});
+const edgeMat = new THREE.MeshBasicMaterial({ attach: 'material' });
 
 export const Paper = props => {
 	const {
@@ -82,8 +82,72 @@ export const Paper = props => {
 		}
 	};
 
+	const hasDuplicate = (item, idx, array, ordered) => {
+		return (
+			!array ||
+			array.find(
+				(cmpItem, cmpIdx) =>
+					cmpIdx !== idx &&
+					(!ordered || cmpItem.length === item.length) &&
+					cmpItem.every((cmpSub, cmpSubIdx) => (ordered ? item[cmpSubIdx] : item.includes(cmpSub)))
+			)
+		);
+	};
+
+	/**
+	 * Returns true if there's a problem. Recursively walks the tree.
+	 */
+	const checkInstruction = (inst, foldObj) => {
+		if (Array.isArray(inst)) {
+			return !hasDuplicate(inst.slice(0, 2), -1, foldObj.edges_vertices) ? inst : false;
+		} else {
+			return inst.children.find(child => checkInstruction(child, foldObj));
+		}
+	}
+
+	const validateFoldObj = foldObj => {
+		let ret;
+
+		// No duplicate vertices, edges, or faces
+		ret = foldObj.vertices_coords.find((item, idx) => hasDuplicate(item, idx, foldObj.vertices_coords, true));
+		if (ret) {
+			console.error('Found duplicate vertex:', ret);
+		}
+
+		ret = foldObj.edges_vertices.find((item, idx) => hasDuplicate(item, idx, foldObj.edges_vertices));
+		if (ret) {
+			console.error('Found duplicate edge:', ret);
+		}
+
+		ret = foldObj.faces_vertices.find((item, idx) => hasDuplicate(item, idx, foldObj.faces_vertices));
+		if (ret) {
+			console.error('Found duplicate face:', ret);
+		}
+
+		// Every face edge is an edge
+		ret = foldObj.faces_vertices.find((face, faceIdx) => {
+			face.some((vert, faceVertIdx) => {
+				const otherFaceVertIdx = faceVertIdx ? faceVertIdx - 1 : face.length - 1;
+				return hasDuplicate([vert, face[otherFaceVertIdx]], -1, foldObj.edges_vertices);
+			});
+		});
+
+		// Every edge is in a face?
+		if (ret) {
+			console.error("Found an invalid face:", ret);
+		}
+
+		ret = foldObj.instructions.children.find(inst => checkInstruction(inst, foldObj))
+		if (ret) {
+			console.error("Found an invalid instruction: ")
+		}
+	};
+
 	const setFoldObj = newFold => {
 		let foldObj = JSON.parse(JSON.stringify(newFold));
+
+		validateFoldObj(foldObj);
+
 		// Calculate the boundaries of the 2D shape
 		const maxes = [0, 2].map(i =>
 			foldObj.vertices_coords.reduce((max, coords) => (Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max), 0)
@@ -210,12 +274,19 @@ export const Paper = props => {
 	 */
 	const createMaterial = () => {
 		let ret = [
-			new THREE.MeshBasicMaterial({
+			// new THREE.MeshBasicMaterial({
+			// 	flatShading: true,
+			// 	roughness: 1,
+			// 	attach: 'material',
+			// 	color: 0xcccccc
+			// 	// side: THREE.DoubleSide
+			// }),
+			new THREE.MeshNormalMaterial({
 				flatShading: true,
 				roughness: 1,
 				attach: 'material',
-				color: 0xcccccc,
-				// side: THREE.DoubleSide
+				color: '#0000ff',
+				// color: new THREE.Color(0xff0000),
 			}),
 			new THREE.MeshNormalMaterial({
 				flatShading: true,
@@ -231,6 +302,23 @@ export const Paper = props => {
 
 		return ret;
 	};
+
+	/**
+	 * Inspects this vertex - if it's sufficiently close to any other vertex, snap it to that vertex
+	 */
+	const snapVertex = (vertIdx) => {
+		const vert = fold.current.vertices_coords[vertIdx];
+		fold.current.vertices_coords.some((cmpVert, cmpVertIdx) => {
+			if (vertIdx === cmpVertIdx) return false;
+
+			const distance = vert.distanceTo(cmpVert)
+			if (distance < 0.002 && distance > 0.00001) {
+				console.log(`Snapping ${printVect(vert)} to ${printVect(cmpVert)}`);
+				vert.copy(cmpVert);
+				return true;
+			}
+		});
+	}
 
 	/**
 	 * The ultimate goal of this function is to update vertex positions.
@@ -537,7 +625,7 @@ export const Paper = props => {
 
 			// Store the fold angle
 			if (!edgeIsTriangulation(edgeIdx, fold)) {
-				// console.log("storing angle", cmd[2], "for edge", edgeIdx);
+				// console.log('storing angle', cmd[2], 'for edge', edgeIdx);
 				fold.edges_foldAngle[edgeIdx] = cmd[2];
 			}
 
@@ -620,6 +708,9 @@ export const Paper = props => {
 
 			// Rotate the third vertex around this edge
 			rotateVertAroundEdge(fold, thirdIdx, edgeVerts, -cmd[2]);
+
+			// Snap this vertex to any nearby vertices that have already been placed
+			snapVertex(thirdIdx, vertsMoved, origCmds);
 		});
 
 		// Do recursive call for every edge in the todo list
@@ -662,7 +753,7 @@ export const Paper = props => {
 	/**
 	 * Prints a THREE.Vector3 object.
 	 */
-	const printVect = vect => `${vect.x.toFixed(2)}, ${vect.y.toFixed(2)}, ${vect.z.toFixed(2)}`;
+	const printVect = vect => `${vect.x.toFixed(3)}, ${vect.y.toFixed(3)}, ${vect.z.toFixed(3)}`;
 
 	const hoverVert = (idx, event, show) => {
 		ctrlOverlay([
@@ -772,7 +863,10 @@ export const Paper = props => {
 		} else if (editorState.edgeHighlights.includes(edgeIdx)) {
 			color = 'red';
 		} else if (foldState.stepIdx < foldState.maxSteps - 1) {
-			const cmdInvolvingEdge = cmdsInvolveEdge(stepArray[foldState.stepIdx + 1], fold.current.edges_vertices[edgeIdx]);
+			const cmdInvolvingEdge = cmdsInvolveEdge(
+				stepArray[foldState.stepIdx + 1],
+				fold.current.edges_vertices[edgeIdx]
+			);
 			if (cmdInvolvingEdge) {
 				color = 'red';
 				dashed = cmdInvolvingEdge[2] < 180;
@@ -795,7 +889,7 @@ export const Paper = props => {
 				visible={editorState.showEdges || color === 'red' || color === '#bbb'}
 				key={edgeIdx}
 			/>
-		)
+		);
 	};
 
 	// ---------
@@ -821,7 +915,7 @@ export const Paper = props => {
 		return null;
 	}
 
-	console.log("[Paper]", fold.current && fold.current.edges_vertices);
+	console.log('[Paper]', fold.current && fold.current.edges_vertices);
 
 	return (
 		<group>
