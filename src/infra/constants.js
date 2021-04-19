@@ -18,6 +18,7 @@ import FrogBase from "./../folds/FrogBase.json";
 import SailBoat from "./../folds/SailBoat.json";
 import Heart from "./../folds/Heart.json";
 import Crane from "./../folds/Crane.json";
+import Butterfly from "./../folds/Butterfly.json";
 
 export const Pages = {
 	Splash: "Splash",
@@ -39,6 +40,10 @@ export const Tags = {
 	},
 	bird: {
 		text: "Bird",
+		category: "counterpart",
+	},
+	insect: {
+		text: "Insect",
 		category: "counterpart",
 	},
 	animal: {
@@ -86,13 +91,13 @@ export const Folds = {
 		author: "Traditional",
 		json: BoatBase
 	},
-	FrogBase: {
-		name: "Frog Base",
-		description: "A complex base used for models with length-wise asymmetry, like flowers and animals.",
-		tags: ["base"],
-		author: "Traditional",
-		json: FrogBase 
-	},
+	// FrogBase: {
+	// 	name: "Frog Base",
+	// 	description: "A complex base used for models with length-wise asymmetry, like flowers and animals.",
+	// 	tags: ["base"],
+	// 	author: "Traditional",
+	// 	json: FrogBase 
+	// },
 	SailBoat: {
 		name: "Sail Boat",
 		description: "An assymetrical sailboat with a built in kickstand - perfect for display.",
@@ -113,6 +118,13 @@ export const Folds = {
 		tags: ["15_mins", "bird", "animal"],
 		author: "Traditional",
 		json: Crane 
+	},
+	Butterfly: {
+		name: "Butterfly",
+		description: "A 3D flapping butterfly built upon a boat base.",
+		tags: ["5_mins", "insect", "animal"],
+		author: "Traditional",
+		json: Butterfly 
 	},
 };
 

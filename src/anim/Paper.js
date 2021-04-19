@@ -125,21 +125,38 @@ export const Paper = props => {
 		}
 
 		// Every face edge is an edge
-		ret = foldObj.faces_vertices.find((face, faceIdx) => {
+		ret = foldObj.faces_vertices.find((face, faceIdx) => (
 			face.some((vert, faceVertIdx) => {
 				const otherFaceVertIdx = faceVertIdx ? faceVertIdx - 1 : face.length - 1;
-				return hasDuplicate([vert, face[otherFaceVertIdx]], -1, foldObj.edges_vertices);
-			});
-		});
-
-		// Every edge is in a face?
+				return !hasDuplicate([vert, face[otherFaceVertIdx]], -1, foldObj.edges_vertices);
+			})
+		));
 		if (ret) {
 			console.error("Found an invalid face:", ret);
 		}
+		// Every edge is in a face
+		ret = foldObj.edges_vertices.find((edge, edgeIdx) => (
+			!foldObj.faces_vertices.find((face, faceIdx) => {
+				const firstIdx = face.indexOf(edge[0]);
+				const secIdx = face.indexOf(edge[1]);
+				if (firstIdx !== -1 && secIdx !== -1) {
+					return (
+						(firstIdx === 0 && secIdx === face.length - 1) ||
+						(secIdx === 0 && firstIdx === face.length - 1) ||
+						Math.abs(firstIdx - secIdx) === 1
+					);
+				}
+				return false;
+			})	
+		));
+		if (ret) {
+			console.error("Found an edge that's not reflected in any face: ", ret);
+		}
 
+		// Every instruction refers to existing edges
 		ret = foldObj.instructions.children.find(inst => checkInstruction(inst, foldObj))
 		if (ret) {
-			console.error("Found an invalid instruction: ")
+			console.error("Found an invalid instruction: ", ret)
 		}
 	};
 
