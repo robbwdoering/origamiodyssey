@@ -49,7 +49,8 @@ const CameraControls = () => {
 			enableDolly={false}
 			mouseButtons={{
 				RIGHT: THREE.MOUSE.ROTATE,
-				LEFT: THREE.MOUSE.ROTATE
+				LEFT: THREE.MOUSE.ROTATE,
+				MIDDLE: THREE.MOUSE.PAN,
 			}}
 			// maxAzimuthAngle={Math.PI / 4}
 			maxPolarAngle={Math.PI * 3 / 4}

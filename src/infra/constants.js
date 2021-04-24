@@ -15,10 +15,12 @@ import GroupAddIcon from "@material-ui/icons/GroupAdd";
 import BirdBase from "./../folds/BirdBase.json";
 import BoatBase from "./../folds/BoatBase.json";
 import FrogBase from "./../folds/FrogBase.json";
+import WaterBombBase from "./../folds/WaterBombBase.json";
 import SailBoat from "./../folds/SailBoat.json";
 import Heart from "./../folds/Heart.json";
 import Crane from "./../folds/Crane.json";
 import Butterfly from "./../folds/Butterfly.json";
+import Lily from "./../folds/Lily.json";
 
 export const Pages = {
 	Splash: "Splash",
@@ -91,6 +93,13 @@ export const Folds = {
 		author: "Traditional",
 		json: BoatBase
 	},
+	WaterBombBase: {
+		name: "Waterbomb Base",
+		description: "A very simple base with four flaps.",
+		tags: ["base"],
+		author: "Traditional",
+		json: WaterBombBase
+	},
 	// FrogBase: {
 	// 	name: "Frog Base",
 	// 	description: "A complex base used for models with length-wise asymmetry, like flowers and animals.",
@@ -125,6 +134,13 @@ export const Folds = {
 		tags: ["5_mins", "insect", "animal"],
 		author: "Traditional",
 		json: Butterfly 
+	},
+	Lily: {
+		name: "Lily",
+		description: "A symmetrical flower perfect for a boquet, or mounted on a folded stem.",
+		tags: ["15_mins", "flower"],
+		author: "Traditional",
+		json: Lily 
 	},
 };
 

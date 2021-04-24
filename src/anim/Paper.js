@@ -98,11 +98,18 @@ export const Paper = props => {
 	 * Returns true if there's a problem. Recursively walks the tree.
 	 */
 	const checkInstruction = (inst, foldObj) => {
+		let ret;
 		if (Array.isArray(inst)) {
-			return !hasDuplicate(inst.slice(0, 2), -1, foldObj.edges_vertices) ? inst : false;
+			// Is this edge part of the edges array?
+			ret = !hasDuplicate(inst.slice(0, 2), -1, foldObj.edges_vertices) ? inst : false;
 		} else {
-			return inst.children.find(child => checkInstruction(child, foldObj));
+			inst.children.some(child => {
+				ret = checkInstruction(child, foldObj)
+				return ret;
+			});
 		}
+		// console.log(Array.isArray(inst) ? "leaf": "root", ret);
+		return ret;
 	}
 
 	const validateFoldObj = foldObj => {
@@ -122,6 +129,12 @@ export const Paper = props => {
 		ret = foldObj.faces_vertices.find((item, idx) => hasDuplicate(item, idx, foldObj.faces_vertices));
 		if (ret) {
 			console.error('Found duplicate face:', ret);
+		}
+
+		// All initial vertices are in a flat sheet (y==0)
+		ret = foldObj.vertices_coords.findIndex((item, idx) => item[1] !== 0);
+		if (ret) {
+			console.log("Found non-flat initial vertex:", ret);
 		}
 
 		// Every face edge is an edge
@@ -154,7 +167,7 @@ export const Paper = props => {
 		}
 
 		// Every instruction refers to existing edges
-		ret = foldObj.instructions.children.find(inst => checkInstruction(inst, foldObj))
+		ret = checkInstruction(foldObj.instructions, foldObj)
 		if (ret) {
 			console.error("Found an invalid instruction: ", ret)
 		}
@@ -330,7 +343,7 @@ export const Paper = props => {
 
 			const distance = vert.distanceTo(cmpVert)
 			if (distance < 0.002 && distance > 0.00001) {
-				console.log(`Snapping ${printVect(vert)} to ${printVect(cmpVert)}`);
+				// console.log(`Snapping ${printVect(vert)} to ${printVect(cmpVert)}`);
 				vert.copy(cmpVert);
 				return true;
 			}
@@ -517,7 +530,7 @@ export const Paper = props => {
 		const norm = new THREE.Vector3().copy(plane.normal);
 		const normLine = new THREE.Line3(norm.clone().multiplyScalar(-1), norm);
 
-		// Get the translation vector from the original plane (i.e. 0,1,0)
+		// Get the translation vector from the original plane (i.e. norm=<0,1,0>)
 		const initStart = new THREE.Vector3(...initFold.vertices_coords[edge[0]]);
 		const initEnd = new THREE.Vector3(...initFold.vertices_coords[edge[1]]);
 		const initThird = new THREE.Vector3(...initFold.vertices_coords[vertIdx]);
@@ -589,20 +602,23 @@ export const Paper = props => {
 
 		// Store the vertex coords for edges + vertices
 		fold.vertices_coords[vertIdx] = targetVec;
-		console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
+		// console.log(`Rotating ${vertIdx} around (${edge[0]}, ${edge[1]}) by ${angle} to ${printVect(targetVec)}`);
 		// console.log('[rotateVertAroundEdge]', {
-		// 	initStart,
-		// 	initThird,
 		// diffInPlane,
 		// actualDiff,
 		// 	axisRotation,
 		// 	xAxis,
 		// 	zAxis,
-		// 	newCoords,
+		// 	// newCoords,
 		// norm,
 		// third,
 		// start,
-		// end
+		// end,
+		// initStart,
+		// initEnd,
+		// initThird,
+		// vertIdx,
+		// initFold
 		// });
 	};
 
@@ -932,7 +948,7 @@ export const Paper = props => {
 		return null;
 	}
 
-	console.log('[Paper]', fold.current && fold.current.edges_vertices);
+	// console.log('[Paper]', fold.current && fold.current.edges_vertices);
 
 	return (
 		<group>
