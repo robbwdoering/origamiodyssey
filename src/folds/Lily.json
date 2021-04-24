@@ -1287,7 +1287,7 @@
                         ]
                     },
                     {
-                        "desc": "Change flaps so the front and back are new faces.",
+                        "desc": "Fold along the center to 'open new flaps'; keep going for two flaps, so that new petal faces are shown.",
                         "children": [
                             [6, 41, 360],
                             [41, 0, 360],
@@ -1443,6 +1443,210 @@
                                     [111, 108, 180]
                                 ]
                             }
+                        ]
+                    }
+                ]
+            },
+            {
+                "desc": "Change front and back flaps one to the left, opening new flat, tall faces.",
+                "children": [
+                    [8, 36, 360],
+                    [36, 0, 360],
+                    [0, 76, 180],
+                    [76, 98, 180],
+                    [98, 2, 180],
+
+                    [7, 42, 360],
+                    [42, 0, 360],
+                    [0, 106, 180],
+                    [106, 128, 180],
+                    [128, 3, 180]
+                ]
+            },
+            {
+                "desc": "Slim the body of the flower by folding all bottom edges of flaps to the midline.",
+                "children": [
+                    {
+                        "desc": "Fold the front face's bottom edges to the midline.",
+                        "children": [
+                            [81, 0, 0],
+                            [79, 81, 0],
+                            [100, 79, 360],
+                            [83, 100, 360],
+                            [95, 83, 0],
+                            [91, 95, 0],
+                            [87, 91, 0],
+                            [93, 87, 360],
+                            [77, 93, 360],
+                            [0, 77, 360],
+
+                            [75, 0, 360],
+                            [92, 75, 360],
+                            [86, 92, 360],
+                            [90, 86, 0],
+                            [94, 90, 0],
+                            [82, 94, 0],
+                            [99, 82, 360],
+                            [73, 99, 360],
+                            [80, 73, 0],
+                            [0, 80, 0]
+                        ]
+                    },
+                    {
+                        "desc": "Fold the back face's bottom edges to the midline.",
+                        "children": [
+                            [111, 0, 0],
+                            [109, 111, 0],
+                            [130, 109, 360],
+                            [113, 130, 360],
+                            [125, 113, 0],
+                            [121, 125, 0],
+                            [117, 121, 0],
+                            [123, 117, 360],
+                            [107, 123, 360],
+                            [0, 107, 360],
+
+                            [105, 0, 360],
+                            [122, 105, 360],
+                            [116, 122, 360],
+                            [120, 116, 0],
+                            [124, 120, 0],
+                            [112, 124, 0],
+                            [129, 112, 360],
+                            [103, 129, 360],
+                            [110, 103, 0],
+                            [0, 110, 0]
+                        ]
+                    },
+                    {
+                        "desc": "Change front and back flaps two to the left, opening new flat, tall faces.",
+                        "children": [
+                            [2, 98, 360],
+                            [98, 76, 360],
+                            [76, 0, 360],
+                            [0, 46, 180],
+                            [46, 68, 180],
+                            [68, 1, 180],
+
+                            [3, 128, 360],
+                            [128, 106, 360],
+                            [106, 0, 360],
+                            [0, 12, 180],
+                            [12, 34, 180],
+                            [34, 4, 180]
+                        ]
+                    },
+                    {
+                        "desc": "Fold the front face's bottom edges to the midline.",
+                        "children": [
+                            [50, 0, 0],
+                            [43, 50, 0],
+                            [69, 43, 360],
+                            [52, 69, 360],
+                            [64, 52, 0],
+                            [60, 64, 0],
+                            [56, 60, 0],
+                            [62, 56, 360],
+                            [45, 62, 360],
+                            [0, 45, 360],
+
+                            [47, 0, 360],
+                            [63, 47, 360],
+                            [57, 63, 360],
+                            [61, 57, 0],
+                            [65, 61, 0],
+                            [53, 65, 0],
+                            [70, 53, 360],
+                            [49, 70, 360],
+                            [51, 49, 0],
+                            [0, 51, 0]
+                        ]
+                    },
+                    {
+                        "desc": "Fold the back face's bottom edges to the midline.",
+                        "children": [
+                            [16, 0, 0],
+                            [9, 16, 0],
+                            [37, 9, 360],
+                            [18, 37, 360],
+                            [30, 18, 0],
+                            [26, 30, 0],
+                            [22, 26, 0],
+                            [28, 22, 360],
+                            [11, 28, 360],
+                            [0, 11, 360],
+
+                            [13, 0, 360],
+                            [29, 13, 360],
+                            [23, 29, 360],
+                            [27, 23, 0],
+                            [31, 27, 0],
+                            [19, 31, 0],
+                            [38, 19, 360],
+                            [15, 38, 360],
+                            [17, 15, 0],
+                            [0, 17, 0]
+                        ]
+                    }
+                ]
+            },
+            {
+                "desc": "Give it the final touches, expanding into a square based flower shape with petals.",
+                "children": [
+                    {
+                        "desc": "Expand the flower into a square based pyramid by folding all the tall flaps flat.",
+                        "children": [
+                            [0, 76, 180, { "flex": true }],
+                            [76, 98, 180, { "flex": true }],
+                            [98, 2, 180, { "flex": true }],
+                            [3, 128, 180, { "flex": true }],
+                            [128, 106, 180, { "flex": true }],
+                            [106, 0, 180, { "flex": true }],
+
+                            [20, 19, 315, { "flex": true }],
+                            [83, 84, 315, { "flex": true }],
+                            [21, 18, 315, { "flex": true }],
+                            [112, 115, 315, { "flex": true }],
+                            [53, 54, 315, { "flex": true }],
+                            [114, 113, 315, { "flex": true }],
+                            [55, 52, 315, { "flex": true }],
+                            [82, 85, 315, { "flex": true }],
+
+                            [0, 50, 315, { "flex": true }],
+                            [50, 43, 315, { "flex": true }],
+                            [43, 69, 45, { "flex": true }],
+                            [69, 52, 45, { "flex": true }],
+                            [82, 99, 45, { "flex": true }],
+                            [99, 73, 45, { "flex": true }],
+                            [73, 80, 315, { "flex": true }],
+                            [80, 0, 315, { "flex": true }],
+
+                            [0, 111, 315, { "flex": true }],
+                            [111, 109, 315, { "flex": true }],
+                            [109, 130, 45, { "flex": true }],
+                            [130, 113, 45, { "flex": true }],
+                            [53, 70, 45, { "flex": true }],
+                            [70, 49, 45, { "flex": true }],
+                            [49, 51, 315, { "flex": true }],
+                            [51, 0, 315, { "flex": true }],
+
+                            [0, 16, 315, { "flex": true }],
+                            [16, 9, 315, { "flex": true }],
+                            [9, 37, 45, { "flex": true }],
+                            [37, 18, 45, { "flex": true }],
+                            [112, 129, 45, { "flex": true }],
+                            [129, 103, 45, { "flex": true }],
+                            [103, 110, 315, { "flex": true }],
+                            [110, 0, 315, { "flex": true }],
+
+                            [0, 81, 315, { "flex": true }],
+                            [81, 79, 315, { "flex": true }],
+                            [79, 100, 45, { "flex": true }],
+                            [100, 83, 45, { "flex": true }],
+                            [19, 38, 45, { "flex": true }],
+                            [38, 15, 45, { "flex": true }],
+                            [15, 17, 315, { "flex": true }],
+                            [17, 0, 315, { "flex": true }]
                         ]
                     }
                 ]
