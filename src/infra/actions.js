@@ -25,3 +25,8 @@ export const setEditorState = payload => ({
 	type: Actions.SET_EDITOR_STATE,
 	payload
 });
+
+export const setUserState = payload => ({
+	type: Actions.SET_USER_STATE,
+	payload
+});

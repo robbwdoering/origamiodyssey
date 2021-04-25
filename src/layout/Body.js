@@ -16,7 +16,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useCookies } from 'react-cookie';
 
 import { Pages, Folds, initNavTree } from './../infra/constants';
-import { setLayoutState, setFoldState, setEditorState } from './../infra/actions';
+import { setLayoutState, setFoldState, setEditorState, setUserState } from './../infra/actions';
 import Splash from './pages/Splash';
 import ModelSelect from './pages/ModelSelect';
 import FoldEditorCards from './pages/FoldEditorCards';
@@ -35,7 +35,9 @@ export const Body = props => {
 		setFoldState,
 		editorState,
 		editorStateHash,
-		setEditorState
+		setEditorState,
+		userState,
+		setUserState
 	} = props;
 
 	// ----------
@@ -77,7 +79,7 @@ export const Body = props => {
 							foldLastUpdated={fold.current.lastUpdated}
 						/>
 
-						{layoutState.showEditor && (
+						{userState.showEditor && (
 							<FoldEditorCards
 								windowHeight={windowHeight}
 								initFold={fold.current.json}
@@ -130,7 +132,7 @@ export const Body = props => {
 		const finalLayoutState = Object.assign({}, layoutState, { searchStr: '' });
 		setCookies(
 			'origamiodyssey_state',
-			{ layoutState: finalLayoutState, foldState, editorState },
+			{ layoutState: finalLayoutState, foldState, editorState, userState },
 			{ path: '/' }
 		);
 	};
@@ -141,8 +143,9 @@ export const Body = props => {
 			setLayoutState(cookies.origamiodyssey_state.layoutState);
 			setFoldState(cookies.origamiodyssey_state.foldState);
 			setEditorState(cookies.origamiodyssey_state.editorState);
+			setUserState(cookies.origamiodyssey_state.userState);
 		} else {
-			console.log('cannot apply cookies... :(', cookies);
+			console.log('Failed to apply cookies.', cookies);
 		}
 	};
 
@@ -201,8 +204,10 @@ export const mapStateToProps = (state, props) => {
 		foldState: state.appReducer.foldState,
 		foldStateHash: state.appReducer.foldState.hash,
 		editorState: state.appReducer.editorState,
-		editorStateHash: state.appReducer.editorState.hash
+		editorStateHash: state.appReducer.editorState.hash,
+		userState: state.appReducer.userState,
+		userStateHash: state.appReducer.userState.hash
 	};
 };
 
-export default connect(mapStateToProps, { setLayoutState, setFoldState, setEditorState })(Body);
+export default connect(mapStateToProps, { setLayoutState, setFoldState, setEditorState, setUserState })(Body);

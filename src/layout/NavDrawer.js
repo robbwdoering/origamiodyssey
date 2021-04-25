@@ -13,16 +13,19 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import { useAuth0 } from "@auth0/auth0-react";
 
 import { Pages, initNavTree } from "./../infra/constants";
 import { setShowNavDrawer, setLayoutState, setFoldState } from "./../infra/actions";
 import useStyles from "./../style/theme";
 
 export const NavDrawer = props => {
-	const { page, showNavDrawer, setShowNavDrawer, layoutState, setLayoutState, foldState, setFoldState } = props;
+	const { page, showNavDrawer, setShowNavDrawer, layoutState, setLayoutState, foldState, setFoldState, userState } = props;
 
 	const [navTreeData, setNavTree] = useState(initNavTree);
 	const styles = useStyles();
+
+	const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
 
 	const findNode = (key, node = navTreeData, path = []) => {
 		// Root case - recurse into array of subtrees
@@ -105,6 +108,9 @@ export const NavDrawer = props => {
 			case "github":
 				window.open('https://github.com/robbwdoering/origamiodyssey', '_blank');
 				break;
+			case "login":
+				loginWithRedirect();
+				break;
 			default:
 				console.log("unhandled navDrawer option", key);
 		}
@@ -119,6 +125,11 @@ export const NavDrawer = props => {
 		switch(condName) {
 			case "is_saved_fold":
 				return layoutState.page !== Pages.Fold && foldState.stepIdx !== -1;
+			case "is_logged_in":
+			console.log("[conditionalEx]", isAuthenticated);
+				return isAuthenticated;
+			case "is_not_logged_in":
+				return !isAuthenticated;
 			default:
 				console.error("passed invalid conditional: ", condName);
 				return true;
@@ -185,7 +196,8 @@ export const mapStateToProps = (state, props) => {
 		layoutState: state.appReducer.layoutState,
 		layoutStateHash: state.appReducer.layoutState.hash,
 		foldState: state.appReducer.foldState,
-		showNavDrawer: state.appReducer.showNavDrawer 
+		showNavDrawer: state.appReducer.showNavDrawer,
+		userState: state.appReducer.userState
 	};
 };
 

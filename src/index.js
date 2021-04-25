@@ -12,6 +12,7 @@ import { createStore, combineReducers } from 'redux';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { CookiesProvider } from 'react-cookie';
+import { Auth0Provider } from "@auth0/auth0-react";
 
 /* Local Modules */
 import { appReducer } from './infra/appReducer';
@@ -34,31 +35,40 @@ const store = createStore(rootReducer);
 render(
 	/* React-redux provider - centralizes state */
 	<Provider store={store}>
+		{/* User Management */}
+		<Auth0Provider
+			domain="plain-math-9135.us.auth0.com"
+			clientId="Fm50tDFmVjVPetvg3exCzeXaO32NVw5F"
+		    // audience="https://bellum.us.auth0.com/api/v2/"
+		    // scopes="read:current_user update:current_user_metadata"
+			redirectUri={window.location.origin}
+		>
 
-		{/* Allows us to store redux state in cookies for smooth refresh behavior */}
-		<CookiesProvider>
+			{/* Allows us to store redux state in cookies for smooth refresh behavior */}
+			<CookiesProvider>
 
-			{/* Material-ui theme controls pallette, global styles */}
-			<ThemeProvider theme={theme}>
-				<CssBaseline />
+				{/* Material-ui theme controls pallette, global styles */}
+				<ThemeProvider theme={theme}>
+					<CssBaseline />
 
-				{/* The Actual App */}
-				<div className="app-root">
+					{/* The Actual App */}
+					<div className="app-root">
 
-					{/* Logo, search, nav-bar access */}
-					<Header />
+						{/* Logo, search, nav-bar access */}
+						<Header />
 
-					{/* Obviously navigation, but also all other "settings"-esque options */}
-					<NavDrawer />
+						{/* Obviously navigation, but also all other "settings"-esque options */}
+						<NavDrawer />
 
-					{/* Main body of the app - copy & animations */}
-					<Body />
+						{/* Main body of the app - copy & animations */}
+						<Body />
 
-					{/* TBD */}
-					<Footer />
-				</div>
-			</ThemeProvider>
-		</CookiesProvider>
+						{/* TBD */}
+						<Footer />
+					</div>
+				</ThemeProvider>
+			</CookiesProvider>
+		</Auth0Provider>
 	</Provider>,
 	document.getElementById('root')
 );

@@ -249,9 +249,7 @@ export const useStyles = makeStyles(theme => ({
 	// Instructional Hierarchy
 	hier_card: {
 		position: 'absolute',
-		bottom: '64px',
-		left: '435px',
-		zIndex: 3001
+		zIndex: 2999
 	},
 	hier_expandCtrl: {
 		position: 'absolute !important',
@@ -260,6 +258,7 @@ export const useStyles = makeStyles(theme => ({
 	},
 	hier_container: {
 		width: '100%',
+		height: '264px',
 		verticalAlign: 'top',
 		padding: '7px',
 		display: 'inline-flex'
@@ -271,6 +270,9 @@ export const useStyles = makeStyles(theme => ({
 		alignItems: 'stretch',
 		width: '20px',
 		height: '100%'
+	},
+	hier_node_container_anchor: {
+		position: "absolute",
 	},
 	hier_node_anchor: {},
 	hier_node: {
@@ -303,6 +305,7 @@ export const useStyles = makeStyles(theme => ({
 		height: '200px',
 		width: '400px',
 		bottom: '64px',
+		right: '50%',
 		zIndex: 3001
 	},
 	hier_controls: {
@@ -338,6 +341,25 @@ export const useStyles = makeStyles(theme => ({
 	},
 	tags__active: {
 		backgroundColor: ""
+	},
+
+	user_profile: {
+		padding: "0.5rem"
+	},
+	user_pref: {
+		padding: "0.5rem"
+	},
+	user_assistant: {
+		padding: "0.5rem"
+	},
+	user_add_model_button: {
+		float: "right"
+	},
+	user_models_header: {
+		color: "$"
+	},
+	slimCol: {
+		maxWidth: "15rem"
 	}
 }));
 

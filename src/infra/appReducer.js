@@ -31,6 +31,11 @@ export const appReducer = (state = finalInitState, action) => {
 			Object.assign(newState.editorState, action.payload || initAppReducerState.editorState);
 			newState.editorState.hash++;
 			break;
+		case Actions.SET_USER_STATE:
+			console.log('[SET_USER_STATE]', action.payload);
+			Object.assign(newState.userState, action.payload || initAppReducerState.userState);
+			newState.userState.hash++;
+			break;
 	}
 
 	return newState;

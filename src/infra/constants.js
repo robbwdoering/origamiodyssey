@@ -213,11 +213,19 @@ export const initAppReducerState = {
 		edgeHighlights: [],
 		vertexHighlights: [],
 		faceHighlights: [],
-		showEdges: true,
-		showVertices: true,
+		showEdges: false,
+		showVertices: false,
 		showFaces: true,
 		showTriangulations: false,
 		showLables: false
+	},
+	userState: {
+		hash: 0,
+		showEditor: false,
+		username: null,
+		showTimerAssess: false,
+		showLikertAssess: false,
+		modelList: []
 	},
 	showNavDrawer: false
 };
@@ -227,7 +235,8 @@ export const Actions = {
 	SET_SHOW_NAV_DRAWER: 'SET_SHOW_NAV_DRAWER',
 	SET_PAGE_CONFIG: 'SET_PAGE_CONFIG',
 	SET_FOLD_STATE: 'SET_FOLD_STATE',
-	SET_EDITOR_STATE: 'SET_EDITOR_STATE'
+	SET_EDITOR_STATE: 'SET_EDITOR_STATE',
+	SET_USER_STATE: 'SET_USER_STATE'
 };
 
 export const initNavTree = [
@@ -243,7 +252,13 @@ export const initNavTree = [
 	},
 	{
 		text: 'User Page',
+		conditional: "is_logged_in",
 		key: Pages.User 
+	},
+	{
+		text: 'Login / Register',
+		conditional: "is_not_logged_in",
+		key: 'login' 
 	},
 	{
 		text: 'What is Origami?',

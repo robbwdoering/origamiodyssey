@@ -48,6 +48,8 @@ export const InstructionalHierarchy = props => {
 
 	const maxLevel = useMemo(() => calcMaxLevel(initFold && initFold.instructions), [foldLastUpdated]);
 
+	const trackTop = (window.innerHeight - 264 - (HIER_PX_SIZE * foldState.stepIdx))  + 'px';
+
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
@@ -63,7 +65,10 @@ export const InstructionalHierarchy = props => {
 	const calcCardPos = () => {
 		let style = {
 			// Don't show first column, and account for padding
-			width: (maxLevel - 1) * HIER_PX_SIZE + 14 + 'px'
+			width: (maxLevel - 1) * HIER_PX_SIZE + 14 + 'px',
+			right: (window.innerWidth / 2) + 460 + 'px',
+			height: contStyle.height,
+			top: (window.innerHeight - 262) - (HIER_PX_SIZE * (foldState.stepIdx + 1)) + 'px'
 		};
 
 		return style;
@@ -215,7 +220,8 @@ export const InstructionalHierarchy = props => {
 	// ---------
 	// LIFECYCLE
 	// ---------
-	const cardStyle = useMemo(calcCardPos, [window.innerWidth, window.innerHeight, layoutState.expandHierarchy, foldState.stepIdx]);
+	// const cardStyle = useMemo(calcCardPos, [window.innerWidth, window.innerHeight, foldState.stepIdx, contStyle.height]);
+	const cardStyle = calcCardPos();
 
 	const buttonClasses = useMemo(
 		() => ({
@@ -241,6 +247,8 @@ export const InstructionalHierarchy = props => {
 
 	const ctrlCardLeftPx = `${435 + (parseInt(cardStyle.width) || 64) + 10}px`;
 
+	console.log("[InstructionalHierarchy]", trackTop, window.innerHeight);
+
 	return (
 		<React.Fragment>
 			{/* The card contains the timeline, which contains most actions here */}
@@ -250,7 +258,9 @@ export const InstructionalHierarchy = props => {
 					{initFold &&
 						renderRows.current.reduce((acc, row, idx) => {
 							if (idx !== 0) {
-								acc.push(<div className={classes.hier_node_container}>{row}</div>);
+								acc.push(
+									<div className={classes.hier_node_container} >{row}</div>
+								);
 							}
 							return acc;
 						}, [])}
