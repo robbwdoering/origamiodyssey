@@ -8,11 +8,12 @@
  * This walks the tree recursively, collecting an array of steps at this "level".
  */
 export const collectStepsForLevel = (fold, level, isDefault) => {
+	console.log("[collectStepsForLevel]", fold, level, isDefault);
 	if (!fold || !fold.instructions) {
 		return [];
 	}
 
-	return calcStepsForLevel(fold.instructions, level, 0, isDefault);
+	return calcStepsForLevel(fold.instructions, level, isDefault);
 };
 
 /**
@@ -21,7 +22,7 @@ export const collectStepsForLevel = (fold, level, isDefault) => {
  * of sequential steps "at" that depth.
  * @returns: a 2D array of step objects
  */
-export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path = '0') => {
+export const calcStepsForLevel = (inst, curLevel, isDefault, path = '0') => {
 	if (!inst.children && !inst.length) {
 		// Error case
 		return null;
@@ -35,7 +36,7 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path =
 
 		// Ancestor nodes - return a list of steps
 	} else {
-		if (curLevel === targetLevel || isDefaultNode) {
+		if (isDefaultNode) {
 			// Recursive case: This is target, so return all leaves below this as one step
 			let allLeafDescendants = concatDescendants(inst, curLevel);
 			// If we just found one leaf node, treat this as a normal step w/ a 2D arr
@@ -43,11 +44,11 @@ export const calcStepsForLevel = (inst, targetLevel, curLevel, isDefault, path =
 				allLeafDescendants = allLeafDescendants[0];
 			}
 			return [[path, ...allLeafDescendants]];
-		} else if (curLevel < targetLevel) {
+		} else {
 			// Recursive case: still above target level, so keep drilling down
 			// COLLECT steps returned from children into one array of steps
 			return inst.children.reduce((acc, childInst, childIdx) => {
-				let ret = calcStepsForLevel(childInst, targetLevel, curLevel + 1, isDefault, path + ',' + childIdx);
+				let ret = calcStepsForLevel(childInst, curLevel + 1, isDefault, path + ',' + childIdx);
 				return ret ? acc.concat(ret) : acc;
 			}, []);
 		}
@@ -96,7 +97,7 @@ export const findInUseFamilyNode = (stepArr, path) => {
 };
 
 export const getHierNode = (instructions, path) => {
-	if ((!path || !path.length) && instructions.desc) {
+	if ((!path || !path.length) && instructions && instructions.desc) {
 		// Base case: If we were passed an empty path, then this is the target node
 		return instructions;
 	} else if (path && path.length && instructions.children) {
@@ -104,7 +105,7 @@ export const getHierNode = (instructions, path) => {
 		return getHierNode(instructions.children[parseInt(path[0])], path.slice(1));
 	} else {
 		// Error case: Return an error
-		return null;
+		return {};
 	}
 };
 

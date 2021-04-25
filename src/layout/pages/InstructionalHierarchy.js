@@ -95,7 +95,10 @@ export const InstructionalHierarchy = props => {
 		setFoldState(newState);
 	};
 
-	const buildStepArray = () => collectStepsForLevel(initFold, foldState.selectedLevel, foldState.usingDefaults);
+	const buildStepArray = () => {
+		console.log("[InstructionalHierarchy buildStepArray]", initFold && initFold.frame_title);
+		return collectStepsForLevel(initFold, 0, foldState.usingDefaults)
+	};
 
 	const renderNode = (inst, renderRows, levelIdx, path, belowDefault) => {
 		// Error case - we're on a level deeper than the tree supports
@@ -105,10 +108,7 @@ export const InstructionalHierarchy = props => {
 		let height = 0;
 		let children = [];
 		const isDefaultNode = foldState.usingDefaults && inst.default;
-		const isSelectedLevel =
-			isDefaultNode ||
-			foldState.selectedLevel === levelIdx ||
-			(foldState.selectedLevel > levelIdx && !inst.children.length);
+		const isSelectedLevel = isDefaultNode || !inst.children.length;
 		const isLeaf = inst.children.length && Array.isArray(inst.children[0]);
 		const stepIdx = stepArray.findIndex(step => path === step[0]);
 
@@ -153,7 +153,7 @@ export const InstructionalHierarchy = props => {
 		if (stepIdx === foldState.stepIdx + 1) {
 			// This node is the current step (i.e. haven't folded yet)
 			type = 'active';
-		} else if (isSelectedLevel || (foldState.selectedLevel > levelIdx && isLeaf && !belowDefault)) {
+		} else if (isSelectedLevel || (isLeaf && !belowDefault)) {
 			// These nodes are part of the current step array
 			type = 'inUse';
 		}
@@ -205,6 +205,7 @@ export const InstructionalHierarchy = props => {
 	const jumpToEnd = () => setFoldState({ stepIdx: foldState.maxSteps - 1 });
 
 	const getDescForNode = (stepIdx) => {
+		console.log("[getDescForNode]", stepIdx, stepArray);
 		const step = stepArray[foldState.stepIdx + 1]
 		const path = step[0].split(",").slice(1)
 		let node = getHierNode(initFold.instructions, path);
@@ -226,8 +227,7 @@ export const InstructionalHierarchy = props => {
 
 	const stepArray = useMemo(buildStepArray, [
 		!initFold || !initFold.instructions,
-		layoutState.currentFold,
-		foldState.selectedLevel
+		initFold && initFold.frame_title
 	]);
 
 	// Rerender whenever the page resizes
@@ -235,7 +235,7 @@ export const InstructionalHierarchy = props => {
 		window.addEventListener('resize', triggerRerender);
 	}, []);
 
-	useEffect(() => refreshRenderRows(maxLevel), [foldState.selectedLevel, foldLastUpdated, foldState.stepIdx]);
+	useEffect(() => refreshRenderRows(maxLevel), [foldLastUpdated, foldState.stepIdx]);
 
 	// console.log('[InstructionalHierarchy]', renderRows.current);
 

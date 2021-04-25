@@ -82,7 +82,6 @@ export const NavDrawer = props => {
 	}
 
 	const handleNavDrawerSelect = (event, key) => {
-		setShowNavDrawer(false);
 		if (!key) {
 			return;
 		}
@@ -90,6 +89,7 @@ export const NavDrawer = props => {
 		// If the key is a page ID, just take us to that page
 		if (Object.keys(Pages).includes(key)) {
 			setLayoutState({ page: key });
+			setShowNavDrawer(false);
 			return;
 		} 
 
@@ -108,6 +108,7 @@ export const NavDrawer = props => {
 			default:
 				console.log("unhandled navDrawer option", key);
 		}
+		setShowNavDrawer(false);
 	}
 
 	const conditionalEx = condName => {
@@ -132,15 +133,13 @@ export const NavDrawer = props => {
 		// Nested component that just renders one node, with no regard for hierarchy beyond tracking nestedLevel
 		const Node = ({ node, nestedLevel }) => {
 			const icon = node.icon || (node.children ? (node.expanded ? <ArrowDropDownIcon /> : <ArrowRightIcon />) : null );
-			console.log("Key: ", node.key)
 
 			return (
 				<ListItem 
-					className={`nested-level-${nestedLevel}`}
+					className={`nested-level-${nestedLevel} ${node.className || ""}`}
 					key={node.key}
 					button
 					onClick={e => handleNavDrawerSelect(e, node.key)}
-					{...(node.params || {})}
 				>
 					{icon && <ListItemIcon> {icon} </ListItemIcon>}
 					<ListItemText> {node.text} </ListItemText>

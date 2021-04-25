@@ -203,8 +203,8 @@ export const initAppReducerState = {
 	},
 	foldState: {
 		hash: 0,
-		selectedLevel: 0,
 		stepIdx: -1, // Depends on selected level
+		active: false,
 		overrideWithEditor: false,
 		usingDefaults: true
 	},
@@ -234,7 +234,7 @@ export const initNavTree = [
 	{
 		text: 'Return to Fold',
 		conditional: "is_saved_fold",
-		params: { color: "primary" },
+		className: "primary-drawer-node",
 		key: Pages.Fold 
 	},
 	{

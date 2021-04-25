@@ -37,3 +37,16 @@ code {
 .MuiAppBar-root {
   z-index: 3000 !important;
 }
+
+div.primary-drawer-node {
+  background-color: #03506f;
+}
+
+div.primary-drawer-node:hover {
+  background-color: #022e40;
+}
+
+div.primary-drawer-node .MuiTypography-root {
+  font-weight: bold !important;
+  color: #fff;
+}

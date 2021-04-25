@@ -89,7 +89,7 @@ export const FoldEditorCards = props => {
 	);
 
 	const resetLocalFold = () => {
-		console.log('[resetLocalFold]', initFold);
+		// console.log('[resetLocalFold]', initFold);
 		localFold.current = JSON.parse(JSON.stringify(initFold));
 	};
 
@@ -128,7 +128,7 @@ export const FoldEditorCards = props => {
 	};
 
 	const handleSelectionChange = event => {
-		console.log('GOT EVENT! ', event.target);
+		// console.log('GOT EVENT! ', event.target);
 		const field = event.target.name;
 		const value = event.target.value;
 
@@ -163,7 +163,6 @@ export const FoldEditorCards = props => {
 					Fold State
 				</Typography>
 				<Grid container>
-					<ControlRow name="Selected Level" text={foldState.selectedLevel} width={6} />
 					<ControlRow name="Step Index" text={`${foldState.stepIdx + 2}/${foldState.maxSteps + 1}`} width={6} />
 				</Grid>
 			</Card>

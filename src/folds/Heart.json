@@ -185,6 +185,7 @@
         [32, 13, 4, 12]
     ],
     "instructions": {
+        "desc": "A flat heart",
         "children": [
             {
                 "desc": "Fold in half vertically and horizontally",

@@ -291,7 +291,7 @@ export const ModelSelect = props => {
 				ret ||
 				!(obj.name.toLowerCase().includes(searchStr) || obj.description.toLowerCase().includes(searchStr));
 		}
-		console.log('tagsAreHidden', ret, searchStr, obj);
+		// console.log('tagsAreHidden', ret, searchStr, obj);
 
 		return ret;
 	};

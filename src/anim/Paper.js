@@ -133,8 +133,8 @@ export const Paper = props => {
 
 		// All initial vertices are in a flat sheet (y==0)
 		ret = foldObj.vertices_coords.findIndex((item, idx) => item[1] !== 0);
-		if (ret) {
-			console.log("Found non-flat initial vertex:", ret);
+		if (ret !== -1) {
+			console.error("Found non-flat initial vertex:", ret);
 		}
 
 		// Every face edge is an edge
@@ -179,13 +179,13 @@ export const Paper = props => {
 		validateFoldObj(foldObj);
 
 		// Calculate the boundaries of the 2D shape
-		const maxes = [0, 2].map(i =>
-			foldObj.vertices_coords.reduce((max, coords) => (Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max), 0)
-		);
+		// const maxes = [0, 2].map(i =>
+		// 	foldObj.vertices_coords.reduce((max, coords) => (Math.abs(coords[i]) > max ? Math.abs(coords[i]) : max), 0)
+		// );
 
-		// Re-scale the model to a unit square (1 unit x 1 unit)
+		// // Re-scale the model to a unit square (1 unit x 1 unit)
 		foldObj.vertices_coords = foldObj.vertices_coords.map(
-			coords => new THREE.Vector3(coords[0] / maxes[0], 0, coords[2] / maxes[1])
+			coords => new THREE.Vector3(coords[0], 0, coords[2])
 		);
 
 		foldObj.edges_foldAngle = foldObj.edges_vertices.map(() => 180);
@@ -199,7 +199,7 @@ export const Paper = props => {
 
 		foldObj.faces_normals = foldObj.faces_vertices.map(face => new THREE.Vector3(0, 1, 0));
 
-		console.log('[setFoldObj]', { maxes, foldObj });
+		console.log('[setFoldObj]', foldObj);
 		fold.current = foldObj;
 	};
 
@@ -208,17 +208,15 @@ export const Paper = props => {
 
 	/*
 	 * Reads the hierarchical instructions, collecting some descriptive values and initializing state.
-	 * This task is greatly simplified by mandating that any one node of the instructional tree
-	 * contain EITHER two integer values, or 1+ subnodes. Any node with subnodes may not have integer values.
 	 */
 	const readInstructionsIntoState = () => {
-		if (fold.current && fold.current.instructions) {
+		console.log("[readInstructionsIntoState]")
+		if (fold.current && fold.current.instructions && stepArray.length) {
 			const maxLevel = calcMaxLevel(fold.current.instructions);
 			setFoldState({
 				maxLevel: maxLevel,
-				selectedLevel: maxLevel - 1,
-				stepIdx: -1,
-				maxSteps: stepArray.length
+				maxSteps: stepArray.length,
+				active: true 
 			});
 		}
 	};
@@ -355,12 +353,21 @@ export const Paper = props => {
 	 * IDEA: Handle one folding edge at a time, then propagate out following neighbors
 	 */
 	const performInstructions = () => {
+
 		let curStep = foldState.stepIdx;
 		if (curStep < -1 || curStep >= foldState.maxSteps) {
 			curStep = -1;
 		}
+
 		const diff = curStep - prevStep;
-		// console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`);
+		console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`, foldState.active);
+
+		// If the fold is not shown and we're changing indices, then assume that
+		// the change is merely a race condition consequence, and that change is coming
+		if (!foldState.active) {
+			setPrevStep(curStep);
+			return;
+		}
 
 		if (diff > 0) {
 			for (let i = 1; i <= diff && stepArray[prevStep + i]; i++) {
@@ -802,7 +809,10 @@ export const Paper = props => {
 		]);
 	};
 
-	const buildStepArray = () => collectStepsForLevel(fold.current, foldState.selectedLevel, foldState.usingDefaults);
+	const buildStepArray = () => {
+		console.log("[Paper buildStepArray]", fold.current && fold.current.frame_title);
+		return collectStepsForLevel(fold.current, 0, foldState.usingDefaults)
+	};
 
 	const getXYForPos = pos => {
 		let pixelVec = new THREE.Vector3().copy(pos);
@@ -929,8 +939,7 @@ export const Paper = props => {
 	const [frontMat, backMat] = useMemo(createMaterial, []);
 	const stepArray = useMemo(buildStepArray, [
 		!fold.current || !fold.current.instructions,
-		foldKey,
-		foldState.selectedLevel
+		fold.current && fold.current.frame_title
 	]);
 
 	useEffect(performInstructions, [foldState.stepIdx]);

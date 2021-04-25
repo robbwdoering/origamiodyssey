@@ -98,6 +98,10 @@ export const Body = props => {
 
 	const selectFold = () => {
 		console.log('selectFold', layoutState, Folds);
+		setFoldState({
+			stepIdx: -1,
+			active: false 
+		});
 		fold.current = {
 			json:
 				layoutState.curFold && Folds[layoutState.curFold]
@@ -122,11 +126,11 @@ export const Body = props => {
 	};
 
 	const saveStateToCookies = () => {
-		const finalFoldState = Object.assign({}, foldState, { stepIdx: -1 });
+		// const finalFoldState = Object.assign({}, foldState, { stepIdx: -1 });
 		const finalLayoutState = Object.assign({}, layoutState, { searchStr: '' });
 		setCookies(
 			'origamiodyssey_state',
-			{ layoutState: finalLayoutState, foldState: finalFoldState, editorState },
+			{ layoutState: finalLayoutState, foldState, editorState },
 			{ path: '/' }
 		);
 	};
