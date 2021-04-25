@@ -15,11 +15,11 @@ import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 
 import { Pages, initNavTree } from "./../infra/constants";
-import { setShowNavDrawer, setLayoutState } from "./../infra/actions";
+import { setShowNavDrawer, setLayoutState, setFoldState } from "./../infra/actions";
 import useStyles from "./../style/theme";
 
 export const NavDrawer = props => {
-	const { page, showNavDrawer, setShowNavDrawer, setLayoutState } = props;
+	const { page, showNavDrawer, setShowNavDrawer, layoutState, setLayoutState, foldState, setFoldState } = props;
 
 	const [navTreeData, setNavTree] = useState(initNavTree);
 	const styles = useStyles();
@@ -82,13 +82,14 @@ export const NavDrawer = props => {
 	}
 
 	const handleNavDrawerSelect = (event, key) => {
+		setShowNavDrawer(false);
 		if (!key) {
 			return;
 		}
 
 		// If the key is a page ID, just take us to that page
 		if (Object.keys(Pages).includes(key)) {
-			setLayoutState({ curPage: key });
+			setLayoutState({ page: key });
 			return;
 		} 
 
@@ -107,11 +108,24 @@ export const NavDrawer = props => {
 			default:
 				console.log("unhandled navDrawer option", key);
 		}
+	}
 
+	const conditionalEx = condName => {
+		if (!condName) {
+			return true;
+		}
+
+		switch(condName) {
+			case "is_saved_fold":
+				return layoutState.page !== Pages.Fold && foldState.stepIdx !== -1;
+			default:
+				console.error("passed invalid conditional: ", condName);
+				return true;
+		}
 	}
 
 	const renderNavNode = (node, nestedLevel = 0) => {
-		if (!node || node.hidden) {
+		if (!node || node.hidden || !conditionalEx(node.conditional)) {
 			return [];
 		}
 
@@ -126,6 +140,7 @@ export const NavDrawer = props => {
 					key={node.key}
 					button
 					onClick={e => handleNavDrawerSelect(e, node.key)}
+					{...(node.params || {})}
 				>
 					{icon && <ListItemIcon> {icon} </ListItemIcon>}
 					<ListItemText> {node.text} </ListItemText>
@@ -168,8 +183,11 @@ export const NavDrawer = props => {
 
 export const mapStateToProps = (state, props) => {
 	return {
+		layoutState: state.appReducer.layoutState,
+		layoutStateHash: state.appReducer.layoutState.hash,
+		foldState: state.appReducer.foldState,
 		showNavDrawer: state.appReducer.showNavDrawer 
 	};
 };
 
-export default connect(mapStateToProps, {setShowNavDrawer})(NavDrawer);
+export default connect(mapStateToProps, { setShowNavDrawer, setLayoutState, setFoldState })(NavDrawer);

@@ -35,7 +35,6 @@ export const Header = props => {
 	const fold = useRef(null);
 
 	const toggleMenu = e => {
-		console.log('toggleMenu');
 		setShowNavDrawer();
 	};
 
@@ -48,7 +47,11 @@ export const Header = props => {
 		setLayoutState(null);
 	};
 
-	console.log(styles);
+	const handleSearchChange = event => {
+		setLayoutState({
+			searchStr: event.target.value || ''
+		});
+	};
 
 	return (
 		<React.Fragment>
@@ -63,14 +66,7 @@ export const Header = props => {
 					>
 						<MenuIcon />
 					</IconButton>
-					<img
-						className={styles.appLogo}
-						height="28px"
-						src={window.location.origin + '/logo512x256.png'}
-						onClick={handleClickLogo}
-					/>
-
-					<div className={styles.appLettering}>
+					<div className={styles.appLettering} onClick={toggleMenu}>
 						<Lettering />
 					</div>
 					<div className={styles.searchContainer}>
@@ -81,6 +77,7 @@ export const Header = props => {
 							placeholder="Search Models…"
 							classes={{ root: styles.inputRoot, input: styles.inputInput }}
 							inputProps={{ 'aria-label': 'search' }}
+							onChange={handleSearchChange}
 						/>
 					</div>
 				</Toolbar>

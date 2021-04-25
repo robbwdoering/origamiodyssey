@@ -18,7 +18,7 @@ import { useUpdate, useSpring, useSprings, animated, config }  from 'react-sprin
 // import { a, useTransition, Transition } from '@react-spring/three';
 
 import { Paper } from "./Paper";
-import { Folds } from "./../infra/constants";
+import { Pages, Folds } from "./../infra/constants";
 import { setLayoutState, setFoldState } from "./../infra/actions";
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
@@ -53,9 +53,9 @@ const CameraControls = () => {
 				MIDDLE: THREE.MOUSE.PAN,
 			}}
 			// maxAzimuthAngle={Math.PI / 4}
-			maxPolarAngle={Math.PI * 3 / 4}
+			// maxPolarAngle={Math.PI * 3 / 4}
 			// minAzimuthAngle={-Math.PI / 4}
-			minPolarAngle={-Math.PI * 3 / 4}
+			// minPolarAngle={-Math.PI * 3 / 4}
 		/>
 	);
 };
@@ -89,9 +89,11 @@ export const Scene = props => {
 		setOverlayPos(overlayPos)
 	}
 
+	const style = layoutState.page === Pages.Fold ? undefined : { display: "none"};
+
 	return (
 		<React.Fragment>
-			<Canvas camera={{fov: 100, position: [0, 1.8, 0]}} onCreated={state => state.gl.setClearColor("red")} >
+			<Canvas camera={{fov: 100, position: [0, 1.8, 0]}} onCreated={state => state.gl.setClearColor("red")} style={style}>
 				<spotLight position={[5, 10, 0]} color='#f1f1ff' distance={100} penumbra={0.75} decay={2} />
 				<CameraControls />
 

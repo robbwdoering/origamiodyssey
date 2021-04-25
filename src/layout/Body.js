@@ -123,7 +123,12 @@ export const Body = props => {
 
 	const saveStateToCookies = () => {
 		const finalFoldState = Object.assign({}, foldState, { stepIdx: -1 });
-		setCookies('origamiodyssey_state', { layoutState, foldState: finalFoldState, editorState }, { path: '/' });
+		const finalLayoutState = Object.assign({}, layoutState, { searchStr: '' });
+		setCookies(
+			'origamiodyssey_state',
+			{ layoutState: finalLayoutState, foldState: finalFoldState, editorState },
+			{ path: '/' }
+		);
 	};
 
 	const fetchStateFromCookies = () => {

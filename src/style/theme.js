@@ -106,6 +106,9 @@ export const useStyles = makeStyles(theme => ({
 		textAlign: 'left',
 		marginBottom: '-4px'
 	},
+	modelCard_img: {
+		objectFit: 'contain !important'
+	},
 
 	// Header / App Bar
 	appBarContainer: {
@@ -118,7 +121,8 @@ export const useStyles = makeStyles(theme => ({
 	},
 	appLettering: {
 		height: '64px !important',
-		padding: '15px 0'
+		padding: '15px 0',
+		cursor: 'pointer'
 	},
 	appLogo: {
 		marginRight: '1rem'
@@ -179,7 +183,7 @@ export const useStyles = makeStyles(theme => ({
 	},
 	fold_controls_button_container: {},
 	fold_controls_button_icon: {
-		fontSize: '32px !important',
+		fontSize: '32px !important'
 	},
 	fold_diagrams_container: {
 		width: '100%',
@@ -245,8 +249,8 @@ export const useStyles = makeStyles(theme => ({
 	// Instructional Hierarchy
 	hier_card: {
 		position: 'absolute',
-		bottom: "64px",
-		left: "435px",
+		bottom: '64px',
+		left: '435px',
 		zIndex: 3001
 	},
 	hier_expandCtrl: {
@@ -255,9 +259,9 @@ export const useStyles = makeStyles(theme => ({
 		top: '0.5rem'
 	},
 	hier_container: {
-		width: "100%",
-		verticalAlign: "top",
-		padding: "7px",
+		width: '100%',
+		verticalAlign: 'top',
+		padding: '7px',
 		display: 'inline-flex'
 	},
 	hier_node_container: {
@@ -265,11 +269,10 @@ export const useStyles = makeStyles(theme => ({
 		flexDirection: 'column',
 		justifyContent: 'space-evenly',
 		alignItems: 'stretch',
-		width: "20px",
-		height: "100%"	
+		width: '20px',
+		height: '100%'
 	},
-	hier_node_anchor: {
-	},
+	hier_node_anchor: {},
 	hier_node: {
 		borderRadius: '10px',
 		width: '16px',
@@ -280,32 +283,61 @@ export const useStyles = makeStyles(theme => ({
 		height: '16px'
 	},
 	hier_node__default: {
-		backgroundColor: 'rgb(0, 0, 0, 0.05)',
+		backgroundColor: 'rgb(0, 0, 0, 0.05)'
 	},
 	hier_node__active: {
-		backgroundColor: '#e3420c',
+		backgroundColor: '#e3420c'
 	},
 	hier_node__inUse: {
-		backgroundColor: '#a33612',
+		backgroundColor: '#a33612'
 	},
 	hier_node_tooltip: {
-		zIndex: "8001 !important"
+		zIndex: '8001 !important'
 	},
 	hier_node_bookend: {
-		width: "100%",
+		width: '100%',
 		height: '16px'
 	},
 	hier_desc_card: {
 		position: 'absolute',
-		height: "200px",
-		width: "400px",
-		bottom: "64px",
+		height: '200px',
+		width: '400px',
+		bottom: '64px',
 		zIndex: 3001
 	},
 	hier_controls: {
 		position: 'absolute',
-		bottom: "274px",
+		bottom: '274px',
 		zIndex: 3001
+	},
+
+	// Model Select Filter
+	filter_container: {
+	},
+	filter_choices: {
+		marginBottom: "32px"
+	},
+	filter_toggle_container: {
+		float: "right"
+	},
+	filter_clear: {
+		marginTop: "-40px !important",
+		marginRight: "-10px !important",
+		zIndex: 2999
+	},
+	filter_toggle: {
+	},
+	filter_card: {
+		width: '100%'
+	},
+	filter_card__active: {
+	},
+
+	tagchip: {
+		margin: '2px !important'
+	},
+	tags__active: {
+		backgroundColor: ""
 	}
 }));
 

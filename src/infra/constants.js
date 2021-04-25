@@ -1,147 +1,193 @@
 /**
- * FILENAME: Constants.js 
+ * FILENAME: Constants.js
  *
- * DESCRIPTION: Contains constants for use accross the app. 
+ * DESCRIPTION: Contains constants for use accross the app.
  */
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import GitHubIcon from "@material-ui/icons/GitHub";
-import SchoolIcon from "@material-ui/icons/School";
-import ClassIcon from "@material-ui/icons/Class";
-import DashboardIcon from "@material-ui/icons/Dashboard";
-import GroupAddIcon from "@material-ui/icons/GroupAdd";
+import GitHubIcon from '@material-ui/icons/GitHub';
+import SchoolIcon from '@material-ui/icons/School';
+import ClassIcon from '@material-ui/icons/Class';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import GroupAddIcon from '@material-ui/icons/GroupAdd';
 
-// The FOLD files 
-import BirdBase from "./../folds/BirdBase.json";
-import BoatBase from "./../folds/BoatBase.json";
-import FrogBase from "./../folds/FrogBase.json";
-import WaterBombBase from "./../folds/WaterBombBase.json";
-import SailBoat from "./../folds/SailBoat.json";
-import Heart from "./../folds/Heart.json";
-import Crane from "./../folds/Crane.json";
-import Butterfly from "./../folds/Butterfly.json";
-import Lily from "./../folds/Lily.json";
+// The FOLD files
+import BirdBase from './../folds/BirdBase.json';
+import BoatBase from './../folds/BoatBase.json';
+import FrogBase from './../folds/FrogBase.json';
+import WaterBombBase from './../folds/WaterBombBase.json';
+import SailBoat from './../folds/SailBoat.json';
+import Heart from './../folds/Heart.json';
+import Crane from './../folds/Crane.json';
+import Butterfly from './../folds/Butterfly.json';
+import Lily from './../folds/Lily.json';
+
+// Images
+import lilyImage from './../static/lily_thumbnail.png';
+import craneImage from './../static/crane_thumbnail.png';
+import butterflyImage from './../static/butterfly_thumbnail.png';
+import heartImage from './../static/heart_thumbnail.png';
+import sailboatImage from './../static/sailboat_thumbnail.png';
+import waterbomb_baseImage from './../static/waterbomb_base_thumbnail.png';
+import boat_baseImage from './../static/boat_base_thumbnail.png';
+import bird_baseImage from './../static/bird_base_thumbnail.png';
 
 export const Pages = {
-	Splash: "Splash",
-	ModelSelect: "ModelSelect",
-	Fold: "Fold",
-	User: "User",
+	Splash: 'Splash',
+	ModelSelect: 'ModelSelect',
+	Fold: 'Fold',
+	User: 'User',
 
 	// Used but undefined
-	Lesson: "Lesson",
-	History: "History",
-	LearnDashboard: "LearnDashboard",
-	TeachDashboard: "TeachDashboard"
+	Lesson: 'Lesson',
+	History: 'History',
+	LearnDashboard: 'LearnDashboard',
+	TeachDashboard: 'TeachDashboard'
+};
+
+export const TagCategories = {
+	type: {
+		text: 'Type',
+		xs: 6,
+		sm: 4,
+		md: 2
+	},
+	author: {
+		text: 'Author',
+		xs: 6,
+		sm: 4,
+		md: 2
+	},
+	counterpart: {
+		text: 'Object',
+		xs: 12,
+		sm: 8,
+		md: 4
+	},
+	duration: {
+		text: 'Time',
+		xs: 12,
+		sm: 8,
+		md: 4
+	}
 };
 
 export const Tags = {
 	base: {
-		text: "Base",
-		category: "family"
+		text: 'Base',
+		category: 'type'
+	},
+	model: {
+		text: 'Model',
+		category: 'type'
+	},
+	traditional: {
+		text: 'Traditional',
+		category: 'author'
 	},
 	bird: {
-		text: "Bird",
-		category: "counterpart",
+		text: 'Bird',
+		category: 'counterpart'
 	},
 	insect: {
-		text: "Insect",
-		category: "counterpart",
+		text: 'Insect',
+		category: 'counterpart'
 	},
 	animal: {
-		text: "Animal",
-		category: "counterpart",
+		text: 'Animal',
+		category: 'counterpart'
 	},
 	boat: {
-		text: "Boat",
-		category: "counterpart"
+		text: 'Boat',
+		category: 'counterpart'
 	},
 	flower: {
-		text: "Flower",
-		category: "counterpart"
+		text: 'Flower',
+		category: 'counterpart'
 	},
 	five_mins: {
-		text: "5 Mins",
-		category: "duration"
+		text: '5 Mins',
+		category: 'duration'
 	},
 	fifteen_mins: {
-		text: "15 Mins",
-		category: "duration"
+		text: '15 Mins',
+		category: 'duration'
 	},
 	thirty_mins: {
-		text: "30 Mins",
-		category: "duration"
+		text: '30 Mins',
+		category: 'duration'
 	},
 	hour_plus: {
-		text: "1+ hours",
-		category: "duration"
+		text: '1+ hours',
+		category: 'duration'
 	}
 };
 
 export const Folds = {
-	BirdBase: {
-		name: "Bird Base",
-		description: "The first base many learn, this is perfect for winged creations such as birds and dragons.",
-		tags: ["base"],
-		author: "Traditional",
-		json: BirdBase
-	},
-	BoatBase: {
-		name: "Boat Base",
-		description: "A more specific base for blocky models, such as boats and frames.",
-		tags: ["base"],
-		author: "Traditional",
-		json: BoatBase
-	},
-	WaterBombBase: {
-		name: "Waterbomb Base",
-		description: "A very simple base with four flaps.",
-		tags: ["base"],
-		author: "Traditional",
-		json: WaterBombBase
-	},
-	// FrogBase: {
-	// 	name: "Frog Base",
-	// 	description: "A complex base used for models with length-wise asymmetry, like flowers and animals.",
-	// 	tags: ["base"],
-	// 	author: "Traditional",
-	// 	json: FrogBase 
-	// },
 	SailBoat: {
-		name: "Sail Boat",
-		description: "An assymetrical sailboat with a built in kickstand - perfect for display.",
-		tags: ["boat"],
-		author: "Traditional",
-		json: SailBoat 
+		name: 'Sail Boat',
+		staticImg: sailboatImage,
+		description: 'An assymetrical sailboat with a built in kickstand - perfect for display.',
+		tags: ['model', 'boat', 'five_mins'],
+		author: 'Traditional',
+		json: SailBoat
 	},
 	Heart: {
-		name: "Heart",
+		name: 'Heart',
+		staticImg: heartImage,
 		description: "A flat heart that's particularly easy to fold - a great place to start.",
-		tags: ["5_mins"],
-		author: "Traditional",
-		json: Heart 
+		tags: ['model', 'five_mins'],
+		author: 'Traditional',
+		json: Heart
 	},
 	Crane: {
-		name: "Crane",
-		description: "The quintessential origami model - fold 1000 of these!",
-		tags: ["15_mins", "bird", "animal"],
-		author: "Traditional",
-		json: Crane 
+		name: 'Crane',
+		staticImg: craneImage,
+		description: 'The quintessential origami model - fold 1000 of these!',
+		tags: ['model', 'fifteen_mins', 'bird', 'animal'],
+		author: 'Traditional',
+		json: Crane
 	},
 	Butterfly: {
-		name: "Butterfly",
-		description: "A 3D flapping butterfly built upon a boat base.",
-		tags: ["5_mins", "insect", "animal"],
-		author: "Traditional",
-		json: Butterfly 
+		name: 'Butterfly',
+		staticImg: butterflyImage,
+		description: 'A 3D flapping butterfly built upon a boat base.',
+		tags: ['model', 'five_mins', 'insect', 'animal'],
+		author: 'Traditional',
+		json: Butterfly
 	},
 	Lily: {
-		name: "Lily",
-		description: "A symmetrical flower perfect for a boquet, or mounted on a folded stem.",
-		tags: ["15_mins", "flower"],
-		author: "Traditional",
-		json: Lily 
+		name: 'Lily',
+		staticImg: lilyImage,
+		description: 'A symmetrical flower perfect for a boquet, or mounted on a folded stem.',
+		tags: ['model', 'fifteen_mins', 'flower'],
+		author: 'Traditional',
+		json: Lily
 	},
+	BirdBase: {
+		name: 'Bird Base',
+		staticImg: bird_baseImage,
+		description: 'The first base many learn, this is perfect for winged creations such as birds and dragons.',
+		tags: ['base'],
+		author: 'Traditional',
+		json: BirdBase
+	},
+	WaterBombBase: {
+		name: 'Waterbomb Base',
+		staticImg: waterbomb_baseImage,
+		description: 'A very simple base with four flaps.',
+		tags: ['base'],
+		author: 'Traditional',
+		json: WaterBombBase
+	},
+	BoatBase: {
+		name: 'Boat Base',
+		staticImg: boat_baseImage,
+		description: 'A more specific base for blocky models, such as boats and frames.',
+		tags: ['base'],
+		author: 'Traditional',
+		json: BoatBase
+	}
 };
 
 export const initAppReducerState = {
@@ -152,7 +198,8 @@ export const initAppReducerState = {
 		foldHash: 0,
 		useImages: false,
 		showEditor: true,
-		expandHierarchy: false 
+		expandHierarchy: false,
+		searchStr: ''
 	},
 	foldState: {
 		hash: 0,
@@ -173,78 +220,91 @@ export const initAppReducerState = {
 		showLables: false
 	},
 	showNavDrawer: false
-
 };
 
 export const Actions = {
-	SET_LAYOUT_STATE: "SET_LAYOUT_STATE",
-	SET_SHOW_NAV_DRAWER: "SET_SHOW_NAV_DRAWER",
-	SET_PAGE_CONFIG: "SET_PAGE_CONFIG",
-	SET_FOLD_STATE: "SET_FOLD_STATE",
-	SET_EDITOR_STATE: "SET_EDITOR_STATE",
+	SET_LAYOUT_STATE: 'SET_LAYOUT_STATE',
+	SET_SHOW_NAV_DRAWER: 'SET_SHOW_NAV_DRAWER',
+	SET_PAGE_CONFIG: 'SET_PAGE_CONFIG',
+	SET_FOLD_STATE: 'SET_FOLD_STATE',
+	SET_EDITOR_STATE: 'SET_EDITOR_STATE'
 };
 
 export const initNavTree = [
-	{	
-		text: "What is Origami?",
-		key: "context_root",
+	{
+		text: 'Return to Fold',
+		conditional: "is_saved_fold",
+		params: { color: "primary" },
+		key: Pages.Fold 
+	},
+	{
+		text: 'Model Select',
+		key: Pages.ModelSelect 
+	},
+	{
+		text: 'User Page',
+		key: Pages.User 
+	},
+	{
+		text: 'What is Origami?',
+		key: 'context_root',
 		children: [
 			{
-				text: "History",
-				key: "history"				
+				text: 'History',
+				key: 'history'
 			},
 			{
-				text: "Origami Today",
-				key: "current_origami"
+				text: 'Origami Today',
+				key: 'current_origami'
 			},
 			{
-				text: "Practical Origami",
-				key: "practical"
+				text: 'Practical Origami',
+				key: 'practical'
 			}
 		]
 	},
-	{	
-		text: "Learn Origami",
-		key: "learn_root",
+	{
+		text: 'Learn Origami',
+		key: 'learn_root',
 		children: [
 			{
 				icon: <DashboardIcon />,
-				text: "Dashboard",
-				key: "learn_dashboard"				
+				text: 'Dashboard',
+				key: 'learn_dashboard'
 			},
 			{
 				icon: <GroupAddIcon />,
-				text: "Join Class",
-				key: "join_class"
+				text: 'Join Class',
+				key: 'join_class'
 			}
 		]
 	},
-	{	
-		text: "Teach Origami",
-		key: "teach_root",
+	{
+		text: 'Teach Origami',
+		key: 'teach_root',
 		children: [
 			{
 				icon: <DashboardIcon />,
-				text: "Lesson Plans",
-				key: "lesson_plan_dashboard"				
+				text: 'Lesson Plans',
+				key: 'lesson_plan_dashboard'
 			},
 			{
 				icon: <SchoolIcon />,
-				text: "Read Research Paper",
-				key: "google_scholar"
+				text: 'Read Research Paper',
+				key: 'google_scholar'
 			},
 			{
 				icon: <ClassIcon />,
-				text: "Origami in the Classroom",
-				key: "teaching_tips"
+				text: 'Origami in the Classroom',
+				key: 'teaching_tips'
 			}
 		]
 	},
-	{	
+	{
 		icon: <GitHubIcon />,
-		text: "Source Code",
-		key: "github"
-	},
+		text: 'Source Code',
+		key: 'github'
+	}
 ];
 
 export const initFoldState = {
@@ -253,14 +313,14 @@ export const initFoldState = {
 	//place to store buffer geo vertex colors
 	colors: [],
 	indices: [],
-	nodes: [], 
-	faces: [], 
-	edges: [], 
-	creases: [], 
+	nodes: [],
+	faces: [],
+	edges: [],
+	creases: [],
 	vertices: [], //indexed vertices array
 	fold: null,
 	creaseParams: null
-}
+};
 
 /*
 export const Lines = {
