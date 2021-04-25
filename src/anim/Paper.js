@@ -342,7 +342,7 @@ export const Paper = props => {
 			if (vertIdx === cmpVertIdx) return false;
 
 			const distance = vert.distanceTo(cmpVert)
-			if (distance < 0.002 && distance > 0.00001) {
+			if (distance < 0.005 && distance > 0.00001) {
 				// console.log(`Snapping ${printVect(vert)} to ${printVect(cmpVert)}`);
 				vert.copy(cmpVert);
 				return true;
@@ -656,6 +656,14 @@ export const Paper = props => {
 			const edgeVerts = [cmd[0], cmd[1]];
 			const edgeIdx = fold.edges_vertices.findIndex(edge => edge.includes(cmd[0]) && edge.includes(cmd[1]));
 
+			// If this is the orig command (i.e. haven't recursed yet)
+			if (level === 0) {
+				// Remember that we folded this edge, to simulate paper creases
+				if (cmd[2] !== 180) {
+					creasedEdges.current.add(edgeIdx);
+				}
+			}
+
 			// Store the fold angle
 			if (!edgeIsTriangulation(edgeIdx, fold)) {
 				// console.log('storing angle', cmd[2], 'for edge', edgeIdx);
@@ -712,18 +720,6 @@ export const Paper = props => {
 				}
 			});
 			// console.log('[performCommands]', { cmd, newCmds, edgeIndices, isTri: [edgeIsTriangulation(edgeIndices[0], fold), edgeIsTriangulation(edgeIndices[1], fold)] });
-
-			// If this is the orig command (i.e. haven't recursed yet)
-			if (level === 0) {
-				// Remember not to move the verts of this edge
-				// vertsMoved.add(edgeVerts[0]);
-				// vertsMoved.add(edgeVerts[1]);
-
-				// Remember that we folded this edge, to simulate paper creases
-				if (cmd[2] !== 180) {
-					creasedEdges.current.add(edgeIdx);
-				}
-			}
 
 			// CAUTION - everything below this line is only executed for folds that will have a direct effect
 
