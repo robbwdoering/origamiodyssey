@@ -68,7 +68,7 @@ export const InstructionalHierarchy = props => {
 			width: (maxLevel - 1) * HIER_PX_SIZE + 14 + 'px',
 			right: (window.innerWidth / 2) + 460 + 'px',
 			height: contStyle.height,
-			top: (window.innerHeight - 262) - (HIER_PX_SIZE * (foldState.stepIdx + 1)) + 'px'
+			top: (window.innerHeight - 266) - (HIER_PX_SIZE * (foldState.stepIdx + 1)) + 'px'
 		};
 
 		return style;
@@ -245,7 +245,7 @@ export const InstructionalHierarchy = props => {
 
 	// console.log('[InstructionalHierarchy]', renderRows.current);
 
-	const ctrlCardLeftPx = `${435 + (parseInt(cardStyle.width) || 64) + 10}px`;
+	const ctrlCardLeftPx = `${(window.innerWidth / 2) + 256}px`;
 
 	console.log("[InstructionalHierarchy]", trackTop, window.innerHeight);
 
@@ -276,7 +276,7 @@ export const InstructionalHierarchy = props => {
 
 			{/* Text box shows details on the current step */}
 			{initFold && initFold.instructions && (
-				<Card className={classes.hier_desc_card} style={{left: ctrlCardLeftPx}}> 
+				<Card className={classes.hier_desc_card}> 
 					<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
 					<Typography>
 						{(foldState.stepIdx < foldState.maxSteps - 1) ?
@@ -288,7 +288,7 @@ export const InstructionalHierarchy = props => {
 				</Card>
 			)}
 
-			<div className={classes.hier_controls} style={{left: ctrlCardLeftPx}}>
+			<div className={classes.hier_controls} style={{right: ctrlCardLeftPx}}>
 				<Fab
 					classes={buttonClasses}
 					onClick={() => changeStep(-1)}
