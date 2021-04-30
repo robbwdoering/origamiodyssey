@@ -63,6 +63,13 @@ export const Body = props => {
 			case Pages.User:
 				return <User {...pageProps} />;
 			case Pages.Fold:
+				return (
+					<InstructionalHierarchy
+						windowHeight={windowHeight}
+						initFold={fold.current.json}
+						foldLastUpdated={fold.current.lastUpdated}
+					/>
+				);
 			default:
 				return null;
 		}
@@ -71,25 +78,15 @@ export const Body = props => {
 	const renderPiecemeal = () => {
 		switch (layoutState.page) {
 			case Pages.Fold:
-				return (
-					<React.Fragment>
-						<InstructionalHierarchy
-							windowHeight={windowHeight}
-							initFold={fold.current.json}
-							foldLastUpdated={fold.current.lastUpdated}
-						/>
-
-						{userState.showEditor && (
-							<FoldEditorCards
-								windowHeight={windowHeight}
-								initFold={fold.current.json}
-								curFold={layoutState.curFold}
-								foldOverrideCallback={foldOverrideCallback}
-								foldLastUpdated={fold.current.lastUpdated}
-							/>
-						)}
-					</React.Fragment>
-				);
+				return ((userState.showEditor) ? (
+					<FoldEditorCards
+						windowHeight={windowHeight}
+						initFold={fold.current.json}
+						curFold={layoutState.curFold}
+						foldOverrideCallback={foldOverrideCallback}
+						foldLastUpdated={fold.current.lastUpdated}
+					/>
+				) : null);
 			case Pages.Splash:
 			case Pages.ModelSelect:
 			case Pages.User:

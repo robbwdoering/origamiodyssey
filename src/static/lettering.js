@@ -1,6 +1,6 @@
 import React from "react";
 
-function Icon() {
+function Icon(props = {}) {
       return (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -9,6 +9,7 @@ function Icon() {
                 height="34px"
                 version="1.1"
                 viewBox="0 0 332.913 29.369"
+                {...props}
               >
                 <g fillOpacity="1" transform="translate(32.076 95.328)">
                   <g transform="translate(-16.933 .265)">

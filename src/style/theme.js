@@ -47,15 +47,26 @@ export const useStyles = makeStyles(theme => ({
 		maxWidth: '1200px',
 		// height: "100%",
 		margin: '0 auto',
-		padding: '2rem',
+		padding: '32px',
 		zIndex: 300,
-		position: 'relative'
+		position: 'relative',
+		pointerEvents: 'none'
+	},
+	centerColumn_flex: {
+		height: "100%",
+		width: "100%",
+		display: "flex",
+		flexDirection: "row",
+		zIndex: 300,
+		alignItems: "flex-end",
+		pointerEvents: 'none'
 	},
 	sceneContainer: {
 		width: '100%',
 		height: '100%',
 		position: 'absolute',
 		marginTop: '-128px'
+		// zIndex: 401
 	},
 
 	// Page "main col" style
@@ -172,18 +183,25 @@ export const useStyles = makeStyles(theme => ({
 		bottom: '64px'
 	},
 	fold_controls_button: {
-		// height: '64px',
-		// width: '64px',
-		alignItems: 'center',
-		verticalAlign: 'middle',
-		margin: '0.5rem !important'
+		pointerEvents: 'all',
+		margin: '0 2.5% !important',
+		zIndex: 402
 	},
 	fold_controls_button_label: {
-		// flexDirection: 'column'
+		fontSize: '1rem'
 	},
-	fold_controls_button_container: {},
+	fold_controls_button_label_large: {
+		fontSize: '2rem'
+	},
+	fold_controls_button_container: {
+		textAlign: "right",
+		flexGrow: 1
+	},
 	fold_controls_button_icon: {
 		fontSize: '32px !important'
+	},
+	fold_controls_button_icon_large: {
+		fontSize: '64px !important'
 	},
 	fold_diagrams_container: {
 		width: '100%',
@@ -249,6 +267,7 @@ export const useStyles = makeStyles(theme => ({
 	// Instructional Hierarchy
 	hier_card: {
 		position: 'absolute',
+		pointerEvents: 'all',
 		zIndex: 2999
 	},
 	hier_expandCtrl: {
@@ -301,17 +320,13 @@ export const useStyles = makeStyles(theme => ({
 		height: '16px'
 	},
 	hier_desc_card: {
-		position: 'absolute',
+		pointerEvents: 'all',
 		height: '200px',
 		width: '400px',
-		bottom: '64px',
-		right: '50%',
-		zIndex: 3001
+		zIndex: 402
 	},
 	hier_controls: {
-		position: 'absolute',
-		bottom: '274px',
-		zIndex: 3001
+		// zIndex: 3001
 	},
 
 	// Model Select Filter

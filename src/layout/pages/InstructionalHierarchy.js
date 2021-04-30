@@ -63,12 +63,16 @@ export const InstructionalHierarchy = props => {
 	};
 
 	const calcCardPos = () => {
+		// const right = window.innerWidth > 1200 ? ((window.innerWidth / 2) + 0 + 'px') : undefined;
+		// const left = right ? undefined : 10;
+		const width = (maxLevel - 1) * HIER_PX_SIZE + 14
+		const left = window.innerWidth < (1200 + width + 10) ? 0 : (-width - 10);
 		let style = {
 			// Don't show first column, and account for padding
-			width: (maxLevel - 1) * HIER_PX_SIZE + 14 + 'px',
-			right: (window.innerWidth / 2) + 460 + 'px',
+			width: width + 'px',
+			left: left + 'px',
 			height: contStyle.height,
-			top: (window.innerHeight - 266) - (HIER_PX_SIZE * (foldState.stepIdx + 1)) + 'px'
+			top: (window.innerHeight - 296) - (HIER_PX_SIZE * (foldState.stepIdx + 1)) + 'px'
 		};
 
 		return style;
@@ -247,10 +251,18 @@ export const InstructionalHierarchy = props => {
 
 	const ctrlCardLeftPx = `${(window.innerWidth / 2) + 256}px`;
 
-	console.log("[InstructionalHierarchy]", trackTop, window.innerHeight);
+	const curBodyWidth = Math.min(1200, window.innerWidth);
+	const buttonSize = Math.min(200, curBodyWidth * 0.15);
+	const buttonIconClass = buttonSize < 100 ?  classes.fold_controls_button_icon : classes.fold_controls_button_icon_large;
+	const fabStyle = {
+		width: buttonSize + 'px',
+		height: buttonSize + 'px',
+	};
+
+	console.log("[InstructionalHierarchy]", trackTop, window.innerHeight, window.innerWidth, cardStyle.width);
 
 	return (
-		<React.Fragment>
+		<div className={classes.centerColumn_flex}>
 			{/* The card contains the timeline, which contains most actions here */}
 			<div className={classes.hier_card} style={cardStyle} ref={cardRef}>
 				{/* The timeline */}
@@ -264,11 +276,7 @@ export const InstructionalHierarchy = props => {
 							}
 							return acc;
 						}, [])}
-					<div className={classes.hier_node_anchor} onClick={jumpToEnd}>
-						<div
-							className={`${classes.hier_node} ${classes.hier_node_bookend}`}
-						/>
-					</div>
+					<div className={`${classes.hier_node} ${classes.hier_node_bookend}`} />
 				</div>
 
 				{/* The "current Time" line */}
@@ -276,7 +284,7 @@ export const InstructionalHierarchy = props => {
 
 			{/* Text box shows details on the current step */}
 			{initFold && initFold.instructions && (
-				<Card className={classes.hier_desc_card}> 
+				<Card className={classes.hier_desc_card} style={{marginLeft: window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) + 10 + 'px') : "0"}}> 
 					<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
 					<Typography>
 						{(foldState.stepIdx < foldState.maxSteps - 1) ?
@@ -288,33 +296,35 @@ export const InstructionalHierarchy = props => {
 				</Card>
 			)}
 
-			<div className={classes.hier_controls} style={{right: ctrlCardLeftPx}}>
+			<div className={classes.fold_controls_button_container}>
 				<Fab
 					classes={buttonClasses}
 					onClick={() => changeStep(-1)}
 					disabled={foldState.stepIdx < 0}
+					style={fabStyle}
 					color="primary"
 					size="large"
 				>
-					<SkipPrevious className={classes.fold_controls_button_icon} />
+					<SkipPrevious className={buttonIconClass} />
 				</Fab>
 				<Fab
 					classes={buttonClasses}
 					onClick={() => changeStep(1)}
 					disabled={foldState.stepIdx >= foldState.maxSteps - 1}
+					style={fabStyle}
 					color="primary"
 					size="large"
 				>
-					<SkipNext className={classes.fold_controls_button_icon} />
+					<SkipNext className={buttonIconClass} />
 				</Fab>
 			</div>
 
 			{/* Annotations provide additional details on timeline items */}
-		</React.Fragment>
+		</div>
 	);
-	// 			<Fab aria-label="expand instructions" className={classes.hier_expandCtrl} onClick={handleExpandClick} color="secondary" size="small">
-	// 				{layoutState.expandHierarchy ? <ExpandLess /> : <ExpandMore />}
-	// 			</Fab>
+				// <Fab aria-label="expand instructions" className={classes.hier_expandCtrl} onClick={handleExpandClick} color="secondary" size="small">
+				// 	{layoutState.expandHierarchy ? <ExpandLess /> : <ExpandMore />}
+				// </Fab>
 };
 
 export const mapStateToProps = (state, props) => {

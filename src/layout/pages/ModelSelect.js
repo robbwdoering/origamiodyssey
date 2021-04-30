@@ -192,9 +192,9 @@ export const ModelSelect = props => {
 														clickable
 														label={Tags[tagKey].text}
 														className={
-															Tags[tagKey].category
+															`${Tags[tagKey].category
 																? classes[`tags__${Tags[tagKey].category}`]
-																: undefined
+																: undefined} ${classes.tagchip}`
 														}
 													/>
 											  ))
