@@ -40,7 +40,8 @@ export const useStyles = makeStyles(theme => ({
 	},
 	bodyContainer: {
 		marginTop: theme.spacing(8),
-		textAlign: 'center'
+		textAlign: 'center',
+		zIndex: 299
 	},
 	centerColumn: {
 		width: '100%',
@@ -73,7 +74,8 @@ export const useStyles = makeStyles(theme => ({
 	page_Splash: {},
 	page_ModelSelect_container: {
 		width: '100%',
-		height: '100%'
+		height: '100%',
+		pointerEvents: 'all'
 	},
 	page_FoldControls: {},
 	page_User: {},
@@ -323,7 +325,19 @@ export const useStyles = makeStyles(theme => ({
 		pointerEvents: 'all',
 		height: '200px',
 		width: '400px',
-		zIndex: 402
+		zIndex: 402,
+		overflow: 'visible !important'
+	},
+	hier_looper_rail: {
+		width: '100%',
+		textAlign: 'left'
+	},
+	hier_looper_container: {
+		zIndex: 402,
+		width: '400px',
+		top: '-20px',
+		height: '20px',
+		backgroundColor: 'red'
 	},
 	hier_controls: {
 		// zIndex: 3001
@@ -346,7 +360,8 @@ export const useStyles = makeStyles(theme => ({
 	filter_toggle: {
 	},
 	filter_card: {
-		width: '100%'
+		width: '100%',
+		pointerEvents: 'all'
 	},
 	filter_card__active: {
 	},

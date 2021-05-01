@@ -126,10 +126,9 @@ export const Body = props => {
 
 	const saveStateToCookies = () => {
 		// const finalFoldState = Object.assign({}, foldState, { stepIdx: -1 });
-		const finalLayoutState = Object.assign({}, layoutState, { searchStr: '' });
 		setCookies(
 			'origamiodyssey_state',
-			{ layoutState: finalLayoutState, foldState, editorState, userState },
+			{ layoutState, foldState, editorState, userState },
 			{ path: '/' }
 		);
 	};
@@ -137,8 +136,11 @@ export const Body = props => {
 	const fetchStateFromCookies = () => {
 		if (cookies.origamiodyssey_state) {
 			console.log('Applying state from cookies.', cookies.origamiodyssey_state);
-			setLayoutState(cookies.origamiodyssey_state.layoutState);
-			setFoldState(cookies.origamiodyssey_state.foldState);
+			// Override fields that we don't want to carry over between sessions 
+			const layoutState = Object.assign({}, cookies.origamiodyssey_state.layoutState, { searchStr: '' });
+			const foldState = Object.assign({}, cookies.origamiodyssey_state.foldState, { repeatRoot: -1, repeatRange: [] });
+			setLayoutState(layoutState);
+			setFoldState(foldState);
 			setEditorState(cookies.origamiodyssey_state.editorState);
 			setUserState(cookies.origamiodyssey_state.userState);
 		} else {
@@ -173,11 +175,16 @@ export const Body = props => {
 	const page = useMemo(renderPage, [layoutState.page]);
 	const piecemeal = useMemo(renderPiecemeal, [layoutState.page, windowHeight]);
 
+	const sceneStyle = {
+		height: windowHeight + 64 + 'px',
+		display: layoutState.page === Pages.Fold ? undefined : "none"
+	};
+
 	console.log('[body]', fold.current);
 
 	return (
 		<div className={classes.bodyContainer} ref={containerRef}>
-			<div className={classes.sceneContainer} style={{ height: windowHeight + 'px' }}>
+			<div className={classes.sceneContainer} style={sceneStyle}>
 				<Scene
 					paperSize={windowHeight}
 					initFold={fold.current.json}

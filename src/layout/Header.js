@@ -67,7 +67,7 @@ export const Header = props => {
 						<MenuIcon />
 					</IconButton>
 					<div className={styles.appLettering} onClick={toggleMenu}>
-						<Lettering />
+						<Lettering style={{maxWidth: window.innerWidth }} />
 					</div>
 					<div className={styles.searchContainer}>
 						<div className={styles.searchIcon}>
@@ -82,25 +82,6 @@ export const Header = props => {
 					</div>
 				</Toolbar>
 			</AppBar>
-			<Menu
-				elevation={0}
-				getContentAnchorEl={null}
-				anchorOrigin={{
-					vertical: 'bottom',
-					horizontal: 'center'
-				}}
-				transformOrigin={{
-					vertical: 'top',
-					horizontal: 'center'
-				}}
-				anchorEl={showMenu}
-				open={Boolean(showMenu)}
-				keepMounted
-				onClose={toggleMenu}
-			>
-				<MenuItem> A Menu without options </MenuItem>
-				<MenuItem> is no menu at all </MenuItem>
-			</Menu>
 		</React.Fragment>
 	);
 };

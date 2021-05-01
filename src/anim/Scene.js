@@ -89,11 +89,9 @@ export const Scene = props => {
 		setOverlayPos(overlayPos)
 	}
 
-	const style = layoutState.page === Pages.Fold ? undefined : { display: "none"};
-
 	return (
 		<React.Fragment>
-			<Canvas camera={{fov: 100, position: [0, 1.8, 0]}} onCreated={state => state.gl.setClearColor("red")} style={style}>
+			<Canvas camera={{fov: 100, position: [0, 1.8, 0]}} onCreated={state => state.gl.setClearColor("red")} >
 				<spotLight position={[5, 10, 0]} color='#f1f1ff' distance={100} penumbra={0.75} decay={2} />
 				<CameraControls />
 

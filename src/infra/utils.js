@@ -90,10 +90,19 @@ export const calcMaxLevel = inst => {
 };
 
 export const findInUseFamilyNode = (stepArr, path) => {
-	return stepArr.findIndex(step => {
+	return stepArr.reduce((acc, step, index) => {
 		// True if inUse step is an ancestor or descendant of this step
-		return path.startsWith(step[0]) || step[0].startsWith(path);
-	});
+		if (path.startsWith(step[0]) || step[0].startsWith(path)) {
+			// First index holds the first discovered descendant
+			if (acc[0] == -1) {
+				acc[0] = index;
+			}
+
+			// Second index holds the last discovered descendant
+			acc[1] = index;
+		}
+		return acc;
+	}, [-1, -1]);
 };
 
 export const getHierNode = (instructions, path) => {

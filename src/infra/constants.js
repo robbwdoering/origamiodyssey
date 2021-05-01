@@ -206,7 +206,9 @@ export const initAppReducerState = {
 		stepIdx: -1, // Depends on selected level
 		active: false,
 		overrideWithEditor: false,
-		usingDefaults: true
+		usingDefaults: true,
+		repeatRoot: -1,
+		repeatRange: null,
 	},
 	editorState: {
 		hash: 0,

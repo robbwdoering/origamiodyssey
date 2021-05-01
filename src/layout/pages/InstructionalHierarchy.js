@@ -45,6 +45,8 @@ export const InstructionalHierarchy = props => {
 	const activeNodeRef = useRef();
 	const renderRows = useRef([]);
 	const [curHash, setHash] = useState(0);
+	const [looperDirection, setLooperDirection] = useState(-1);
+	const [looperWorkerId, setLooperWorkerId] = useState(-1);
 
 	const maxLevel = useMemo(() => calcMaxLevel(initFold && initFold.instructions), [foldLastUpdated]);
 
@@ -55,10 +57,12 @@ export const InstructionalHierarchy = props => {
 	// ----------------
 
 	// Changes the current instructional sequential step, prompting animation.
-	const changeStep = delta => {
+	const changeStep = (delta, isFromLooper) => {
 		let newStepIndex = Math.min(Math.max(foldState.stepIdx + delta, -1), foldState.maxSteps);
 		setFoldState({
-			stepIdx: newStepIndex
+			stepIdx: newStepIndex,
+			repeatRoot: isFromLooper ? undefined : -1,
+			repeatRange: isFromLooper ? undefined : null
 		});
 	};
 
@@ -86,20 +90,70 @@ export const InstructionalHierarchy = props => {
 		setLayoutState({ expandHierarchy: !layoutState.expandHierarchy });
 	};
 
-	const handleHierNodeClick = path => {
+	const handleHierNodeClick = (event, path) => {
 		const stepIdx = stepArray.findIndex(step => path === step[0]);
 		const newState = {};
 
-		if (stepIdx !== -1) {
-			// If it's in the stepArray, just set the index to that element
-			newState.stepIdx = stepIdx - 1;
-		} else {
-			// Else we need to find whatever in use index corresponds
-			const inUseIndex = findInUseFamilyNode(stepArray, path);
-			if (inUseIndex !== -1) {
-				newState.stepIdx = inUseIndex - 1;
+		const [startUseIndex, endUseIndex] = findInUseFamilyNode(stepArray, path);
+		console.log("[handleHierNodeClick]", event, startUseIndex, endUseIndex);
+
+		if (!event.shiftKey) {
+			// If no shift, just move to this node 
+			if (stepIdx !== -1) {
+				// If it's in the stepArray, just set the index to that element
+				newState.stepIdx = stepIdx - 1;
+			} else {
+				// Else we need to find whatever in use index corresponds
+				if (startUseIndex !== -1 && endUseIndex !== -1) {
+					newState.stepIdx = startUseIndex - 1;
+				}
 			}
+
+			if (foldState.repeatRoot !== -1) {
+				setFoldState({
+					repeatRoot: -1,
+					repeatRange: []
+				});
+
+				if (looperWorkerId !== -1) {
+					clearInterval(looperWorkerId);
+					setLooperWorkerId(-1);
+				}
+			}
+		} else {
+			let newFoldState = {};
+
+			// If shift held, then start or modify repeatRange 
+			if (foldState.repeatRoot !== -1) {
+				// Modify existing range, replacing the second clicked index
+				if (stepIdx !== -1) {
+					newFoldState.repeatRange = [foldState.repeatRoot, stepIdx];
+				} else if (startUseIndex <= foldState.repeatRoot && endUseIndex >= foldState.repeatRoot) {
+					// Either clicked a descendant or ancestor of the root - basically undefined behavior
+					newFoldState.repeatRange = [startUseIndex, endUseIndex];
+				} else if (startUseIndex < foldState.repeatRoot) {
+					// Clicked something before
+					newState.repeatRange = [foldState.repeatRoot, startUseIndex]	
+				} else {
+					// Clicked something after
+					newState.repeatRange = [foldState.repeatRoot, endUseIndex]	
+				}
+			} else {
+				if (stepIdx !== -1) {
+					newFoldState.repeatRoot = stepIdx;
+					newFoldState.repeatRange = [stepIdx, stepIdx];
+				} else {
+					newFoldState.repeatRoot = startUseIndex;
+					newFoldState.repeatRange = [startUseIndex, endUseIndex];
+				}
+			}
+
+			console.log("[setting repeatRange]", newFoldState);
+
+			newFoldState.repeatRange.sort();
+			setFoldState(newFoldState);
 		}
+
 
 		setFoldState(newState);
 	};
@@ -177,7 +231,7 @@ export const InstructionalHierarchy = props => {
 				classes={{ popper: classes.hier_node_tooltip }}
 				key={path}
 			>
-				<div className={`${classes.hier_node_anchor}`} ref={activeNodeRef} style={style} onClick={() => handleHierNodeClick(path)}>
+				<div className={`${classes.hier_node_anchor}`} ref={activeNodeRef} style={style} onClick={event => handleHierNodeClick(event, path)}>
 					<div
 						className={`${classes.hier_node} ${classes['hier_node__' + type]}`}
 						style={{ height: pxHeight }}
@@ -221,6 +275,35 @@ export const InstructionalHierarchy = props => {
 		return node.desc;
 	}
 
+	const looperWorker = () => {
+		const distFromStart = foldState.stepIdx - foldState.repeatRange[0];
+		const distFromEnd = foldState.repeatRange[1] - foldState.stepIdx;
+
+		let tmpDirection = looperDirection;
+
+		if (looperDirection === -1 && distFromStart === -1) {
+			// Switch direction to go back up
+			setLooperDirection(1);
+			tmpDirection = 1;
+		} else if (looperDirection(1) && distFromEnd === 0) {
+			// Switch direction to go back down 
+			setLooperDirection(-1);
+			tmpDirection = -1;
+		}
+
+		changeStep(tmpDirection, true);
+	}
+
+	const renderLooperItems = () => {
+		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
+			return null;
+		}
+
+		if (looperWorkerId === -1) {
+			setLooperWorkerId(setInterval(looperWorker, 2500));
+		}
+	};
+
 	// ---------
 	// LIFECYCLE
 	// ---------
@@ -240,9 +323,18 @@ export const InstructionalHierarchy = props => {
 		initFold && initFold.frame_title
 	]);
 
-	// Rerender whenever the page resizes
+	// Perform mount and unmount actions
 	useEffect(() => {
+		// Rerender whenever the page resizes
 		window.addEventListener('resize', triggerRerender);
+
+		// Unmount logic
+		return () => {
+			// Stop the looper worker if it's running
+			if (looperWorkerId !== -1) {
+				clearInterval(looperWorkerId);
+			}
+		}
 	}, []);
 
 	useEffect(() => refreshRenderRows(maxLevel), [foldLastUpdated, foldState.stepIdx]);
@@ -259,7 +351,9 @@ export const InstructionalHierarchy = props => {
 		height: buttonSize + 'px',
 	};
 
-	console.log("[InstructionalHierarchy]", trackTop, window.innerHeight, window.innerWidth, cardStyle.width);
+	const instCardMargin = window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) + 10 + 'px') : "0";
+
+	console.log("[InstructionalHierarchy]", foldState);
 
 	return (
 		<div className={classes.centerColumn_flex}>
@@ -284,16 +378,25 @@ export const InstructionalHierarchy = props => {
 
 			{/* Text box shows details on the current step */}
 			{initFold && initFold.instructions && (
-				<Card className={classes.hier_desc_card} style={{marginLeft: window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) + 10 + 'px') : "0"}}> 
-					<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
-					<Typography>
-						{(foldState.stepIdx < foldState.maxSteps - 1) ?
+				<div>
+					{foldState.repeatRoot !== -1 && (
+						<div className={classes.hier_looper_rail} style={{marginLeft: instCardMargin}}>
+							<div className={classes.hier_looper_container} >
+								{renderLooperItems()}
+							</div>
+						</div>
+					)}
+					<Card className={classes.hier_desc_card} style={{marginLeft: instCardMargin}}> 
+						<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
+						<Typography>
+							{(foldState.stepIdx < foldState.maxSteps - 1) ?
 								getDescForNode(foldState.stepIdx) :
 								// "text" :
 								"Congratulations - your model is complete!"
-						}
-					</Typography>
-				</Card>
+							}
+						</Typography>
+					</Card>
+				</div>
 			)}
 
 			<div className={classes.fold_controls_button_container}>
