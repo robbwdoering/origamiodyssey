@@ -281,7 +281,7 @@ export const useStyles = makeStyles(theme => ({
 		width: '100%',
 		height: '264px',
 		verticalAlign: 'top',
-		padding: '7px',
+		padding: '0 7px',
 		display: 'inline-flex'
 	},
 	hier_node_container: {
@@ -335,9 +335,18 @@ export const useStyles = makeStyles(theme => ({
 	hier_looper_container: {
 		zIndex: 402,
 		width: '400px',
-		top: '-20px',
-		height: '20px',
-		backgroundColor: 'red'
+		top: '-10px',
+		height: '10px',
+		display: 'flex'
+	},
+	hier_looper_item: {
+		height: '5px',
+		borderRadius: "2.5px",
+		flexGrow: 1,
+		margin: "0 2px !important"
+	},
+	hier_looper_item__active: {
+		backgroundColor: '#a33612',
 	},
 	hier_controls: {
 		// zIndex: 3001

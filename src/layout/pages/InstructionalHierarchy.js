@@ -47,6 +47,7 @@ export const InstructionalHierarchy = props => {
 	const [curHash, setHash] = useState(0);
 	const [looperDirection, setLooperDirection] = useState(-1);
 	const [looperWorkerId, setLooperWorkerId] = useState(-1);
+	const [looperHash, setLooperHash] = useState(0);
 
 	const maxLevel = useMemo(() => calcMaxLevel(initFold && initFold.instructions), [foldLastUpdated]);
 
@@ -59,24 +60,60 @@ export const InstructionalHierarchy = props => {
 	// Changes the current instructional sequential step, prompting animation.
 	const changeStep = (delta, isFromLooper) => {
 		let newStepIndex = Math.min(Math.max(foldState.stepIdx + delta, -1), foldState.maxSteps);
-		setFoldState({
-			stepIdx: newStepIndex,
-			repeatRoot: isFromLooper ? undefined : -1,
-			repeatRange: isFromLooper ? undefined : null
+		let newFoldState = {
+			stepIdx: newStepIndex
+		};
+
+		if (!isFromLooper) {
+			newFoldState.repeatRoot = -1;
+			newFoldState.repeatRange = null	
+			if (looperWorkerId !== -1) {
+				console.log("CLEARING - changeStep");
+				clearInterval(looperWorkerId);
+				setLooperWorkerId(-1);
+			}
+		}
+
+		setFoldState(newFoldState);
+	};
+
+	const calcNumDefaultsBefore = stepIdx => {
+		let total = 0;
+
+		stepArray.some((elem, i) => {
+			console.log("checking ", i, stepIdx, Array.isArray(elem[1][0]));
+			if (i > stepIdx) {
+				return true;	
+			}
+
+			// Only default items are 2D arrays
+			if (Array.isArray(elem[1][0])) {
+				// Add the number of leaf nodes here, minus one for the path at idx 0, and one for the spot taken by the root 2D array
+				total += elem.length - 2;
+			}
 		});
+
+		return total;
 	};
 
 	const calcCardPos = () => {
 		// const right = window.innerWidth > 1200 ? ((window.innerWidth / 2) + 0 + 'px') : undefined;
 		// const left = right ? undefined : 10;
 		const width = (maxLevel - 1) * HIER_PX_SIZE + 14
+
+		// Left side is outside the center column if there's room, else just sticks to the left side
 		const left = window.innerWidth < (1200 + width + 10) ? 0 : (-width - 10);
+
+		// Top updates every time the step changes
+		const numDefaultsBefore = calcNumDefaultsBefore(foldState.stepIdx);
+		console.log("[calcCardPos]", numDefaultsBefore, foldState.stepIdx, stepArray)
+		const top = (window.innerHeight - 296) - (HIER_PX_SIZE * (foldState.stepIdx + 1 + numDefaultsBefore));
 		let style = {
 			// Don't show first column, and account for padding
 			width: width + 'px',
 			left: left + 'px',
 			height: contStyle.height,
-			top: (window.innerHeight - 296) - (HIER_PX_SIZE * (foldState.stepIdx + 1)) + 'px'
+			top: top + 'px'
 		};
 
 		return style;
@@ -92,37 +129,34 @@ export const InstructionalHierarchy = props => {
 
 	const handleHierNodeClick = (event, path) => {
 		const stepIdx = stepArray.findIndex(step => path === step[0]);
-		const newState = {};
+		let newFoldState = {};
 
 		const [startUseIndex, endUseIndex] = findInUseFamilyNode(stepArray, path);
-		console.log("[handleHierNodeClick]", event, startUseIndex, endUseIndex);
+		console.log("[handleHierNodeClick]", event, stepIdx, startUseIndex, endUseIndex);
 
 		if (!event.shiftKey) {
 			// If no shift, just move to this node 
 			if (stepIdx !== -1) {
 				// If it's in the stepArray, just set the index to that element
-				newState.stepIdx = stepIdx - 1;
+				newFoldState.stepIdx = stepIdx - 1;
 			} else {
 				// Else we need to find whatever in use index corresponds
 				if (startUseIndex !== -1 && endUseIndex !== -1) {
-					newState.stepIdx = startUseIndex - 1;
+					newFoldState.stepIdx = startUseIndex - 1;
 				}
 			}
 
 			if (foldState.repeatRoot !== -1) {
-				setFoldState({
-					repeatRoot: -1,
-					repeatRange: []
-				});
+				newFoldState.repeatRoot = -1;
+				newFoldState.repeatRange = null;
 
 				if (looperWorkerId !== -1) {
+					console.log("CLEARING");
 					clearInterval(looperWorkerId);
 					setLooperWorkerId(-1);
 				}
 			}
 		} else {
-			let newFoldState = {};
-
 			// If shift held, then start or modify repeatRange 
 			if (foldState.repeatRoot !== -1) {
 				// Modify existing range, replacing the second clicked index
@@ -133,33 +167,48 @@ export const InstructionalHierarchy = props => {
 					newFoldState.repeatRange = [startUseIndex, endUseIndex];
 				} else if (startUseIndex < foldState.repeatRoot) {
 					// Clicked something before
-					newState.repeatRange = [foldState.repeatRoot, startUseIndex]	
+					newFoldState.repeatRange = [foldState.repeatRoot, startUseIndex]	
 				} else {
 					// Clicked something after
-					newState.repeatRange = [foldState.repeatRoot, endUseIndex]	
+					newFoldState.repeatRange = [foldState.repeatRoot, endUseIndex]	
 				}
+
 			} else {
 				if (stepIdx !== -1) {
+					// If this is the first shift click, we're starting at this location
+					newFoldState.stepIdx = stepIdx - 1;
+
 					newFoldState.repeatRoot = stepIdx;
 					newFoldState.repeatRange = [stepIdx, stepIdx];
 				} else {
+					// If this is the first shift click, we're starting at this location
+					newFoldState.stepIdx = startUseIndex - 1;
+
 					newFoldState.repeatRoot = startUseIndex;
 					newFoldState.repeatRange = [startUseIndex, endUseIndex];
 				}
 			}
 
-			console.log("[setting repeatRange]", newFoldState);
+			if (looperWorkerId === -1) {
+				console.log("SETTING");
+				setLooperWorkerId(setInterval(looperWorker, 2500));
+			}
 
+			// Ensure the first element is always the first in index order
 			newFoldState.repeatRange.sort();
-			setFoldState(newFoldState);
+
+			// Go to the start, and progress forward
+			newFoldState.stepIdx = newFoldState.repeatRange[0] - 1;
+			console.log("setting looper - handleHierNodeClick", 1);
+			setLooperDirection(1);
 		}
 
-
-		setFoldState(newState);
+		console.log("[setting repeatRange]", newFoldState);
+		setFoldState(newFoldState);
 	};
 
 	const buildStepArray = () => {
-		console.log("[InstructionalHierarchy buildStepArray]", initFold && initFold.frame_title);
+		// console.log("[InstructionalHierarchy buildStepArray]", initFold && initFold.frame_title);
 		return collectStepsForLevel(initFold, 0, foldState.usingDefaults)
 	};
 
@@ -259,7 +308,7 @@ export const InstructionalHierarchy = props => {
 		const longestRowLen = Math.max(...tmpRows.map(arr => arr.length));
 		setContStyle(
 			Object.assign({}, contStyle, {
-				height: HIER_PX_SIZE * longestRowLen + 14,
+				height: HIER_PX_SIZE * longestRowLen,
 				width: cardStyle.width
 			})
 		);
@@ -268,7 +317,7 @@ export const InstructionalHierarchy = props => {
 	const jumpToEnd = () => setFoldState({ stepIdx: foldState.maxSteps - 1 });
 
 	const getDescForNode = (stepIdx) => {
-		console.log("[getDescForNode]", stepIdx, stepArray);
+		// console.log("[getDescForNode]", stepIdx, stepArray);
 		const step = stepArray[foldState.stepIdx + 1]
 		const path = step[0].split(",").slice(1)
 		let node = getHierNode(initFold.instructions, path);
@@ -276,39 +325,55 @@ export const InstructionalHierarchy = props => {
 	}
 
 	const looperWorker = () => {
+		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
+			console.log("[looperWorker] ERR - null arguments");
+			return;
+		}
+		setLooperHash(curHash => curHash + 1);
+	};
+
+	const updateLooper = () => {
+		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
+			return;
+		}
+
 		const distFromStart = foldState.stepIdx - foldState.repeatRange[0];
 		const distFromEnd = foldState.repeatRange[1] - foldState.stepIdx;
+		// console.log("[looperWorker]", foldState.stepIdx, foldState.repeatRoot, looperDirection, distFromStart, distFromEnd);
 
+		// Switch direction to go back up
 		let tmpDirection = looperDirection;
 
-		if (looperDirection === -1 && distFromStart === -1) {
-			// Switch direction to go back up
-			setLooperDirection(1);
+		if (tmpDirection === -1 && distFromStart === -1) {
 			tmpDirection = 1;
-		} else if (looperDirection(1) && distFromEnd === 0) {
-			// Switch direction to go back down 
-			setLooperDirection(-1);
+			setLooperDirection(tmpDirection);
+		} else if (tmpDirection === 1 && distFromEnd === 1) {
 			tmpDirection = -1;
+			setLooperDirection(tmpDirection);
 		}
 
 		changeStep(tmpDirection, true);
-	}
+	};
 
 	const renderLooperItems = () => {
 		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
 			return null;
 		}
 
-		if (looperWorkerId === -1) {
-			setLooperWorkerId(setInterval(looperWorker, 2500));
+		let ret = [];
+		for (let i = foldState.repeatRange[0]; i <= foldState.repeatRange[1]; i++) {
+			ret.push(
+				<div className={`${classes.hier_looper_item} ${(i <= foldState.stepIdx + 1) ? classes.hier_looper_item__active : ""}`} />
+			);
 		}
+
+		return ret;
 	};
 
 	// ---------
 	// LIFECYCLE
 	// ---------
 	// const cardStyle = useMemo(calcCardPos, [window.innerWidth, window.innerHeight, foldState.stepIdx, contStyle.height]);
-	const cardStyle = calcCardPos();
 
 	const buttonClasses = useMemo(
 		() => ({
@@ -322,6 +387,8 @@ export const InstructionalHierarchy = props => {
 		!initFold || !initFold.instructions,
 		initFold && initFold.frame_title
 	]);
+
+	const cardStyle = calcCardPos();
 
 	// Perform mount and unmount actions
 	useEffect(() => {
@@ -339,6 +406,8 @@ export const InstructionalHierarchy = props => {
 
 	useEffect(() => refreshRenderRows(maxLevel), [foldLastUpdated, foldState.stepIdx]);
 
+	useEffect(updateLooper, [looperHash])
+
 	// console.log('[InstructionalHierarchy]', renderRows.current);
 
 	const ctrlCardLeftPx = `${(window.innerWidth / 2) + 256}px`;
@@ -353,7 +422,7 @@ export const InstructionalHierarchy = props => {
 
 	const instCardMargin = window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) + 10 + 'px') : "0";
 
-	console.log("[InstructionalHierarchy]", foldState);
+	console.log("[InstructionalHierarchy]", stepArray);
 
 	return (
 		<div className={classes.centerColumn_flex}>

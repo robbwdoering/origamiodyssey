@@ -210,7 +210,7 @@ export const Paper = props => {
 	 * Reads the hierarchical instructions, collecting some descriptive values and initializing state.
 	 */
 	const readInstructionsIntoState = () => {
-		console.log("[readInstructionsIntoState]")
+		// console.log("[readInstructionsIntoState]")
 		if (fold.current && fold.current.instructions && stepArray.length) {
 			const maxLevel = calcMaxLevel(fold.current.instructions);
 			setFoldState({
@@ -248,7 +248,7 @@ export const Paper = props => {
 	 * Initializes the fold state if possible, which involves reading the instructional hierarchy shape.
 	 */
 	const initFoldState = () => {
-		console.log('[initFoldState]', initFold);
+		// console.log('[initFoldState]', initFold);
 		if (!initFold) {
 			return;
 		}
@@ -360,7 +360,7 @@ export const Paper = props => {
 		}
 
 		const diff = curStep - prevStep;
-		console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`, foldState.active);
+		// console.log('[performInstructions] ', `${prevStep} + ${diff} = ${curStep}`, foldState.active);
 
 		// If the fold is not shown and we're changing indices, then assume that
 		// the change is merely a race condition consequence, and that change is coming
@@ -810,7 +810,6 @@ export const Paper = props => {
 	};
 
 	const buildStepArray = () => {
-		console.log("[Paper buildStepArray]", fold.current && fold.current.frame_title);
 		return collectStepsForLevel(fold.current, 0, foldState.usingDefaults)
 	};
 
