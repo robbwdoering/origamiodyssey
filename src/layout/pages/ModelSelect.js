@@ -74,7 +74,7 @@ export const ModelSelect = props => {
 		setActiveIndex(activeIndex === index ? -1 : index);
 
 		// TODO - redo this whole thing with React Portals
-		setTimeout(() => triggerRerender(), 50);
+		setTimeout(triggerRerender, 50);
 	};
 
 	const generateFilterCardStyle = () => {
@@ -94,6 +94,9 @@ export const ModelSelect = props => {
 		}
 
 		setFilterTags(newFilterTags);
+
+		// TODO - redo this whole thing with React Portals
+		setTimeout(triggerRerender, 50);
 	};
 
 	const tagsAreHidden = (obj, searchStr) => {
@@ -111,6 +114,14 @@ export const ModelSelect = props => {
 		// console.log('tagsAreHidden', ret, searchStr, obj);
 
 		return ret;
+	};
+
+	const handleClearFilters = () => {
+		// Clear out the fitler tags list
+		setFilterTags(new Set())
+
+		// TODO - redo this whole thing with React Portals
+		setTimeout(triggerRerender, 50);
 	};
 
 	// ---------
@@ -141,7 +152,7 @@ export const ModelSelect = props => {
 					{filterTags.size > 0 && (
 						<Fab
 							className={classes.filter_clear}
-							onClick={() => setFilterTags(new Set())}
+							onClick={handleClearFilters}
 							size="small"
 						>
 							<Clear />

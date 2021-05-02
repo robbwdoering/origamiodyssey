@@ -101,6 +101,10 @@ export const ModelCard = props => {
 		style.current.left = placeholderRef.current.offsetLeft;
 	}
 
+	if (window.innerWidth < 600 && isActive && style.current.left) {
+		style.current.left = ((window.innerWidth - 400) / 2) + 'px';
+	}
+
 	// Update hash when style changes so we can inform children
 	useEffect(() => setPosHash(cur => cur + 1), [style]);
 
@@ -203,10 +207,10 @@ export const ModelCard = props => {
 				{/* Actions */}
 				{isActive && (
 					<CardActions classes={classes.modelCard_footer}>
-						<Button size="small" color="primary">
+						<Button size="small" color="primary" disabled>
 							Share
 						</Button>
-						<Button size="small" color="primary">
+						<Button size="small" color="primary" disabled>
 							Learn More
 						</Button>
 						<div className={classes.modelCard_foldButton}>

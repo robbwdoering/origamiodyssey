@@ -29,14 +29,11 @@ export const useStyles = makeStyles(theme => ({
 		paddingTop: theme.spacing(8)
 	},
 	navDrawerNode0: {
-		color: 'red',
 		height: '200px'
 	},
 	navDrawerNode1: {
-		color: 'red'
 	},
 	navDrawerNode2: {
-		color: 'red'
 	},
 	bodyContainer: {
 		marginTop: theme.spacing(8),
@@ -89,7 +86,12 @@ export const useStyles = makeStyles(theme => ({
 	},
 	modelCard_title: {
 		padding: '0.5rem',
-		textAlign: 'left'
+		textAlign: 'left',
+		[theme.breakpoints.down('sm')]: {
+			fontSize: '1rem !important',
+			fontWeight: 'bold !important',
+			color: ''
+		}
 	},
 	modelCard_placeholder: {
 		height: '180px',
@@ -135,7 +137,8 @@ export const useStyles = makeStyles(theme => ({
 	appLettering: {
 		height: '64px !important',
 		padding: '15px 0',
-		cursor: 'pointer'
+		cursor: 'pointer',
+		marginRight: '10px'
 	},
 	appLogo: {
 		marginRight: '1rem'
@@ -197,7 +200,8 @@ export const useStyles = makeStyles(theme => ({
 	},
 	fold_controls_button_container: {
 		textAlign: "right",
-		flexGrow: 1
+		flexGrow: 1,
+		minHeight: '200px'
 	},
 	fold_controls_button_icon: {
 		fontSize: '32px !important',
@@ -219,7 +223,8 @@ export const useStyles = makeStyles(theme => ({
 	},
 	fold_timer_snackbar: {
 		pointerEvents: 'all',
-		marginTop: '64px !important'
+		marginTop: '64px !important',
+		zIndex: '3000 !important'
 	},
 	fold_timer_snackbar_close: {
 		position: 'absolute !important',
@@ -309,7 +314,8 @@ export const useStyles = makeStyles(theme => ({
 	hier_card: {
 		position: 'absolute',
 		pointerEvents: 'all',
-		zIndex: 2999
+		zIndex: 2999,
+		flexGrow: 1
 	},
 	hier_expandCtrl: {
 		position: 'absolute !important',
@@ -363,9 +369,12 @@ export const useStyles = makeStyles(theme => ({
 	hier_desc_card: {
 		pointerEvents: 'all',
 		height: '200px',
-		width: '400px',
+		maxWidth: '400px',
 		zIndex: 402,
 		overflow: 'visible !important'
+	},
+	hier_desc_container: {
+		flexGrow: 2
 	},
 	hier_looper_rail: {
 		width: '100%',
@@ -438,7 +447,6 @@ export const useStyles = makeStyles(theme => ({
 		float: "right"
 	},
 	user_models_header: {
-		color: "$"
 	},
 	slimCol: {
 		maxWidth: "15rem"

@@ -109,6 +109,9 @@ export const Body = props => {
 			lastUpdated: Date.now()
 		};
 
+		// Scroll to the top of the page
+		window.scroll(0, 0);
+
 		triggerRerender();
 	};
 

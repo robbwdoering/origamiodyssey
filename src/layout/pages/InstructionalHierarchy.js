@@ -9,6 +9,7 @@ import React, { useState, useRef, useMemo, useEffect, createRef } from 'react';
 import { connect } from 'react-redux';
 
 import { useUpdate, useSpring, useSprings, animated, config } from 'react-spring';
+import SquareLoader from "react-spinners/SquareLoader";
 
 import { SwipeableDrawer, Tooltip, Typography, Fab, ButtonGroup, List, Divider, ListItem, Card } from '@material-ui/core';
 import SkipPrevious from '@material-ui/icons/SkipPrevious';
@@ -51,6 +52,7 @@ export const InstructionalHierarchy = props => {
 	const [looperDirection, setLooperDirection] = useState(-1);
 	const [looperWorkerId, setLooperWorkerId] = useState(-1);
 	const [looperHash, setLooperHash] = useState(0);
+	const [finishedInit, setFinishedInit] = useState(false);
 
 	const maxLevel = useMemo(() => calcMaxLevel(initFold && initFold.instructions), [foldLastUpdated]);
 
@@ -408,6 +410,9 @@ export const InstructionalHierarchy = props => {
 		}
 	}, []);
 
+	// Start actually rendering text after a second
+	useEffect(() => setTimeout(() => setFinishedInit(true), 1000), []);
+
 	useEffect(() => refreshRenderRows(maxLevel), [foldLastUpdated, foldState.stepIdx]);
 
 	useEffect(updateLooper, [looperHash])
@@ -417,14 +422,18 @@ export const InstructionalHierarchy = props => {
 	const ctrlCardLeftPx = `${(window.innerWidth / 2) + 256}px`;
 
 	const curBodyWidth = Math.min(1200, window.innerWidth);
-	const buttonSize = Math.min(200, curBodyWidth * 0.15);
+	const buttonSize = (window.innerWidth > 440) ? Math.min(200, curBodyWidth * 0.15) : 95;
 	const buttonIconClass = buttonSize < 100 ?  classes.fold_controls_button_icon : classes.fold_controls_button_icon_large;
 	const fabStyle = {
 		width: buttonSize + 'px',
 		height: buttonSize + 'px',
 	};
 
-	const instCardMargin = window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) + 10 + 'px') : "0";
+	// Magic nums:
+		// 1200 is max width of the center colun
+		// 10 is common spacing
+		// 32 is padding on center column
+	const instCardMargin = window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) - 32 + 10 + 'px') : "0";
 
 	console.log("[InstructionalHierarchy]", stepArray);
 
@@ -451,7 +460,7 @@ export const InstructionalHierarchy = props => {
 
 			{/* Text box shows details on the current step */}
 			{initFold && initFold.instructions && (
-				<div>
+				<div className={classes.hier_desc_container}>
 					{foldState.repeatRoot !== -1 && (
 						<div className={classes.hier_looper_rail} style={{marginLeft: instCardMargin}}>
 							<div className={classes.hier_looper_container} >
@@ -460,14 +469,18 @@ export const InstructionalHierarchy = props => {
 						</div>
 					)}
 					<Card className={classes.hier_desc_card} style={{marginLeft: instCardMargin}}> 
-						<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
-						<Typography>
-							{(foldState.stepIdx < foldState.maxSteps - 1) ?
-								getDescForNode(foldState.stepIdx) :
-								// "text" :
-								"Congratulations - your model is complete!"
-							}
-						</Typography>
+						{finishedInit ? (
+							<React.Fragment>
+								<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
+								<Typography>
+									{(foldState.stepIdx < foldState.maxSteps - 1) ?
+										getDescForNode(foldState.stepIdx) :
+										// "text" :
+										"Congratulations - your model is complete!"
+									}
+								</Typography>
+							</React.Fragment>
+						) : <SquareLoader color="#e0e0e0" size={75} css="margin: 16px;" />}
 					</Card>
 				</div>
 			)}

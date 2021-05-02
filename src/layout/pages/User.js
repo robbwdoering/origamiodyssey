@@ -37,6 +37,7 @@ import {
 import { ToggleButton } from '@material-ui/lab';
 import Remove from '@material-ui/icons/Remove';
 import ExitToApp from '@material-ui/icons/ExitToApp';
+import SquareLoader from "react-spinners/SquareLoader";
 
 import { useAuth0 } from '@auth0/auth0-react';
 
@@ -201,7 +202,7 @@ export const User = props => {
 												<TableCell align="right" className={classes.slimCol}>
 													{' '}
 													{new Intl.DateTimeFormat().format(
-														new Date(Date.now() + entry.schedule * 24 * 60 * 1000)
+														new Date(Date.now() + entry.schedule * 24 * 60 * 60 * 1000)
 													)}{' '}
 												</TableCell>
 												<TableCell align="right" className={classes.slimCol}>
@@ -301,7 +302,7 @@ export const User = props => {
 	if (isLoading) {
 		return (
 			<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
-				Loading...
+				<SquareLoader color="#e0e0e0" size={100} />
 			</Typography>
 		);
 	} else if (!isAuthenticated) {
@@ -327,7 +328,7 @@ export const User = props => {
 	return (
 		<Grid className={classes.user_container} container spacing={2}>
 			{/* Profile Information */}
-			<Grid item xs={6} md={4}>
+			<Grid item xs={12} md={4}>
 				<Paper className={classes.user_profile} elevation={3}>
 					<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
 						Profile
@@ -348,7 +349,7 @@ export const User = props => {
 			</Grid>
 
 			{/* Preferences */}
-			<Grid item xs={6} md={8}>
+			<Grid item xs={12} md={8}>
 				<Paper className={classes.user_pref} elevation={2}>
 					<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
 						Preferences
@@ -356,7 +357,7 @@ export const User = props => {
 					<Divider />
 					<br />
 					<Grid container spacing={2}>
-						<Grid item xs={6} md={4}>
+						<Grid item xs={12} md={4}>
 							<ToggleButton
 								value={userState.showEditor}
 								selected={userState.showEditor}
@@ -365,14 +366,14 @@ export const User = props => {
 								Show Editor
 							</ToggleButton>
 						</Grid>
-						<Grid item xs={6} md={8}>
+						<Grid item xs={12} md={8}>
 							<Typography variant="body2" color="textSecondary" component="h4">
 								Show special cards during instructions for controlling the animation, and identifying
 								individual vertices and edges in the paper.
 							</Typography>
 						</Grid>
 
-						<Grid item xs={6} md={4}>
+						<Grid item xs={12} md={4}>
 							<ToggleButton
 								value={userState.showTimerAssess}
 								selected={userState.showTimerAssess}
@@ -381,14 +382,14 @@ export const User = props => {
 								Show Timer
 							</ToggleButton>
 						</Grid>
-						<Grid item xs={6} md={8}>
+						<Grid item xs={12} md={8}>
 							<Typography variant="body2" color="textSecondary" component="h4">
 								Show a timer that allows you to track model folding speed over time. Turning this on
 								allows the assistant to identify your strengths and weakenesses better.
 							</Typography>
 						</Grid>
 
-						<Grid item xs={6} md={4}>
+						<Grid item xs={12} md={4}>
 							<ToggleButton
 								value={userState.showLikertAssess}
 								selected={userState.showLikertAssess}
@@ -397,7 +398,7 @@ export const User = props => {
 								Show Quality Prompts
 							</ToggleButton>
 						</Grid>
-						<Grid item xs={6} md={8}>
+						<Grid item xs={12} md={8}>
 							<Typography variant="body2" color="textSecondary" component="h4">
 								Show a prompt after completing a model, allowing you to track quality over time. Turning
 								this on allows the assistant to identify your strengths and weakenesses better.

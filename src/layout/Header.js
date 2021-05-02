@@ -53,6 +53,8 @@ export const Header = props => {
 		});
 	};
 
+	const letteringStyle = {maxWidth: window.innerWidth - 64 };
+
 	return (
 		<React.Fragment>
 			<AppBar className={styles.appBarContainer}>
@@ -66,8 +68,8 @@ export const Header = props => {
 					>
 						<MenuIcon />
 					</IconButton>
-					<div className={styles.appLettering} onClick={toggleMenu}>
-						<Lettering style={{maxWidth: window.innerWidth }} />
+					<div className={styles.appLettering} onClick={toggleMenu} style={letteringStyle}>
+						<Lettering style={letteringStyle} />
 					</div>
 					<div className={styles.searchContainer}>
 						<div className={styles.searchIcon}>
