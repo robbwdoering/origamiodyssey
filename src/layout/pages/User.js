@@ -143,9 +143,24 @@ export const User = props => {
 	}
 
 	console.log('[User]', user);
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
+	// TODO - history tab
 
 	return (
-		<Grid container spacing={2}>
+		<Grid className={classes.user_container} container spacing={2}>
 			{/* Profile Information */}
 			<Grid item xs={6} md={4}>
 				<Paper className={classes.user_profile} elevation={3}>

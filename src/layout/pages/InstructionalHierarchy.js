@@ -18,7 +18,8 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 
 import useStyles from './../../style/theme';
 import { Folds } from './../../infra/constants';
-import { setFoldState, setLayoutState } from './../../infra/actions';
+import { setFoldState, setLayoutState, setUserState } from './../../infra/actions';
+import TimerContainer from './Timer';
 import { collectStepsForLevel, calcMaxLevel, printPath, findInUseFamilyNode, getHierNode } from './../../infra/utils';
 
 const HIER_PX_SIZE = 20;
@@ -33,7 +34,9 @@ export const InstructionalHierarchy = props => {
 		setFoldState,
 		layoutState,
 		layoutStateHash,
-		setLayoutState
+		setLayoutState,
+		userState,
+		setUserState
 	} = props;
 
 	// ----------
@@ -321,6 +324,7 @@ export const InstructionalHierarchy = props => {
 		const step = stepArray[foldState.stepIdx + 1]
 		const path = step[0].split(",").slice(1)
 		let node = getHierNode(initFold.instructions, path);
+
 		return node.desc;
 	}
 
@@ -329,6 +333,7 @@ export const InstructionalHierarchy = props => {
 			console.log("[looperWorker] ERR - null arguments");
 			return;
 		}
+
 		setLooperHash(curHash => curHash + 1);
 	};
 
@@ -491,7 +496,9 @@ export const InstructionalHierarchy = props => {
 				</Fab>
 			</div>
 
-			{/* Annotations provide additional details on timeline items */}
+			{userState.showTimerAssess && (
+				<TimerContainer />
+			)}
 		</div>
 	);
 				// <Fab aria-label="expand instructions" className={classes.hier_expandCtrl} onClick={handleExpandClick} color="secondary" size="small">
@@ -504,8 +511,10 @@ export const mapStateToProps = (state, props) => {
 		layoutState: state.appReducer.layoutState,
 		layoutStateHash: state.appReducer.layoutState.hash,
 		foldState: state.appReducer.foldState,
-		foldStateHash: state.appReducer.foldState.hash
+		foldStateHash: state.appReducer.foldState.hash,
+		userState: state.appReducer.userState,
+		userStateHash: state.appReducer.userState.hash
 	};
 };
 
-export default connect(mapStateToProps, { setFoldState, setLayoutState })(InstructionalHierarchy);
+export default connect(mapStateToProps, { setFoldState, setLayoutState, setUserState })(InstructionalHierarchy);

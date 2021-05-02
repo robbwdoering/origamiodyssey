@@ -195,7 +195,6 @@ export const initAppReducerState = {
 		hash: 0,
 		page: Pages.ModelSelect,
 		curFold: null,
-		foldHash: 0,
 		useImages: false,
 		showEditor: true,
 		expandHierarchy: false,
@@ -209,6 +208,8 @@ export const initAppReducerState = {
 		usingDefaults: true,
 		repeatRoot: -1,
 		repeatRange: null,
+		lastRecordedTimer: 0,
+		lastRecordedLikert: 0
 	},
 	editorState: {
 		hash: 0,
@@ -227,7 +228,8 @@ export const initAppReducerState = {
 		username: null,
 		showTimerAssess: false,
 		showLikertAssess: false,
-		modelList: []
+		modelList: [],
+		foldHistory: []
 	},
 	showNavDrawer: false
 };
@@ -238,7 +240,8 @@ export const Actions = {
 	SET_PAGE_CONFIG: 'SET_PAGE_CONFIG',
 	SET_FOLD_STATE: 'SET_FOLD_STATE',
 	SET_EDITOR_STATE: 'SET_EDITOR_STATE',
-	SET_USER_STATE: 'SET_USER_STATE'
+	SET_USER_STATE: 'SET_USER_STATE',
+	ADD_HISTORY_ENTRY: 'ADD_HISTORY_ENTRY'
 };
 
 export const initNavTree = [
@@ -262,61 +265,61 @@ export const initNavTree = [
 		conditional: "is_not_logged_in",
 		key: 'login' 
 	},
-	{
-		text: 'What is Origami?',
-		key: 'context_root',
-		children: [
-			{
-				text: 'History',
-				key: 'history'
-			},
-			{
-				text: 'Origami Today',
-				key: 'current_origami'
-			},
-			{
-				text: 'Practical Origami',
-				key: 'practical'
-			}
-		]
-	},
-	{
-		text: 'Learn Origami',
-		key: 'learn_root',
-		children: [
-			{
-				icon: <DashboardIcon />,
-				text: 'Dashboard',
-				key: 'learn_dashboard'
-			},
-			{
-				icon: <GroupAddIcon />,
-				text: 'Join Class',
-				key: 'join_class'
-			}
-		]
-	},
-	{
-		text: 'Teach Origami',
-		key: 'teach_root',
-		children: [
-			{
-				icon: <DashboardIcon />,
-				text: 'Lesson Plans',
-				key: 'lesson_plan_dashboard'
-			},
-			{
-				icon: <SchoolIcon />,
-				text: 'Read Research Paper',
-				key: 'google_scholar'
-			},
-			{
-				icon: <ClassIcon />,
-				text: 'Origami in the Classroom',
-				key: 'teaching_tips'
-			}
-		]
-	},
+	// {
+	// 	text: 'What is Origami?',
+	// 	key: 'context_root',
+	// 	children: [
+	// 		{
+	// 			text: 'History',
+	// 			key: 'history'
+	// 		},
+	// 		{
+	// 			text: 'Origami Today',
+	// 			key: 'current_origami'
+	// 		},
+	// 		{
+	// 			text: 'Practical Origami',
+	// 			key: 'practical'
+	// 		}
+	// 	]
+	// },
+	// {
+	// 	text: 'Learn Origami',
+	// 	key: 'learn_root',
+	// 	children: [
+	// 		{
+	// 			icon: <DashboardIcon />,
+	// 			text: 'Dashboard',
+	// 			key: 'learn_dashboard'
+	// 		},
+	// 		{
+	// 			icon: <GroupAddIcon />,
+	// 			text: 'Join Class',
+	// 			key: 'join_class'
+	// 		}
+	// 	]
+	// },
+	// {
+	// 	text: 'Teach Origami',
+	// 	key: 'teach_root',
+	// 	children: [
+	// 		{
+	// 			icon: <DashboardIcon />,
+	// 			text: 'Lesson Plans',
+	// 			key: 'lesson_plan_dashboard'
+	// 		},
+	// 		{
+	// 			icon: <SchoolIcon />,
+	// 			text: 'Read Research Paper',
+	// 			key: 'google_scholar'
+	// 		},
+	// 		{
+	// 			icon: <ClassIcon />,
+	// 			text: 'Origami in the Classroom',
+	// 			key: 'teaching_tips'
+	// 		}
+	// 	]
+	// },
 	{
 		icon: <GitHubIcon />,
 		text: 'Source Code',

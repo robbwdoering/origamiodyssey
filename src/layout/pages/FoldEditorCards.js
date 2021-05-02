@@ -29,6 +29,8 @@ import {
 } from '@material-ui/core';
 import SkipPrevious from '@material-ui/icons/SkipPrevious';
 import SkipNext from '@material-ui/icons/SkipNext';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
 import { ToggleButton } from '@material-ui/lab';
 
 import useStyles from './../../style/theme';
@@ -56,6 +58,7 @@ export const FoldEditorCards = props => {
 	// ----------
 	const classes = useStyles();
 	const [curHash, setHash] = useState(0);
+	const [expandControls, setExpandControls] = useState(false);
 	const localFold = useRef();
 
 	// ----------------
@@ -168,10 +171,14 @@ export const FoldEditorCards = props => {
 			</Card>
 
 			{/* Details on the current instruction */}
-			<Card className={classes.editorDetails}>
+			<Card className={classes.editorDetails} style={{height: expandControls ? "60%" : "60px"}}>
 				<Typography className={classes.editor_cardTitle} variant="h4" color="textSecondary" component="h4">
 					Editor Controls
 				</Typography>
+				<Button className={classes.editor_details_expand} onClick={() => setExpandControls(cur => !cur)}>
+					{expandControls ? <ExpandMore /> : <ExpandLess />}
+				</Button>
+				{expandControls && (
 				<Grid container>
 					<ControlRow name="Highlighted Edges">
 						<Select
@@ -301,6 +308,7 @@ export const FoldEditorCards = props => {
 						/>
 					</ControlRow>
 				</Grid>
+				)}
 			</Card>
 
 			{/* Entry box for direct JSON manipulation */}

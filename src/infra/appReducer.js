@@ -4,6 +4,7 @@
  * DESCRIPTION: Handles state update for all layout actions.
  */
 
+// import supermemo2 from 'supermemo2';
 import { initAppReducerState, Actions } from './constants';
 
 const finalInitState = JSON.parse(JSON.stringify(initAppReducerState));
@@ -34,6 +35,22 @@ export const appReducer = (state = finalInitState, action) => {
 		case Actions.SET_USER_STATE:
 			console.log('[SET_USER_STATE]', action.payload);
 			Object.assign(newState.userState, action.payload || initAppReducerState.userState);
+			newState.userState.hash++;
+			break;
+		case Actions.ADD_HISTORY_ENTRY:
+			console.log('[ADD_HISTORY_ENTRY]', action.payload);
+			if (!action.payload) {
+				return newState;
+			}
+			newState.userState.foldHistory.push(action.payload)
+
+			// If this model type is part of the memo alogirthm, update that entry 
+			if (newState.modelList.find(model => model.foldKey === action.payload.foldKey)) {
+
+			}
+
+			// Update the spaced learning params given this new information
+
 			newState.userState.hash++;
 			break;
 	}

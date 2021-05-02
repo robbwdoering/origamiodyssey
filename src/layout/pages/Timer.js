@@ -1,0 +1,318 @@
+/**
+ * FILENAME: Timer.js
+ *
+ * DESCRIPTION: This page allows the user to browse through cards, read details on models, and select one to fold.
+ */
+
+// React + Redux
+import React, { useState, useRef, useMemo, useEffect, createRef } from 'react';
+import { connect } from 'react-redux';
+
+import { useUpdate, useSpring, useSprings, animated, config } from 'react-spring';
+
+import {
+	ButtonGroup,
+	Divider,
+	Typography,
+	CardMedia,
+	CardActionArea,
+	CardActions,
+	CardContent,
+	Button,
+	Grid,
+	Fab,
+	Card,
+	Chip,
+	Snackbar,
+	Paper
+} from '@material-ui/core';
+import MuiAlert from "@material-ui/lab/Alert";
+import FilterList from '@material-ui/icons/FilterList';
+import Clear from '@material-ui/icons/Clear';
+import PlayArrow from '@material-ui/icons/PlayArrow';
+import Pause from '@material-ui/icons/Pause';
+import Star from '@material-ui/icons/Star';
+import StarBorder from '@material-ui/icons/StarBorder';
+
+import useStyles from './../../style/theme';
+import { Folds, Pages, Tags, TagCategories } from './../../infra/constants';
+import { setLayoutState, setFoldState, addHistoryEntry } from './../../infra/actions';
+
+/**
+ * A timer that will re-rerender every second minimum.
+ */
+export const Timer = props => {
+	const {
+		foldEntry,
+		name,
+		placeholderRef,
+		cardKey,
+		index,
+		isActive,
+		isHidden,
+		handleCardClick,
+		layoutState,
+		setLayoutState,
+		foldState,
+		setFoldState,
+		userState,
+		addHistoryEntry
+	} = props;
+	const [curHash, setHash] = useState(0);
+	const [isPlaying, setIsPlaying] = useState(false);
+	const [startPosix, setStartPosix] = useState(-1);
+	const [workerId, setWorkerId] = useState(-1);
+	const [hasInitialized, setHasInitialized] = useState(false);
+	const [hasFinished, setHasFinished] = useState(false);
+	const [showSnackbar, setShowSnackbar] = useState(false);
+	const [showLikertAssess, setShowLikertAssess] = useState(false);
+	const [lastLikert, setLastLikert] = useState(-1);
+	const classes = useStyles();
+	const style = useRef({});
+
+	useEffect(() => console.log('[Timer]', cardKey), []);
+
+	/**
+	 * Pass the click event on to the parent function to open a fold page.
+	 */
+	const handleFoldClick = e => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		openFold(cardKey);
+	};
+
+	/**
+	 * Open the fold page with the supplied model name, closing this page.
+	 */
+	const openFold = foldKey => {
+		setLayoutState({
+			page: Pages.Fold,
+			curFold: foldKey
+		});
+	};
+
+	const triggerRerender = () => {
+		setHash(cur => cur + 1);
+	};
+
+	const toggleTimer = () => {
+		if (isPlaying && workerId !== -1) {
+			setFoldState({
+				lastRecordedTimer: foldState.lastRecordedTimer + (Date.now() - startPosix)
+			});
+
+			clearInterval(workerId);
+			setWorkerId(-1);
+			setStartPosix(-1);
+		} else if (!isPlaying && workerId === -1){
+			setWorkerId(setInterval(triggerRerender, 1000))
+			setStartPosix(Date.now());
+		}
+
+		setIsPlaying(cur => !cur);
+	};
+
+	/**
+	 * Reset the state that backs the value of the timer. Does not affect the running state;
+	 * a running timer that is reset will immediately start counting from 0. 
+	 */
+	const resetTimer = () => {
+		// Erase any record of the previous run - it is not saved anywhere
+		setFoldState({ lastRecordedTimer: 0 });
+
+		// Start running immediately if it was already running
+		setStartPosix(isPlaying ? Date.now()  : -1);
+
+		// Don't update the worker - if it's running, let it continue running
+	};
+
+	const resetAllState = () => {
+		setIsPlaying(false);
+		setHasInitialized(false);
+		setHasFinished(false);
+		setStartPosix(-1);
+
+		setFoldState({lastRecordedTimer: 0});
+	};
+
+	const handleRecordQuality = () => {
+		setShowLikertAssess(true);
+	};
+
+	const handleModelSelect = () => {
+		closeSnackbar();
+		setLayoutState({
+			page: Pages.ModelSelect,
+			curFold: null
+		});
+
+		// Reset fold state
+		setFoldState(null);
+	};
+
+	const handleFoldAnother = () => {
+		closeSnackbar();
+		// Reset fold state
+		setFoldState(null);
+	}
+
+	const genLikertScale = () => {
+		let ret = [];
+		for (let i = 0; i <= 5; i++) {
+			const isActive = i <= lastLikert;
+			ret.push(
+				<div key={i} className={classes.likert_icon_container} onClick={() => setLastLikert(cur => cur === i ? -1 : i)}>
+					{isActive ? <Star className={classes.likert_icon}/> : <StarBorder className={classes.likert_icon}/>}
+				</div>
+			);
+		}
+
+		return (
+			<ButtonGroup variant="text">
+				{ret}
+				<Button>
+					Submit	
+				</Button>
+			</ButtonGroup>
+		);
+	};
+
+	const closeSnackbar = () => {
+		setShowSnackbar(false);
+
+		// If details weren't already sent, send them now
+		if (!hasFinished) {
+			setHasFinished(true);	
+
+			addHistoryEntry({
+				foldKey: layoutState.curFold,
+				time: Date.now(),
+				quality: lastLikert
+			});
+		}
+	};
+
+	// LIFECYCLE
+
+	// Dynamically calculate the target size of the card
+	style.current = {
+		height: isActive ? '400px' : '180px',
+		width: isActive ? '400px' : '200px',
+		display: isHidden ? 'none' : undefined
+	};
+
+	if (placeholderRef && placeholderRef.current) {
+		style.current.top = placeholderRef.current.offsetTop;
+		style.current.left = placeholderRef.current.offsetLeft;
+	}
+
+	// Every time a new model is selected, the timer starts from scratch
+	useEffect(resetAllState, [layoutState.curFold]);
+
+	useEffect(() => {
+		console.log("[Timer useEffect] ", foldState.stepIdx, foldState.maxSteps)
+		// If this is a change to the last step, 
+		if (foldState.stepIdx >= foldState.maxSteps - 1) {
+			if (isPlaying) {
+				toggleTimer();
+			}
+
+			setShowSnackbar(true);
+
+		// Start the timer the first time the user changes steps
+		} else if (!hasInitialized && !isPlaying) {
+			setHasInitialized(true);
+			setIsPlaying(true);
+			setStartPosix(Date.now());
+		}
+	}, [foldState.stepIdx]);
+
+	let timerPosix = foldState.lastRecordedTimer;
+	if (isPlaying) {
+		timerPosix += Date.now() - startPosix;
+	}
+	const date = new Date(timerPosix);
+	const minStr = `${date.getMinutes()}`.padStart(2, '0');
+	const secStr = `${date.getSeconds()}`.padStart(2, '0');
+
+	// This is the actual card: an `absolute` element so it can grow or shrink in place without affecting others' positioning
+	return (
+		<React.Fragment>
+			<div className={classes.fold_timer_container}>
+				<ButtonGroup>
+					<Button
+						className={`${classes.fold_timer} ${!isPlaying ? classes.fold_timer__paused : ''}`}
+						color={isPlaying ? undefined : "primary"}
+						// variant="text"
+						// size="large"
+						onClick={toggleTimer}
+					>
+						{!isPlaying && <PlayArrow/>}
+						{`${minStr}:${secStr}`}
+					</Button>
+					<Button className={classes.fold_timer_control} onClick={resetTimer} disabled={!isPlaying && !foldState.lastRecordedTimer}>
+						<Clear />	
+					</Button>
+				</ButtonGroup>
+			</div>
+			<Snackbar className={classes.fold_timer_snackbar} open={showSnackbar} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+				<Paper elevation={5}>
+				{showLikertAssess ? (
+					<Grid container>
+						<Grid item xs={12}>
+							<Typography variant="h4" component="h4">
+								Please rate the quality of this result...	
+							</Typography>
+						</Grid>
+						<Grid item xs={12}>
+							{genLikertScale()}
+						</Grid>
+					</Grid>
+				) : (
+					<Grid container>
+						<Grid item xs={10}>
+							<Typography  variant="h4" component="h4">
+								Model complete
+							</Typography>
+							<Button onClick={closeSnackbar}>
+								<Clear />
+							</Button>
+						</Grid>
+						{userState.showLikertAssess && (
+							<Grid item xs={12} md={4}>
+								<Button onClick={handleRecordQuality}>
+									Record Quality
+								</Button>
+							</Grid>
+						)}
+						<Grid item xs={12} md={4}>
+							<Button onClick={handleFoldAnother}>
+								Fold Another	
+							</Button>
+						</Grid>
+						<Grid item xs={12} md={4}>
+							<Button onClick={handleModelSelect}>
+								Find Another Model	
+							</Button>
+						</Grid>
+					</Grid>
+				)}
+				</Paper>
+			</Snackbar>
+			</React.Fragment>
+	);
+};
+
+export const mapStateToProps = (state, props) => {
+	return {
+		layoutState: state.appReducer.layoutState,
+		layoutStateHash: state.appReducer.layoutState.hash,
+		foldState: state.appReducer.foldState,
+		foldStateHash: state.appReducer.foldState.hash,
+		userState: state.appReducer.userState,
+		userStateHash: state.appReducer.userState.hash
+	};
+};
+
+export default connect(mapStateToProps, { setLayoutState, setFoldState, addHistoryEntry })(Timer);

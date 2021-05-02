@@ -30,3 +30,8 @@ export const setUserState = payload => ({
 	type: Actions.SET_USER_STATE,
 	payload
 });
+
+export const addHistoryEntry = payload => ({
+	type: Actions.ADD_HISTORY_ENTRY,
+	payload
+});

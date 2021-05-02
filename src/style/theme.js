@@ -209,6 +209,35 @@ export const useStyles = makeStyles(theme => ({
 		width: '100%',
 		border: '1px solid blue'
 	},
+	fold_timer_container: {
+		position: 'absolute',
+		top: '14px',
+		right: '0px',
+		pointerEvents: 'all'
+	},
+	fold_timer_control: {
+	},
+	fold_timer_snackbar: {
+		pointerEvents: 'all',
+		backgroundColor: "#e3420c",
+		marginTop: '64px !important'
+	},
+	fold_timer_snackbar_close: {
+		float: 'right'
+	},
+	fold_timer: {
+	},
+	fold_timer__paused: {
+	},
+	fold_timer_grid: {
+		width: '100%'
+	},
+	likert_icon_container: {
+		backgroundColor: 'blue'
+	},
+	likert_icon: {
+		backgroundColor: 'red'
+	},
 
 	// Fold Editor
 	editorState: {
@@ -225,7 +254,8 @@ export const useStyles = makeStyles(theme => ({
 		height: '60%',
 		top: '37%',
 		left: '20px',
-		padding: '0.5rem !important'
+		padding: '0.5rem !important',
+		zIndex: 301
 	},
 	editorEntry: {
 		position: 'absolute',
@@ -257,6 +287,11 @@ export const useStyles = makeStyles(theme => ({
 	},
 	editor_select: {
 		width: '90%'
+	},
+	editor_details_expand: {
+		position: 'absolute !important',
+		top: '12px',
+		right: '7px',
 	},
 
 	// Paper
@@ -382,6 +417,10 @@ export const useStyles = makeStyles(theme => ({
 		backgroundColor: ""
 	},
 
+	// The user page
+	user_container: {
+		pointerEvents: 'all'
+	},
 	user_profile: {
 		padding: "0.5rem"
 	},
