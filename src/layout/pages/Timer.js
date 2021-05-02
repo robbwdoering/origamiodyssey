@@ -24,7 +24,8 @@ import {
 	Card,
 	Chip,
 	Snackbar,
-	Paper
+	Paper,
+	Tooltip
 } from '@material-ui/core';
 import MuiAlert from "@material-ui/lab/Alert";
 import FilterList from '@material-ui/icons/FilterList';
@@ -33,10 +34,12 @@ import PlayArrow from '@material-ui/icons/PlayArrow';
 import Pause from '@material-ui/icons/Pause';
 import Star from '@material-ui/icons/Star';
 import StarBorder from '@material-ui/icons/StarBorder';
+import Done from '@material-ui/icons/Done';
 
 import useStyles from './../../style/theme';
-import { Folds, Pages, Tags, TagCategories } from './../../infra/constants';
+import { Folds, Pages, Tags, TagCategories, LikertTitles } from './../../infra/constants';
 import { setLayoutState, setFoldState, addHistoryEntry } from './../../infra/actions';
+import { timerPosixToString } from './../../infra/utils';
 
 /**
  * A timer that will re-rerender every second minimum.
@@ -153,25 +156,42 @@ export const Timer = props => {
 
 	const handleFoldAnother = () => {
 		closeSnackbar();
+		resetAllState();
+
 		// Reset fold state
-		setFoldState(null);
+		setFoldState({
+			stepIdx: -1	,
+			repeatRoot: -1,
+			repeatRange: null
+		});
 	}
+
+	const handleSubmitLikert = () => {
+		setShowLikertAssess(false);
+	};
 
 	const genLikertScale = () => {
 		let ret = [];
-		for (let i = 0; i <= 5; i++) {
+		for (let i = 0; i < 5; i++) {
 			const isActive = i <= lastLikert;
 			ret.push(
-				<div key={i} className={classes.likert_icon_container} onClick={() => setLastLikert(cur => cur === i ? -1 : i)}>
-					{isActive ? <Star className={classes.likert_icon}/> : <StarBorder className={classes.likert_icon}/>}
-				</div>
+				<Tooltip
+					title={LikertTitles[i]}
+					placement="bottom-start"
+					classes={{ popper: classes.hier_node_tooltip }}
+					key={`likert-tt-${i}`}
+				>
+					<div key={i} className={classes.likert_icon_container} onClick={() => setLastLikert(cur => cur === i ? -1 : i)}>
+						{isActive ? <Star className={classes.likert_icon}/> : <StarBorder className={classes.likert_icon}/>}
+					</div>
+				</Tooltip>
 			);
 		}
 
 		return (
 			<ButtonGroup variant="text">
 				{ret}
-				<Button>
+				<Button onClick={handleSubmitLikert} disabled={lastLikert === -1}>
 					Submit	
 				</Button>
 			</ButtonGroup>
@@ -179,17 +199,28 @@ export const Timer = props => {
 	};
 
 	const closeSnackbar = () => {
+		console.log("[closeSnackbar]", hasFinished, showSnackbar, lastLikert, layoutState.curFold);
+		if (!showSnackbar) {
+			return;
+		}
+
 		setShowSnackbar(false);
 
 		// If details weren't already sent, send them now
 		if (!hasFinished) {
 			setHasFinished(true);	
 
-			addHistoryEntry({
+			let newEntry = {
 				foldKey: layoutState.curFold,
 				time: Date.now(),
-				quality: lastLikert
-			});
+				quality: lastLikert !== -1 ? lastLikert : 3,
+				timer: foldState.lastRecordedTimer
+			};
+
+			addHistoryEntry(newEntry);
+
+			setFoldState({ lastRecordedTimer: 0 });
+			setLastLikert(-1);
 		}
 	};
 
@@ -221,20 +252,23 @@ export const Timer = props => {
 			setShowSnackbar(true);
 
 		// Start the timer the first time the user changes steps
-		} else if (!hasInitialized && !isPlaying) {
-			setHasInitialized(true);
-			setIsPlaying(true);
-			setStartPosix(Date.now());
+		// TODO - probably good feature, but system needs redesign
+		// } else if (!hasInitialized && !isPlaying) {
+		// 	setHasInitialized(true);
+		// 	setIsPlaying(true);
+		// 	setStartPosix(Date.now());
 		}
+
+		// Close the snackbar on unmount if it's open, which involves saving
+		return closeSnackbar;
 	}, [foldState.stepIdx]);
 
 	let timerPosix = foldState.lastRecordedTimer;
 	if (isPlaying) {
 		timerPosix += Date.now() - startPosix;
 	}
-	const date = new Date(timerPosix);
-	const minStr = `${date.getMinutes()}`.padStart(2, '0');
-	const secStr = `${date.getSeconds()}`.padStart(2, '0');
+
+	console.log("[Timer]", timerPosix, foldState.lastRecordedTimer, isPlaying);
 
 	// This is the actual card: an `absolute` element so it can grow or shrink in place without affecting others' positioning
 	return (
@@ -249,7 +283,7 @@ export const Timer = props => {
 						onClick={toggleTimer}
 					>
 						{!isPlaying && <PlayArrow/>}
-						{`${minStr}:${secStr}`}
+						{timerPosixToString(timerPosix)}
 					</Button>
 					<Button className={classes.fold_timer_control} onClick={resetTimer} disabled={!isPlaying && !foldState.lastRecordedTimer}>
 						<Clear />	
@@ -259,7 +293,7 @@ export const Timer = props => {
 			<Snackbar className={classes.fold_timer_snackbar} open={showSnackbar} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
 				<Paper elevation={5}>
 				{showLikertAssess ? (
-					<Grid container>
+					<Grid className={classes.fold_timer_grid} container>
 						<Grid item xs={12}>
 							<Typography variant="h4" component="h4">
 								Please rate the quality of this result...	
@@ -270,18 +304,21 @@ export const Timer = props => {
 						</Grid>
 					</Grid>
 				) : (
-					<Grid container>
+					<Grid className={classes.fold_timer_grid} container>
 						<Grid item xs={10}>
 							<Typography  variant="h4" component="h4">
 								Model complete
 							</Typography>
-							<Button onClick={closeSnackbar}>
+							<Button classes={{root: classes.fold_timer_snackbar_close}} onClick={closeSnackbar}>
 								<Clear />
 							</Button>
 						</Grid>
 						{userState.showLikertAssess && (
 							<Grid item xs={12} md={4}>
-								<Button onClick={handleRecordQuality}>
+								<Button onClick={handleRecordQuality} disabled={lastLikert !== -1}>
+									{lastLikert !== -1 && (
+										<Done className={classes.fold_timer_done_icon} />
+									)}
 									Record Quality
 								</Button>
 							</Grid>

@@ -25,6 +25,7 @@
     "react-spring": "^8.0.27",
     "react-three-fiber": "^5.3.18",
     "redux": "^4.0.5",
+    "supermemo2": "^1.1.0",
     "three": "^0.125.2",
     "web-vitals": "^0.2.4"
   },

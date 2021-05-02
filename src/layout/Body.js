@@ -139,10 +139,11 @@ export const Body = props => {
 			// Override fields that we don't want to carry over between sessions 
 			const layoutState = Object.assign({}, cookies.origamiodyssey_state.layoutState, { searchStr: '' });
 			const foldState = Object.assign({}, cookies.origamiodyssey_state.foldState, { repeatRoot: -1, repeatRange: [] });
+			const userState = Object.assign({}, cookies.origamiodyssey_state.userState);
 			setLayoutState(layoutState);
 			setFoldState(foldState);
 			setEditorState(cookies.origamiodyssey_state.editorState);
-			setUserState(cookies.origamiodyssey_state.userState);
+			setUserState(userState);
 		} else {
 			console.log('Failed to apply cookies.', cookies);
 		}

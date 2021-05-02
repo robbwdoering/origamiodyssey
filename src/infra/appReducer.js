@@ -4,7 +4,7 @@
  * DESCRIPTION: Handles state update for all layout actions.
  */
 
-// import supermemo2 from 'supermemo2';
+import supermemo2 from 'supermemo2';
 import { initAppReducerState, Actions } from './constants';
 
 const finalInitState = JSON.parse(JSON.stringify(initAppReducerState));
@@ -38,20 +38,29 @@ export const appReducer = (state = finalInitState, action) => {
 			newState.userState.hash++;
 			break;
 		case Actions.ADD_HISTORY_ENTRY:
-			console.log('[ADD_HISTORY_ENTRY]', action.payload);
 			if (!action.payload) {
 				return newState;
 			}
 			newState.userState.foldHistory.push(action.payload)
 
-			// If this model type is part of the memo alogirthm, update that entry 
-			if (newState.modelList.find(model => model.foldKey === action.payload.foldKey)) {
+			// If this model type is part of the memo algorithm, update that entry 
+			const idx = newState.userState.modelList.findIndex(model => model.foldKey === action.payload.foldKey);
+			if (idx !== -1) {
+				console.log("Modifying entry for ", action.payload.foldKey);
 
+				// Update the spaced learning params given this new information
+				const quality = action.payload.quality;
+				const lastSchedule = newState.userState.modelList[idx].schedule
+				const lastFactor = newState.userState.modelList[idx].factor
+				newState.userState.modelList[idx] = {
+					foldKey: action.payload.foldKey,
+					...supermemo2(quality, lastSchedule, lastFactor)
+				}
 			}
-
-			// Update the spaced learning params given this new information
+			// Else don't rememeber anything other than the foldHistory row
 
 			newState.userState.hash++;
+			console.log('[ADD_HISTORY_ENTRY]', action.payload, newState.userState);
 			break;
 	}
 

@@ -84,7 +84,6 @@ export const InstructionalHierarchy = props => {
 		let total = 0;
 
 		stepArray.some((elem, i) => {
-			console.log("checking ", i, stepIdx, Array.isArray(elem[1][0]));
 			if (i > stepIdx) {
 				return true;	
 			}

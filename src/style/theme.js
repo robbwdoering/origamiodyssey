@@ -200,7 +200,7 @@ export const useStyles = makeStyles(theme => ({
 		flexGrow: 1
 	},
 	fold_controls_button_icon: {
-		fontSize: '32px !important'
+		fontSize: '32px !important',
 	},
 	fold_controls_button_icon_large: {
 		fontSize: '64px !important'
@@ -219,11 +219,12 @@ export const useStyles = makeStyles(theme => ({
 	},
 	fold_timer_snackbar: {
 		pointerEvents: 'all',
-		backgroundColor: "#e3420c",
 		marginTop: '64px !important'
 	},
 	fold_timer_snackbar_close: {
-		float: 'right'
+		position: 'absolute !important',
+		top: '7px',
+		right: '7px'
 	},
 	fold_timer: {
 	},
@@ -232,11 +233,14 @@ export const useStyles = makeStyles(theme => ({
 	fold_timer_grid: {
 		width: '100%'
 	},
+	fold_timer_done_icon: {
+		color: '#388e3c !important'
+	},
 	likert_icon_container: {
-		backgroundColor: 'blue'
+		cursor: 'pointer',
+		padding: '3px 0'
 	},
 	likert_icon: {
-		backgroundColor: 'red'
 	},
 
 	// Fold Editor

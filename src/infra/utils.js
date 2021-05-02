@@ -168,3 +168,10 @@ export const cmdOrderingComparator = (lhs, rhs) => {
 	const rhsFlex = stepHasArgs(lhs) && lhs[3].flex;
 	return (lhsFlex && !rhsFlex) ? 1 : (rhsFlex ? -1 : 0);
 };
+
+export const timerPosixToString = (timerPosix) => {
+	const date = new Date(timerPosix);
+	const minStr = `${date.getMinutes()}`.padStart(2, '0');
+	const secStr = `${date.getSeconds()}`.padStart(2, '0');
+	return `${minStr}:${secStr}`;
+}

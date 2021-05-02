@@ -352,3 +352,11 @@ export const Lines = {
     B: borderLines
 };
 */
+
+export const LikertTitles = [
+	"I was not able to finish the model.",
+	"I finished it, but there many distracting differences.",
+	"There are a few noticeable differences, like edges not lining up perfectly.",
+	"There are only a couple differences; you have to inspect closely to find a problem.",
+	"There are no differences, this model was perfectly folded!"
+];

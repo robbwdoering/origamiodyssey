@@ -50,3 +50,7 @@ div.primary-drawer-node .MuiTypography-root {
   font-weight: bold !important;
   color: #fff;
 }
+
+/*table.MuiTable-root tr.MuiTableRow-root td.MuiTableCell-root {
+  padding: 2px;
+}*/
