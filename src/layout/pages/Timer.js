@@ -73,8 +73,6 @@ export const Timer = props => {
 	const classes = useStyles();
 	const style = useRef({});
 
-	useEffect(() => console.log('[Timer]', cardKey), []);
-
 	/**
 	 * Pass the click event on to the parent function to open a fold page.
 	 */
@@ -199,7 +197,7 @@ export const Timer = props => {
 	};
 
 	const closeSnackbar = () => {
-		console.log("[closeSnackbar]", hasFinished, showSnackbar, lastLikert, layoutState.curFold);
+		// console.log("[closeSnackbar]", hasFinished, showSnackbar, lastLikert, layoutState.curFold);
 		if (!showSnackbar) {
 			return;
 		}
@@ -242,7 +240,7 @@ export const Timer = props => {
 	useEffect(resetAllState, [layoutState.curFold]);
 
 	useEffect(() => {
-		console.log("[Timer useEffect] ", foldState.stepIdx, foldState.maxSteps)
+		// console.log("[Timer useEffect] ", foldState.stepIdx, foldState.maxSteps)
 		// If this is a change to the last step, 
 		if (foldState.stepIdx >= foldState.maxSteps - 1) {
 			if (isPlaying) {
@@ -268,7 +266,7 @@ export const Timer = props => {
 		timerPosix += Date.now() - startPosix;
 	}
 
-	console.log("[Timer]", timerPosix, foldState.lastRecordedTimer, isPlaying);
+	// console.log("[Timer]", timerPosix, foldState.lastRecordedTimer, isPlaying);
 
 	// This is the actual card: an `absolute` element so it can grow or shrink in place without affecting others' positioning
 	return (

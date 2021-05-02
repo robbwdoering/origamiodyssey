@@ -73,7 +73,7 @@ export const InstructionalHierarchy = props => {
 			newFoldState.repeatRoot = -1;
 			newFoldState.repeatRange = null	
 			if (looperWorkerId !== -1) {
-				console.log("CLEARING - changeStep");
+				// console.log("CLEARING - changeStep");
 				clearInterval(looperWorkerId);
 				setLooperWorkerId(-1);
 			}
@@ -110,7 +110,7 @@ export const InstructionalHierarchy = props => {
 
 		// Top updates every time the step changes
 		const numDefaultsBefore = calcNumDefaultsBefore(foldState.stepIdx);
-		console.log("[calcCardPos]", numDefaultsBefore, foldState.stepIdx, stepArray)
+		// console.log("[calcCardPos]", numDefaultsBefore, foldState.stepIdx, stepArray)
 		const top = (window.innerHeight - 296) - (HIER_PX_SIZE * (foldState.stepIdx + 1 + numDefaultsBefore));
 		let style = {
 			// Don't show first column, and account for padding
@@ -136,7 +136,7 @@ export const InstructionalHierarchy = props => {
 		let newFoldState = {};
 
 		const [startUseIndex, endUseIndex] = findInUseFamilyNode(stepArray, path);
-		console.log("[handleHierNodeClick]", event, stepIdx, startUseIndex, endUseIndex);
+		// console.log("[handleHierNodeClick]", event, stepIdx, startUseIndex, endUseIndex);
 
 		if (!event.shiftKey) {
 			// If no shift, just move to this node 
@@ -155,7 +155,7 @@ export const InstructionalHierarchy = props => {
 				newFoldState.repeatRange = null;
 
 				if (looperWorkerId !== -1) {
-					console.log("CLEARING");
+					// console.log("CLEARING");
 					clearInterval(looperWorkerId);
 					setLooperWorkerId(-1);
 				}
@@ -194,7 +194,7 @@ export const InstructionalHierarchy = props => {
 			}
 
 			if (looperWorkerId === -1) {
-				console.log("SETTING");
+				// console.log("SETTING");
 				setLooperWorkerId(setInterval(looperWorker, 2500));
 			}
 
@@ -203,11 +203,11 @@ export const InstructionalHierarchy = props => {
 
 			// Go to the start, and progress forward
 			newFoldState.stepIdx = newFoldState.repeatRange[0] - 1;
-			console.log("setting looper - handleHierNodeClick", 1);
+			// console.log("setting looper - handleHierNodeClick", 1);
 			setLooperDirection(1);
 		}
 
-		console.log("[setting repeatRange]", newFoldState);
+		// console.log("[setting repeatRange]", newFoldState);
 		setFoldState(newFoldState);
 	};
 
@@ -435,7 +435,7 @@ export const InstructionalHierarchy = props => {
 		// 32 is padding on center column
 	const instCardMargin = window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) - 32 + 10 + 'px') : "0";
 
-	console.log("[InstructionalHierarchy]", stepArray);
+	// console.log("[InstructionalHierarchy]", stepArray);
 
 	return (
 		<div className={classes.centerColumn_flex}>
