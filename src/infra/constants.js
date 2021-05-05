@@ -12,15 +12,15 @@ import DashboardIcon from '@material-ui/icons/Dashboard';
 import GroupAddIcon from '@material-ui/icons/GroupAdd';
 
 // The FOLD files
-import BirdBase from './../folds/BirdBase.json';
-import BoatBase from './../folds/BoatBase.json';
-import FrogBase from './../folds/FrogBase.json';
-import WaterBombBase from './../folds/WaterBombBase.json';
-import SailBoat from './../folds/SailBoat.json';
-import Heart from './../folds/Heart.json';
-import Crane from './../folds/Crane.json';
-import Butterfly from './../folds/Butterfly.json';
-import Lily from './../folds/Lily.json';
+import BirdBase from './../anim/folds/BirdBase.json';
+import BoatBase from './../anim/folds/BoatBase.json';
+import FrogBase from './../anim/folds/FrogBase.json';
+import WaterBombBase from './../anim/folds/WaterBombBase.json';
+import SailBoat from './../anim/folds/SailBoat.json';
+import Heart from './../anim/folds/Heart.json';
+import Crane from './../anim/folds/Crane.json';
+import Butterfly from './../anim/folds/Butterfly.json';
+import Lily from './../anim/folds/Lily.json';
 
 // Images
 import lilyImage from './../static/lily_thumbnail.png';

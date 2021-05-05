@@ -41,10 +41,10 @@ import SquareLoader from "react-spinners/SquareLoader";
 
 import { useAuth0 } from '@auth0/auth0-react';
 
-import useStyles from './../../style/theme';
-import { Folds, Pages } from './../../infra/constants';
-import { setUserState, setLayoutState } from './../../infra/actions';
-import { timerPosixToString } from './../../infra/utils';
+import useStyles from './../style/theme';
+import { Folds, Pages } from './../infra/constants';
+import { setUserState, setLayoutState } from './../infra/actions';
+import { timerPosixToString } from './../infra/utils';
 // const AnimatedCard = animated(Card);
 
 export const User = props => {

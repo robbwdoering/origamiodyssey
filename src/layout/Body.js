@@ -17,11 +17,11 @@ import { useCookies } from 'react-cookie';
 
 import { Pages, Folds, initNavTree } from './../infra/constants';
 import { setLayoutState, setFoldState, setEditorState, setUserState } from './../infra/actions';
-import Splash from './pages/Splash';
-import ModelSelect from './pages/ModelSelect';
-import FoldEditorCards from './pages/FoldEditorCards';
-import User from './pages/User';
-import InstructionalHierarchy from './pages/InstructionalHierarchy';
+import Splash from './../components/Splash';
+import ModelSelect from './../components/ModelSelect';
+import FoldEditorCards from './../components/FoldEditorCards';
+import User from './../components/User';
+import InstructionalHierarchy from './../components/InstructionalHierarchy';
 import Scene from './../anim/Scene';
 import useStyles from './../style/theme';
 

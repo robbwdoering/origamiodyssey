@@ -14,9 +14,9 @@ import { SwipeableDrawer, Button,  ButtonGroup, List, Divider, ListItem, Card } 
 import SkipPrevious from "@material-ui/icons/SkipPrevious";
 import SkipNext from "@material-ui/icons/SkipNext";
 
-import useStyles from "./../../style/theme";
-import { Folds } from "./../../infra/constants";
-import { setFoldState } from "./../../infra/actions";
+import useStyles from "./../style/theme";
+import { Folds } from "./../infra/constants";
+import { setFoldState } from "./../infra/actions";
 // const AnimatedCard = animated(Card);
 
 export const FoldControls = props => {

@@ -26,9 +26,9 @@ import {
 import FilterList from '@material-ui/icons/FilterList';
 import Clear from '@material-ui/icons/Clear';
 
-import useStyles from './../../style/theme';
-import { Folds, Pages, Tags, TagCategories } from './../../infra/constants';
-import { setLayoutState } from './../../infra/actions';
+import useStyles from './../style/theme';
+import { Folds, Pages, Tags, TagCategories } from './../infra/constants';
+import { setLayoutState } from './../infra/actions';
 const AnimatedCard = animated(Card);
 
 /**
@@ -110,7 +110,7 @@ export const ModelCard = props => {
 
 	// Get the location of the current image using webpack  - probably only done once per card
 	const imagePath = useMemo(
-		() => (layoutState.useImages ? require(`./../../static/${foldEntry.img}_thumbnail.png`) : undefined),
+		() => (layoutState.useImages ? require(`./../static/${foldEntry.img}_thumbnail.png`) : undefined),
 		[foldEntry.img, layoutState.useImages]
 	);
 

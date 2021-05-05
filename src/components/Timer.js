@@ -36,10 +36,10 @@ import Star from '@material-ui/icons/Star';
 import StarBorder from '@material-ui/icons/StarBorder';
 import Done from '@material-ui/icons/Done';
 
-import useStyles from './../../style/theme';
-import { Folds, Pages, Tags, TagCategories, LikertTitles } from './../../infra/constants';
-import { setLayoutState, setFoldState, addHistoryEntry } from './../../infra/actions';
-import { timerPosixToString } from './../../infra/utils';
+import useStyles from './../style/theme';
+import { Folds, Pages, Tags, TagCategories, LikertTitles } from './../infra/constants';
+import { setLayoutState, setFoldState, addHistoryEntry } from './../infra/actions';
+import { timerPosixToString } from './../infra/utils';
 
 /**
  * A timer that will re-rerender every second minimum.

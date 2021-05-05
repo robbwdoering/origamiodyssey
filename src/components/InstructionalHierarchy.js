@@ -17,11 +17,11 @@ import SkipNext from '@material-ui/icons/SkipNext';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 
-import useStyles from './../../style/theme';
-import { Folds } from './../../infra/constants';
-import { setFoldState, setLayoutState, setUserState } from './../../infra/actions';
+import useStyles from './../style/theme';
+import { Folds } from './../infra/constants';
+import { setFoldState, setLayoutState, setUserState } from './../infra/actions';
 import TimerContainer from './Timer';
-import { collectStepsForLevel, calcMaxLevel, printPath, findInUseFamilyNode, getHierNode } from './../../infra/utils';
+import { collectStepsForLevel, calcMaxLevel, printPath, findInUseFamilyNode, getHierNode } from './../infra/utils';
 
 const HIER_PX_SIZE = 20;
 

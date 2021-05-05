@@ -33,9 +33,9 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import { ToggleButton } from '@material-ui/lab';
 
-import useStyles from './../../style/theme';
-import { Folds } from './../../infra/constants';
-import { setFoldState, setEditorState } from './../../infra/actions';
+import useStyles from './../style/theme';
+import { Folds } f './../infra/constants';
+import { setFoldState, setEditorState } from './../infra/actions';
 // const AnimatedCard = animated(Card);
 
 export const FoldEditorCards = props => {

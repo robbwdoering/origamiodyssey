@@ -26,9 +26,9 @@ import {
 import FilterList from '@material-ui/icons/FilterList';
 import Clear from '@material-ui/icons/Clear';
 
-import useStyles from './../../style/theme';
-import { Folds, Pages, Tags, TagCategories } from './../../infra/constants';
-import { setLayoutState } from './../../infra/actions';
+import useStyles from './../style/theme';
+import { Folds, Pages, Tags, TagCategories } from './../infra/constants';
+import { setLayoutState } from './../infra/actions';
 import ModelCardContainer from './ModelCard';
 const AnimatedCard = animated(Card);
 
