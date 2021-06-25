@@ -17,7 +17,7 @@ import { useCookies } from 'react-cookie';
 
 import { Pages, Folds, initNavTree } from './../infra/constants';
 import { setLayoutState, setFoldState, setEditorState, setUserState } from './../infra/actions';
-import Splash from './../components/Splash';
+// import Splash from './../components/Splash';
 import ModelSelect from './../components/ModelSelect';
 import FoldEditorCards from './../components/FoldEditorCards';
 import User from './../components/User';
@@ -57,7 +57,8 @@ export const Body = props => {
 
 		switch (layoutState.page) {
 			case Pages.Splash:
-				return <Splash {...pageProps} />;
+				return null;
+				// return <Splash {...pageProps} />;
 			case Pages.ModelSelect:
 				return <ModelSelect {...pageProps} />;
 			case Pages.User:

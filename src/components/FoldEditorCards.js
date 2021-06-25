@@ -34,7 +34,7 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import { ToggleButton } from '@material-ui/lab';
 
 import useStyles from './../style/theme';
-import { Folds } f './../infra/constants';
+import { Folds } from './../infra/constants';
 import { setFoldState, setEditorState } from './../infra/actions';
 // const AnimatedCard = animated(Card);
 
