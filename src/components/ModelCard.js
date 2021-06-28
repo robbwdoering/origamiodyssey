@@ -52,8 +52,6 @@ export const ModelCard = props => {
 	const classes = useStyles();
 	const style = useRef({});
 
-	useEffect(() => console.log("[ModelCard]", cardKey), []);
-
 	/**
 	 * Pass the click event on to the parent function to open a fold page.
 	 */
@@ -113,8 +111,6 @@ export const ModelCard = props => {
 		() => (layoutState.useImages ? require(`./../static/${foldEntry.img}_thumbnail.png`) : undefined),
 		[foldEntry.img, layoutState.useImages]
 	);
-
-	console.log("[ModelCard] ", style.current);
 
 	// This is the actual card: an `absolute` element so it can grow or shrink in place without affecting others' positioning
 	return (

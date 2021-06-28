@@ -138,10 +138,6 @@ export const ModelSelect = props => {
 		display: filterIsActive ? undefined : 'none'
 	};
 
-	// 	
-
-	console.log("[ModelSelect] ", cardList.length, cardList, activeIndex);
-
 	return (
 		<React.Fragment>
 			<div
