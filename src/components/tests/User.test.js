@@ -1,5 +1,5 @@
 /**
- * FILENAME: ModelCard.test.js
+ * FILENAME: User.test.js
  */
 
 // React + Enzyme 
@@ -9,37 +9,27 @@ import { shallow } from './../../infra/enzyme';
 // Local
 import { testRedux } from './../../infra/testConstants';
 import { Folds } from './../../infra/constants';
-import { ModelCard } from './../ModelCard';
+import { User } from './../User';
 
-describe('Model Card', () => {
+describe('User Page', () => {
 	let comp;
-	let handleCardClick;
+	let setUserState, setLayoutState;
 
-			
 	beforeEach(() => {
-		handleCardClick = jest.fn();
+		setUserState = jest.fn();
+		setLayoutState = jest.fn();
 
 		comp = shallow(
-			<ModelCard 
-				// Parent
-				placeholderRef={{}} 
-				name="Bird Base"
-				cardKey='BirdBase'
-				foldEntry={Folds.BirdBase}
-				index={0}
-				isActive={true}
-				shouldOpenFlipped={false}
-				isHidden={false}
-				handleCardClick={handleCardClick}
+			<User 
 				// Redux
+				userState={Object.assign({}, testRedux.userState)}
+				userStateHash={0}
 				layoutState={Object.assign({}, testRedux.layoutState)}
 				layoutStateHash={0}
+				setUserState={setUserState}
+				setLayoutState={setLayoutState}
 			/>
 		);
-	});
-
-	afterEach(() => {
-		comp.unmount();
 	});
 
 	it('renders without crashing', () => {

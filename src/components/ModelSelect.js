@@ -167,7 +167,7 @@ export const ModelSelect = props => {
 				</div>
 				<Grid container className={classes.filter_choices} style={filterChoicesStyle}>
 					{Object.keys(TagCategories).map(categoryKey => (
-						<Grid item className={classes.editor_row} {...TagCategories[categoryKey]}>
+						<Grid item key={categoryKey} className={classes.editor_row} {...TagCategories[categoryKey]}>
 							{/* Title */}
 							<Typography
 								className={classes.modelCard_label}

@@ -8,7 +8,7 @@
  * This walks the tree recursively, collecting an array of steps at this "level".
  */
 export const collectStepsForLevel = (fold, level, isDefault) => {
-	console.log("[collectStepsForLevel]", fold, level, isDefault);
+	// console.log("[collectStepsForLevel]", fold, level, isDefault);
 	if (!fold || !fold.instructions) {
 		return [];
 	}

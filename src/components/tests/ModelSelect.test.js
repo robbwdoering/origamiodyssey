@@ -1,5 +1,5 @@
 /**
- * FILENAME: ModelCard.test.js
+ * FILENAME: ModelSelect.test.js
  */
 
 // React + Enzyme 
@@ -9,31 +9,19 @@ import { shallow } from './../../infra/enzyme';
 // Local
 import { testRedux } from './../../infra/testConstants';
 import { Folds } from './../../infra/constants';
-import { ModelCard } from './../ModelCard';
+import { ModelSelect } from './../ModelSelect';
 
-describe('Model Card', () => {
+describe('Model Selection Page', () => {
 	let comp;
-	let handleCardClick;
+	let setLayoutState;
 
-			
 	beforeEach(() => {
-		handleCardClick = jest.fn();
-
 		comp = shallow(
-			<ModelCard 
-				// Parent
-				placeholderRef={{}} 
-				name="Bird Base"
-				cardKey='BirdBase'
-				foldEntry={Folds.BirdBase}
-				index={0}
-				isActive={true}
-				shouldOpenFlipped={false}
-				isHidden={false}
-				handleCardClick={handleCardClick}
+			<ModelSelect 
 				// Redux
 				layoutState={Object.assign({}, testRedux.layoutState)}
 				layoutStateHash={0}
+				setLayoutState={setLayoutState}
 			/>
 		);
 	});
