@@ -9,6 +9,7 @@
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@react-spring/three": "^9.0.0-rc.3",
     "@react-three/drei": "^3.10.2",
+    "@react-three/fiber": "^7.0.6",
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.6.3",
