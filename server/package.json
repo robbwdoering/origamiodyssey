@@ -1,6 +1,6 @@
 {
   "name": "server",
-  "description": "REST API for the Origami Odyssey application.",
+  "description": "The REST API for the Origami Odyssey application.",
   "version": "0.0.0",
   "homepage": "",
   "private": true,
@@ -49,9 +49,10 @@
     "@feathersjs/transport-commons": "^4.5.11",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "feathers-nedb": "^5.1.0",
+    "feathers-mongoose": "^8.3.3",
     "helmet": "^4.6.0",
-    "nedb": "^1.8.0",
+    "mongodb-core": "^3.2.7",
+    "mongoose": "^5.13.7",
     "serve-favicon": "^2.5.0",
     "winston": "^3.3.3"
   },
@@ -60,7 +61,6 @@
     "@types/cors": "^2.8.12",
     "@types/jest": "^27.0.1",
     "@types/jsonwebtoken": "^8.5.5",
-    "@types/nedb": "^1.8.12",
     "@types/serve-favicon": "^2.5.3",
     "@typescript-eslint/eslint-plugin": "^4.29.2",
     "@typescript-eslint/parser": "^4.29.2",

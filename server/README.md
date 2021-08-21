@@ -1,6 +1,6 @@
 # server
 
-> REST API for the Origami Odyssey application.
+> The REST API for the Origami Odyssey application.
 
 ## About
 
