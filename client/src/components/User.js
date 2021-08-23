@@ -39,9 +39,9 @@ import SquareLoader from 'react-spinners/SquareLoader';
 import { useAuth0 } from '@auth0/auth0-react';
 
 import useStyles from './../style/theme';
-import { Folds, Pages } from './../infra/constants';
+import { Folds, Pages, DEF_API_OPTIONS } from './../infra/constants';
 import { setUserState, setLayoutState } from './../infra/actions';
-import { timerPosixToString } from './../infra/utils';
+import { timerPosixToString, useApi } from './../infra/utils';
 
 export const User = props => {
 	const { userState, setUserState, layoutState, setLayoutState } = props;
@@ -271,6 +271,10 @@ export const User = props => {
 	// LIFECYCLE
 	// ---------
 
+	// ------
+	// RENDER 
+	// ------
+
 	if (isLoading) {
 		return (
 			<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
@@ -284,7 +288,7 @@ export const User = props => {
 					Login
 				</Typography>
 
-				<Typography variant='body' color='textSecondary' component='body'>
+				<Typography variant='body2' color='textSecondary' component='body'>
 					Please login to access user page features and preferences.
 				</Typography>
 
@@ -294,8 +298,6 @@ export const User = props => {
 			</Paper>
 		);
 	}
-
-	console.log('[User]', user);
 
 	return (
 		<Grid className={classes.user_container} container spacing={2}>

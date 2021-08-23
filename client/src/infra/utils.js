@@ -1,8 +1,11 @@
 /**
- * FILENAME: Constants.js
+ * FILENAME: utils.js
  *
- * DESCRIPTION: Contains constants for use accross the app.
+ * DESCRIPTION: Contains functions and hooks for use across the app.
  */
+
+import { useEffect, useState } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 
 /*
  * This walks the tree recursively, collecting an array of steps at this "level".
@@ -90,19 +93,22 @@ export const calcMaxLevel = inst => {
 };
 
 export const findInUseFamilyNode = (stepArr, path) => {
-	return stepArr.reduce((acc, step, index) => {
-		// True if inUse step is an ancestor or descendant of this step
-		if (path.startsWith(step[0]) || step[0].startsWith(path)) {
-			// First index holds the first discovered descendant
-			if (acc[0] == -1) {
-				acc[0] = index;
-			}
+	return stepArr.reduce(
+		(acc, step, index) => {
+			// True if inUse step is an ancestor or descendant of this step
+			if (path.startsWith(step[0]) || step[0].startsWith(path)) {
+				// First index holds the first discovered descendant
+				if (acc[0] == -1) {
+					acc[0] = index;
+				}
 
-			// Second index holds the last discovered descendant
-			acc[1] = index;
-		}
-		return acc;
-	}, [-1, -1]);
+				// Second index holds the last discovered descendant
+				acc[1] = index;
+			}
+			return acc;
+		},
+		[-1, -1]
+	);
 };
 
 export const getHierNode = (instructions, path) => {
@@ -144,7 +150,7 @@ export const cmdsInvolveEdge = (origCmds, edge) => {
 
 	return (
 		origCmds &&
-		origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && (edge.includes(cmd[0]) && edge.includes(cmd[1])))
+		origCmds.find(cmd => (cmd.length !== 4 || !cmd[3].flex) && edge.includes(cmd[0]) && edge.includes(cmd[1]))
 	);
 };
 
@@ -159,19 +165,19 @@ export const stepIs1D = step => step.length && !Array.isArray(step[0]);
 export const stepHasArgs = step => step.length > 3 && step[3];
 
 /**
- * A comparison function for use in sorting lists of cmds (i.e. a step). 
+ * A comparison function for use in sorting lists of cmds (i.e. a step).
  * Right now just puts flex items first - this is because they don't initiate movement,
  * but need to be processed in full before any movement begins.
  */
 export const cmdOrderingComparator = (lhs, rhs) => {
 	const lhsFlex = stepHasArgs(lhs) && lhs[3].flex;
 	const rhsFlex = stepHasArgs(lhs) && lhs[3].flex;
-	return (lhsFlex && !rhsFlex) ? 1 : (rhsFlex ? -1 : 0);
+	return lhsFlex && !rhsFlex ? 1 : rhsFlex ? -1 : 0;
 };
 
-export const timerPosixToString = (timerPosix) => {
+export const timerPosixToString = timerPosix => {
 	const date = new Date(timerPosix);
 	const minStr = `${date.getMinutes()}`.padStart(2, '0');
 	const secStr = `${date.getSeconds()}`.padStart(2, '0');
 	return `${minStr}:${secStr}`;
-}
+};

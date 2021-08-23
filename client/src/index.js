@@ -12,7 +12,7 @@ import { createStore, combineReducers } from 'redux';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { CookiesProvider } from 'react-cookie';
-import { Auth0Provider } from "@auth0/auth0-react";
+import { Auth0Provider } from '@auth0/auth0-react';
 
 /* Local Modules */
 import { appReducer } from './infra/appReducer';
@@ -21,6 +21,7 @@ import Header from './layout/Header';
 import Body from './layout/Body';
 import Footer from './layout/Footer';
 import NavDrawer from './layout/NavDrawer';
+import { DEF_API_OPTIONS } from './infra/constants';
 
 /* Source (this package) */
 // import * as serviceWorker from './serviceWorker';
@@ -32,28 +33,29 @@ const rootReducer = combineReducers({
 });
 const store = createStore(rootReducer);
 
+console.log('Process Env: ', process.env, window.location.origin);
+
 render(
 	/* React-redux provider - centralizes state */
 	<Provider store={store}>
 		{/* User Management */}
 		<Auth0Provider
-			domain="plain-math-9135.us.auth0.com"
-			clientId="Fm50tDFmVjVPetvg3exCzeXaO32NVw5F"
-		    // audience="https://bellum.us.auth0.com/api/v2/"
-		    // scopes="read:current_user update:current_user_metadata"
+			// Basic Props
+			domain={process.env.REACT_APP_AUTH0_DOMAIN}
+			clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
 			redirectUri={window.location.origin}
+			cacheLocation='localstorage'//shouldn't be needed, but seems to be...
+			// Request API Acess Token - define audience and scopes
+			{...DEF_API_OPTIONS}
 		>
-
 			{/* Allows us to store redux state in cookies for smooth refresh behavior */}
 			<CookiesProvider>
-
 				{/* Material-ui theme controls pallette, global styles */}
 				<ThemeProvider theme={theme}>
 					<CssBaseline />
 
 					{/* The Actual App */}
 					<div className="app-root">
-
 						{/* Logo, search, nav-bar access */}
 						<Header />
 

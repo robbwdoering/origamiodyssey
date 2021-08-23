@@ -14,8 +14,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useCookies } from 'react-cookie';
+import { useAuth0 } from '@auth0/auth0-react';
 
-import { Pages, Folds, initNavTree } from './../infra/constants';
+import { Pages, Folds, initNavTree, Actions, DEF_API_OPTIONS } from './../infra/constants';
+import { useApi } from './../infra/useApi';
 import { setLayoutState, setFoldState, setEditorState, setUserState } from './../infra/actions';
 // import Splash from './../components/Splash';
 import ModelSelect from './../components/ModelSelect';
@@ -48,6 +50,7 @@ export const Body = props => {
 	const fold = useRef({});
 	const [curHash, setHash] = useState(0);
 	const [cookies, setCookies] = useCookies([]);
+	const { user, isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0();
 
 	// ----------------
 	// MEMBER FUNCTIONS
@@ -97,7 +100,7 @@ export const Body = props => {
 	};
 
 	const selectFold = () => {
-		console.log('selectFold', layoutState, Folds);
+		// console.log('selectFold', layoutState, Folds);
 		setFoldState({
 			stepIdx: -1,
 			active: false 
@@ -117,7 +120,7 @@ export const Body = props => {
 	};
 
 	const foldOverrideCallback = newFold => {
-		console.log('[foldOverrideCallback] ', newFold);
+		// console.log('[foldOverrideCallback] ', newFold);
 		Object.assign(fold.current.json, newFold);
 
 		// Reset fold state
@@ -139,7 +142,7 @@ export const Body = props => {
 
 	const fetchStateFromCookies = () => {
 		if (cookies.origamiodyssey_state) {
-			console.log('Applying state from cookies.', cookies.origamiodyssey_state);
+			// console.log('Applying state from cookies.', cookies.origamiodyssey_state);
 			// Override fields that we don't want to carry over between sessions 
 			const layoutState = Object.assign({}, cookies.origamiodyssey_state.layoutState, { searchStr: '' });
 			const foldState = Object.assign({}, cookies.origamiodyssey_state.foldState, { repeatRoot: -1, repeatRange: [] });
@@ -153,9 +156,54 @@ export const Body = props => {
 		}
 	};
 
+	/**
+	 * Tell the useApi() hook to send a new fetch request to the API after getting the authentication token.
+	 */
+	const fetchFromApi = async () => {
+		if (isAuthenticated && !isLoading) {
+			console.log('[fetchFromApi]', user)
+			refresh(`/${user.email}`);
+		}
+	}
+
+	/**
+	 * This callback understands every redux-oriented response from the server, storing the relevant data in redux
+	 * through the use of package-specific reducers.
+	 */
+	const handleFetchResult = useMemo(() => (json) => {
+		console.log("[handleFetchResult]", json);
+		if (!json) {
+			return;
+		}
+		switch (json.type) {
+			case Actions.SET_LAYOUT_STATE:
+				setLayoutState(json.payload);
+				break;
+			case Actions.SET_FOLD_STATE:
+				setFoldState(json.payload);
+				break;
+			case Actions.SET_EDITOR_STATE:
+				setEditorState(json.payload);
+				break;
+			case Actions.SET_USER_STATE:
+				setUserState(json.payload);
+				break;
+			default:
+				throw new Error(`Unrecognized Type: ${json.type}`);
+		}
+	}, []);
+
+
 	// ---------
 	// LIFECYCLE
 	// ---------
+
+	// Setup the API connection for the backend - managed by the custom hook
+	const { loading, error, refresh, data: users } = useApi('/users', 'GET', DEF_API_OPTIONS, handleFetchResult);
+
+	// When authenticated for the first time, request user data from API
+	useEffect(fetchFromApi, [getAccessTokenSilently, isLoading, isAuthenticated]);
+
 	// Rerender whenever the page resizes
 	useEffect(() => {
 		window.addEventListener('resize', triggerRerender);
@@ -163,6 +211,7 @@ export const Body = props => {
 
 		fetchStateFromCookies();
 	}, []);
+
 
 	useEffect(() => {
 		saveStateToCookies();
@@ -185,7 +234,7 @@ export const Body = props => {
 		display: layoutState.page === Pages.Fold ? undefined : "none"
 	};
 
-	console.log('[body]', fold.current);
+	// console.log('[body]', fold.current);
 
 	return (
 		<div className={classes.bodyContainer} ref={containerRef}>

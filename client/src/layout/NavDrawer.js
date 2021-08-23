@@ -126,7 +126,6 @@ export const NavDrawer = props => {
 			case "is_saved_fold":
 				return layoutState.page !== Pages.Fold && foldState.stepIdx !== -1;
 			case "is_logged_in":
-			console.log("[conditionalEx]", isAuthenticated);
 				return isAuthenticated;
 			case "is_not_logged_in":
 				return !isAuthenticated;

@@ -360,3 +360,8 @@ export const LikertTitles = [
 	"There are only a couple differences; you have to inspect closely to find a problem.",
 	"There are no differences, this model was perfectly folded!"
 ];
+
+export const DEF_API_OPTIONS = {
+	audience: 'https://server.origamiodyssey.com',
+	scope: 'read:current_user update:current_user'
+}

@@ -70,6 +70,5 @@
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.3.5"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
