@@ -36,7 +36,7 @@ export const useApi = (url, method, options = {}, handleFetch, data) => {
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json',
-                    // Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${accessToken}`,
                     strategy: 'auth0',
                     access_token: accessToken
                 }

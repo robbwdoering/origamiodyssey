@@ -56,7 +56,7 @@ render(
 
 					{/* The Actual App */}
 					<div className="app-root">
-						<Router>
+						<BrowserRouter>
 							{/* Logo, search, nav-bar access */}
 							<Header />
 
@@ -68,7 +68,7 @@ render(
 
 							{/* TBD */}
 							<Footer />
-						</Router>
+						</BrowserRouter>
 					</div>
 				</ThemeProvider>
 			</CookiesProvider>

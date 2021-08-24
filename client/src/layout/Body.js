@@ -53,7 +53,7 @@ export const Body = props => {
 	const { access_token } = useParams();
 	const [curHash, setHash] = useState(0);
 	const [cookies, setCookies] = useCookies([]);
-	const { user, isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0();
+	const { user, isLoading, isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
 
 	// ----------------
 	// MEMBER FUNCTIONS
@@ -161,23 +161,28 @@ export const Body = props => {
 
 	/**
 	 * Tell the useApi() hook to send a new fetch request to the API after getting the authentication token.
+	 * I recognize that localStorage use for access tokens is not the most secure solution, but it was
+	 * chosen because I frankly couldn't get a PKCE flow working to authenticate both the feathersjs API
+	 * and the client in the same operation. Currently, everying authenticates based on the access_token
+	 * we get from feathersjs, NOT the ones furnished by Auth0 as part of their automated PKCE offering.
+	 * If you know better, I'd appreciate being pointed in the right direction architecture wise!
 	 */
 	const fetchFromApi = async () => {
-		if (isAuthenticated && !isLoading && user.email) {
-			console.log('fetchFromApi', location.pathname);
+		console.log('fetchFromApi', location.pathname);
+		// PRIORITY 1: Check for a new access token given as a url parameter
+		let accessToken = location.pathname.match(/.*\/#access_token=.*/g);
 
-			if (access_token) {
-				// PRIORITY 1: Check for a new access token given as a url parameter
-
-			} else if () {
-				// PRIORITY 2: Use any stored access token from local storage	
-			} else {
-				// Else 
-			}
-
-
-			refresh(`users/${user.email}`);
+		// PRIORITY 2: Check for an old one in storage
+		if (!accessToken && storageAvailable('localStorage')) {
+			accessToken = localStorage.getItem('oo_feathersjs_token');
 		}
+
+		if (!accessToken) {
+			// PRIORITY 3: We're logged out, do nothing
+			return;
+		}
+
+		refresh(`users/${user.email}`);
 	}
 
 	/**
