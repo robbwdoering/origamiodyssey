@@ -224,6 +224,7 @@ export const initAppReducerState = {
 	},
 	userState: {
 		hash: 0,
+		authObj: {},
 		showEditor: false,
 		username: null,
 		showTimerAssess: false,

@@ -45,7 +45,7 @@ render(
 			redirectUri={window.location.origin}
 			onRedirectCallback={e => console.log("onRedirectCallback !!!!!!!!!", e)}
 			cacheLocation='localstorage'//shouldn't be needed, but seems to be...
-			// Request API Acess Token - define audience and scopes
+			// Request API Access Token - define audience and scopes
 			{...DEF_API_OPTIONS}
 		>
 			{/* Allows us to store redux state in cookies for smooth refresh behavior */}

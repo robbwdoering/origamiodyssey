@@ -110,7 +110,8 @@ export const NavDrawer = props => {
 				break;
 			case "login":
 				// Redirect to feathersjs server so it can proxy us to auth0
-				window.location.href = process.env.REACT_APP_API_IP + '/oauth/auth0';
+				// window.location.href = process.env.REACT_APP_API_IP + '/oauth/auth0';
+				loginWithRedirect();
 				break;
 			default:
 				console.log("unhandled navDrawer option", key);

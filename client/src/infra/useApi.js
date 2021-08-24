@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
-export const useApi = (url, method, options = {}, handleFetch, data) => {
+export const useApi = (url, accessToken, method, options = {}, handleFetch, data) => {
     const { getAccessTokenSilently, user, isAuthenticated } = useAuth0();
     const [state, setState] = useState({
         error: null,
@@ -29,18 +29,18 @@ export const useApi = (url, method, options = {}, handleFetch, data) => {
         }
 
         try {
-            const accessToken = await getAccessTokenSilently(options);
-
+            // const accessToken = await getAccessTokenSilently(options);
             let msg = {
                 method: overrideMethod || method,
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
-                    strategy: 'auth0',
-                    access_token: accessToken
+                    'Content-Type': 'application/json'
                 }
             };
+
+            if (accessToken) {
+                msg.headers.Authorization = `Bearer ${accessToken}`;
+            }
 
             // Append data if it was passed
             if (overrideValues) {
@@ -50,6 +50,7 @@ export const useApi = (url, method, options = {}, handleFetch, data) => {
             }
             setState(Object.assign({}, state, { loading: true }))
 
+            console.log("[perform]", msg)
             // Perform the fetch asynchrounously
             fetch(process.env.REACT_APP_API_IP + url + (urlSuffix || ""), msg)
             .then(response => {

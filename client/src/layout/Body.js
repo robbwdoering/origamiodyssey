@@ -46,11 +46,11 @@ export const Body = props => {
 	// ----------
 	// STATE INIT
 	// ----------
+	const [notifiedServerOfAuth, setNotifiedServerOfAuth] = useState(false);
 	const classes = useStyles();
 	const containerRef = useRef();
 	const fold = useRef({});
 	const location = useLocation();
-	const { access_token } = useParams();
 	const [curHash, setHash] = useState(0);
 	const [cookies, setCookies] = useCookies([]);
 	const { user, isLoading, isAuthenticated, loginWithRedirect, getAccessTokenSilently } = useAuth0();
@@ -64,7 +64,7 @@ export const Body = props => {
 		switch (layoutState.page) {
 			case Pages.Splash:
 				return null;
-				// return <Splash {...pageProps} />;
+			// return <Splash {...pageProps} />;
 			case Pages.ModelSelect:
 				return <ModelSelect {...pageProps} />;
 			case Pages.User:
@@ -85,7 +85,7 @@ export const Body = props => {
 	const renderPiecemeal = () => {
 		switch (layoutState.page) {
 			case Pages.Fold:
-				return ((userState.showEditor) ? (
+				return userState.showEditor ? (
 					<FoldEditorCards
 						windowHeight={windowHeight}
 						initFold={fold.current.json}
@@ -93,7 +93,7 @@ export const Body = props => {
 						foldOverrideCallback={foldOverrideCallback}
 						foldLastUpdated={fold.current.lastUpdated}
 					/>
-				) : null);
+				) : null;
 			case Pages.Splash:
 			case Pages.ModelSelect:
 			case Pages.User:
@@ -106,7 +106,7 @@ export const Body = props => {
 		// console.log('selectFold', layoutState, Folds);
 		setFoldState({
 			stepIdx: -1,
-			active: false 
+			active: false
 		});
 		fold.current = {
 			json:
@@ -136,19 +136,18 @@ export const Body = props => {
 
 	const saveStateToCookies = () => {
 		// const finalFoldState = Object.assign({}, foldState, { stepIdx: -1 });
-		setCookies(
-			'origamiodyssey_state',
-			{ layoutState, foldState, editorState, userState },
-			{ path: '/' }
-		);
+		setCookies('origamiodyssey_state', { layoutState, foldState, editorState, userState }, { path: '/' });
 	};
 
 	const fetchStateFromCookies = () => {
 		if (cookies.origamiodyssey_state) {
 			// console.log('Applying state from cookies.', cookies.origamiodyssey_state);
-			// Override fields that we don't want to carry over between sessions 
+			// Override fields that we don't want to carry over between sessions
 			const layoutState = Object.assign({}, cookies.origamiodyssey_state.layoutState, { searchStr: '' });
-			const foldState = Object.assign({}, cookies.origamiodyssey_state.foldState, { repeatRoot: -1, repeatRange: [] });
+			const foldState = Object.assign({}, cookies.origamiodyssey_state.foldState, {
+				repeatRoot: -1,
+				repeatRange: []
+			});
 			const userState = Object.assign({}, cookies.origamiodyssey_state.userState);
 			setLayoutState(layoutState);
 			setFoldState(foldState);
@@ -167,61 +166,84 @@ export const Body = props => {
 	 * we get from feathersjs, NOT the ones furnished by Auth0 as part of their automated PKCE offering.
 	 * If you know better, I'd appreciate being pointed in the right direction architecture wise!
 	 */
-	const fetchFromApi = async () => {
-		console.log('fetchFromApi', location.pathname);
-		// PRIORITY 1: Check for a new access token given as a url parameter
-		let accessToken = location.pathname.match(/.*\/#access_token=.*/g);
+	const authenticate = async () => {
+		if (isAuthenticated && !isLoading && user.email) {
+			// Once per session, authenticate with the server
+			// We already are authenticated with Auth0, we just need to link that to a DB entry on the server
+			if (!notifiedServerOfAuth) {
+				const access_token = await getAccessTokenSilently();
+				await refresh('authentication', { strategy: 'auth0', access_token }, 'POST');
 
-		// PRIORITY 2: Check for an old one in storage
-		if (!accessToken && storageAvailable('localStorage')) {
-			accessToken = localStorage.getItem('oo_feathersjs_token');
+				setNotifiedServerOfAuth(true);
+			}
 		}
+	};
 
-		if (!accessToken) {
-			// PRIORITY 3: We're logged out, do nothing
-			return;
+	const fetchUserInfo = async () => {
+		if (isAuthenticated && !isLoading && user.email && userState.authObj) {
+			console.log('[fetchUserInfo]', userState.authObj);
+			refresh(`users/${userState.authObj.payload.sub}`);
 		}
-
-		refresh(`users/${user.email}`);
-	}
+	};
 
 	/**
 	 * This callback understands every redux-oriented response from the server, storing the relevant data in redux
 	 * through the use of package-specific reducers.
 	 */
-	const handleFetchResult = useMemo(() => (json) => {
-		console.log("[handleFetchResult]", json);
-		if (!json) {
-			return;
-		}
-		switch (json.type) {
-			case Actions.SET_LAYOUT_STATE:
-				setLayoutState(json.payload);
-				break;
-			case Actions.SET_FOLD_STATE:
-				setFoldState(json.payload);
-				break;
-			case Actions.SET_EDITOR_STATE:
-				setEditorState(json.payload);
-				break;
-			case Actions.SET_USER_STATE:
-				setUserState(json.payload);
-				break;
-			default:
-				throw new Error(`Unrecognized Type: ${json.type}`);
-		}
-	}, []);
+	const handleFetchResult = useMemo(
+		() => json => {
+			console.log('[handleFetchResult]', json);
+			if (!json) {
+				return;
+			}
 
+			// If this is the authentication results from featherjs, remember them
+			if (json.authentication && json.user) {
+				setUserState({
+					authObj: Object.assign({}, json.authentication, {
+						payload: Object.assign({}, json.authentication.payload)
+					})
+				});
+			} else {
+				switch (json.type) {
+					case Actions.SET_LAYOUT_STATE:
+						setLayoutState(json.payload);
+						break;
+					case Actions.SET_FOLD_STATE:
+						setFoldState(json.payload);
+						break;
+					case Actions.SET_EDITOR_STATE:
+						setEditorState(json.payload);
+						break;
+					case Actions.SET_USER_STATE:
+						setUserState(json.payload);
+						break;
+					default:
+						throw new Error(`Unrecognized Type: ${json.type}`);
+				}
+			}
+		},
+		[]
+	);
 
 	// ---------
 	// LIFECYCLE
 	// ---------
 
 	// Setup the API connection for the backend - managed by the custom hook
-	const { loading, error, refresh, data: users } = useApi('/', 'GET', DEF_API_OPTIONS, handleFetchResult);
+	const { loading, error, refresh, data: users } = useApi(
+		'/',
+		userState.authObj.accessToken,
+		'GET',
+		DEF_API_OPTIONS,
+		handleFetchResult
+	);
 
-	// When authenticated for the first time, request user data from API
-	useEffect(fetchFromApi, [getAccessTokenSilently, isLoading, isAuthenticated]);
+	// When authenticated for the first time, get an access token from feathersjs
+	useEffect(authenticate, [getAccessTokenSilently, isLoading, isAuthenticated]);
+
+	// When we get a new access token, request user info
+	useEffect(fetchUserInfo, [userState.authObj]);
 
 	// Rerender whenever the page resizes
 	useEffect(() => {
@@ -230,7 +252,6 @@ export const Body = props => {
 
 		fetchStateFromCookies();
 	}, []);
-
 
 	useEffect(() => {
 		saveStateToCookies();
@@ -250,7 +271,7 @@ export const Body = props => {
 
 	const sceneStyle = {
 		height: windowHeight + 64 + 'px',
-		display: layoutState.page === Pages.Fold ? undefined : "none"
+		display: layoutState.page === Pages.Fold ? undefined : 'none'
 	};
 
 	// console.log('[body]', fold.current);
