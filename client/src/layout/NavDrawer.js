@@ -109,7 +109,8 @@ export const NavDrawer = props => {
 				window.open('https://github.com/robbwdoering/origamiodyssey', '_blank');
 				break;
 			case "login":
-				loginWithRedirect();
+				// Redirect to feathersjs server so it can proxy us to auth0
+				window.location.href = process.env.REACT_APP_API_IP + '/oauth/auth0';
 				break;
 			default:
 				console.log("unhandled navDrawer option", key);

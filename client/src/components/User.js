@@ -314,7 +314,7 @@ export const User = props => {
 							<div> {user.email} </div>
 						</ControlRow>
 						<ControlRow text='Logout' xs={12} md={4}>
-							<Button onClick={() => loginWithRedirect()} color='primary'>
+							<Button onClick={() => logout()} color='primary'>
 								Logout
 							</Button>
 						</ControlRow>

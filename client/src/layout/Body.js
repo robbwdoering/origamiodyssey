@@ -15,6 +15,7 @@ import ArrowRightIcon from '@material-ui/icons/ArrowRight';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { useCookies } from 'react-cookie';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useLocation, useParams } from 'react-router-dom';
 
 import { Pages, Folds, initNavTree, Actions, DEF_API_OPTIONS } from './../infra/constants';
 import { useApi } from './../infra/useApi';
@@ -48,6 +49,8 @@ export const Body = props => {
 	const classes = useStyles();
 	const containerRef = useRef();
 	const fold = useRef({});
+	const location = useLocation();
+	const { access_token } = useParams();
 	const [curHash, setHash] = useState(0);
 	const [cookies, setCookies] = useCookies([]);
 	const { user, isLoading, isAuthenticated, getAccessTokenSilently } = useAuth0();
@@ -160,9 +163,20 @@ export const Body = props => {
 	 * Tell the useApi() hook to send a new fetch request to the API after getting the authentication token.
 	 */
 	const fetchFromApi = async () => {
-		if (isAuthenticated && !isLoading) {
-			console.log('[fetchFromApi]', user)
-			refresh(`/${user.email}`);
+		if (isAuthenticated && !isLoading && user.email) {
+			console.log('fetchFromApi', location.pathname);
+
+			if (access_token) {
+				// PRIORITY 1: Check for a new access token given as a url parameter
+
+			} else if () {
+				// PRIORITY 2: Use any stored access token from local storage	
+			} else {
+				// Else 
+			}
+
+
+			refresh(`users/${user.email}`);
 		}
 	}
 
@@ -199,7 +213,7 @@ export const Body = props => {
 	// ---------
 
 	// Setup the API connection for the backend - managed by the custom hook
-	const { loading, error, refresh, data: users } = useApi('/users', 'GET', DEF_API_OPTIONS, handleFetchResult);
+	const { loading, error, refresh, data: users } = useApi('/', 'GET', DEF_API_OPTIONS, handleFetchResult);
 
 	// When authenticated for the first time, request user data from API
 	useEffect(fetchFromApi, [getAccessTokenSilently, isLoading, isAuthenticated]);

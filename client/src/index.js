@@ -13,6 +13,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/core/styles';
 import { CookiesProvider } from 'react-cookie';
 import { Auth0Provider } from '@auth0/auth0-react';
+import { BrowserRouter, Switch, Route, Link } from 'react-router-dom';
 
 /* Local Modules */
 import { appReducer } from './infra/appReducer';
@@ -33,8 +34,6 @@ const rootReducer = combineReducers({
 });
 const store = createStore(rootReducer);
 
-console.log('Process Env: ', process.env, window.location.origin);
-
 render(
 	/* React-redux provider - centralizes state */
 	<Provider store={store}>
@@ -44,6 +43,7 @@ render(
 			domain={process.env.REACT_APP_AUTH0_DOMAIN}
 			clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
 			redirectUri={window.location.origin}
+			onRedirectCallback={e => console.log("onRedirectCallback !!!!!!!!!", e)}
 			cacheLocation='localstorage'//shouldn't be needed, but seems to be...
 			// Request API Acess Token - define audience and scopes
 			{...DEF_API_OPTIONS}
@@ -56,17 +56,19 @@ render(
 
 					{/* The Actual App */}
 					<div className="app-root">
-						{/* Logo, search, nav-bar access */}
-						<Header />
+						<Router>
+							{/* Logo, search, nav-bar access */}
+							<Header />
 
-						{/* Obviously navigation, but also all other "settings"-esque options */}
-						<NavDrawer />
+							{/* Obviously navigation, but also all other "settings"-esque options */}
+							<NavDrawer />
 
-						{/* Main body of the app - copy & animations */}
-						<Body />
+							{/* Main body of the app - copy & animations */}
+							<Body />
 
-						{/* TBD */}
-						<Footer />
+							{/* TBD */}
+							<Footer />
+						</Router>
 					</div>
 				</ThemeProvider>
 			</CookiesProvider>
