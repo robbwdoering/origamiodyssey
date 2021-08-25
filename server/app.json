@@ -1,7 +1,7 @@
 {
     "scripts": {
         "dokku": {
-            "predeploy": "cp .env .env.production; cat .env.production; echo '--------COMPLETED CUSTOM POSTDEPLOY--------'; cat .env" 
+            "predeploy": "docker cp /home/dokku/config/* oo.web.1:/app" 
         }
     }
 } 
