@@ -1,7 +1,0 @@
-{
-	"scripts": {
-		"dokku": {
-			"postdeploy": "cp .env .env.production"	
-		}
-	}
-}
