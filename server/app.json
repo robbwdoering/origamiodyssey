@@ -1,7 +1,0 @@
-{
-    "scripts": {
-        "dokku": {
-            "predeploy": "docker cp /home/dokku/config/* oo.web.1:/app" 
-        }
-    }
-} 
