@@ -55,7 +55,7 @@
     "mongoose": "^5.13.7",
     "serve-favicon": "^2.5.0",
     "winston": "^3.3.3",
-    "shx": "^0.3.3",
+    "shx": "^0.3.3"
   },
   "devDependencies": {
     "@types/compression": "^1.7.1",
