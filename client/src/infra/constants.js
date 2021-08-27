@@ -262,9 +262,14 @@ export const initNavTree = [
 		key: Pages.User 
 	},
 	{
-		text: 'Login / Register',
+		text: 'Login',
 		conditional: "is_not_logged_in",
 		key: 'login' 
+	},
+	{
+		text: 'Sign Up',
+		conditional: "is_not_logged_in",
+		key: 'signup' 
 	},
 	// {
 	// 	text: 'What is Origami?',

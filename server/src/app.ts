@@ -7,8 +7,7 @@ import cors from 'cors';
 import feathers from '@feathersjs/feathers';
 import configuration from '@feathersjs/configuration';
 import express from '@feathersjs/express';
-
-
+import { HookContext as FeathersHookContext } from '@feathersjs/feathers';
 
 import { Application } from './declarations';
 import logger from './logger';
@@ -16,7 +15,6 @@ import middleware from './middleware';
 import services from './services';
 import appHooks from './app.hooks';
 import channels from './channels';
-import { HookContext as FeathersHookContext } from '@feathersjs/feathers';
 import authentication from './authentication';
 import mongoose from './mongoose';
 // Don't remove this comment. It's needed to format import lines nicely.
@@ -41,9 +39,7 @@ app.use('/', express.static(app.get('public')));
 // Set up Plugins and providers
 app.configure(express.rest());
 
-
 app.configure(mongoose);
-
 
 // Configure other middleware (see `middleware/index.ts`)
 app.configure(middleware);

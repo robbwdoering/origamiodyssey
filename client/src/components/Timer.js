@@ -1,7 +1,7 @@
 /**
  * FILENAME: Timer.js
  *
- * DESCRIPTION: This page allows the user to browse through cards, read details on models, and select one to fold.
+ * DESCRIPTION: This component shows a simple timer that records to redux the amount of time taken to complete a set of instructions. 
  */
 
 // React + Redux
@@ -46,14 +46,9 @@ import { timerPosixToString } from './../infra/utils';
  */
 export const Timer = props => {
 	const {
-		foldEntry,
-		name,
 		placeholderRef,
-		cardKey,
-		index,
 		isActive,
 		isHidden,
-		handleCardClick,
 		layoutState,
 		setLayoutState,
 		foldState,
@@ -72,26 +67,6 @@ export const Timer = props => {
 	const [lastLikert, setLastLikert] = useState(-1);
 	const classes = useStyles();
 	const style = useRef({});
-
-	/**
-	 * Pass the click event on to the parent function to open a fold page.
-	 */
-	const handleFoldClick = e => {
-		e.preventDefault();
-		e.stopPropagation();
-
-		openFold(cardKey);
-	};
-
-	/**
-	 * Open the fold page with the supplied model name, closing this page.
-	 */
-	const openFold = foldKey => {
-		setLayoutState({
-			page: Pages.Fold,
-			curFold: foldKey
-		});
-	};
 
 	const triggerRerender = () => {
 		setHash(cur => cur + 1);
@@ -239,8 +214,8 @@ export const Timer = props => {
 	// Every time a new model is selected, the timer starts from scratch
 	useEffect(resetAllState, [layoutState.curFold]);
 
+	// Every time a step is advanced, check for completion
 	useEffect(() => {
-		// console.log("[Timer useEffect] ", foldState.stepIdx, foldState.maxSteps)
 		// If this is a change to the last step, 
 		if (foldState.stepIdx >= foldState.maxSteps - 1) {
 			if (isPlaying) {
@@ -249,12 +224,8 @@ export const Timer = props => {
 
 			setShowSnackbar(true);
 
-		// Start the timer the first time the user changes steps
-		// TODO - probably good feature, but system needs redesign
-		// } else if (!hasInitialized && !isPlaying) {
-		// 	setHasInitialized(true);
-		// 	setIsPlaying(true);
-		// 	setStartPosix(Date.now());
+			// Start the timer the first time the user changes steps
+			// TODO - probably good feature, but system needs redesign
 		}
 
 		// Close the snackbar on unmount if it's open, which involves saving
@@ -268,16 +239,13 @@ export const Timer = props => {
 
 	// console.log("[Timer]", timerPosix, foldState.lastRecordedTimer, isPlaying);
 
-	// This is the actual card: an `absolute` element so it can grow or shrink in place without affecting others' positioning
 	return (
 		<React.Fragment>
 			<div className={classes.fold_timer_container}>
-				<ButtonGroup>
+				<ButtonGroup id="oo-timer-container">
 					<Button
 						className={`${classes.fold_timer} ${!isPlaying ? classes.fold_timer__paused : ''}`}
 						color={isPlaying ? undefined : "primary"}
-						// variant="text"
-						// size="large"
 						onClick={toggleTimer}
 					>
 						{!isPlaying && <PlayArrow/>}
