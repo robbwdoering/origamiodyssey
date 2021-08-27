@@ -57,7 +57,7 @@ describe('User Page', () => {
 
 		expect(setUserState.mock.calls.length).toBe(1);
 		const newEntry = setUserState.mock.calls[0][0].modelList[0];
-		expect(newEntry.foldKey).toBe('SailBoat')
+		expect(newEntry.foldKey).toBe('SailBoat');
 
 		// Use the object to actually change the props
 		comp.setProps({
@@ -72,13 +72,13 @@ describe('User Page', () => {
 	});
 
 	it('renders history tab without crashing', () => {
-		comp.find("WithStyles(ForwardRef(Tabs))").prop('onChange')({}, 1);
+		comp.find('WithStyles(ForwardRef(Tabs))').prop('onChange')({}, 1);
 		comp.update();
 		expect(comp.find('#oo-assistant')).toMatchSnapshot();
 	});
 
 	it('renders settings tab without crashing', () => {
-		comp.find("WithStyles(ForwardRef(Tabs))").prop('onChange')({}, 2);
+		comp.find('WithStyles(ForwardRef(Tabs))').prop('onChange')({}, 2);
 		comp.update();
 		expect(comp.find('#oo-assistant')).toMatchSnapshot();
 	});
@@ -89,7 +89,7 @@ describe('User Page', () => {
 		});
 		comp.update();
 
-		expect(comp.exists("#oo-assistant")).toBe(false);
+		expect(comp.exists('#oo-assistant')).toBe(false);
 		expect(comp).toMatchSnapshot();
 	});
 

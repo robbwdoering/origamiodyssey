@@ -9,9 +9,19 @@ import React, { useState, useRef, useMemo, useEffect, createRef } from 'react';
 import { connect } from 'react-redux';
 
 import { useUpdate, useSpring, useSprings, animated, config } from 'react-spring';
-import SquareLoader from "react-spinners/SquareLoader";
+import SquareLoader from 'react-spinners/SquareLoader';
 
-import { SwipeableDrawer, Tooltip, Typography, Fab, ButtonGroup, List, Divider, ListItem, Card } from '@material-ui/core';
+import {
+	SwipeableDrawer,
+	Tooltip,
+	Typography,
+	Fab,
+	ButtonGroup,
+	List,
+	Divider,
+	ListItem,
+	Card
+} from '@material-ui/core';
 import SkipPrevious from '@material-ui/icons/SkipPrevious';
 import SkipNext from '@material-ui/icons/SkipNext';
 import ExpandMore from '@material-ui/icons/ExpandMore';
@@ -27,14 +37,11 @@ const HIER_PX_SIZE = 20;
 
 export const InstructionalHierarchy = props => {
 	const {
-		windowHeight,
 		initFold,
 		foldLastUpdated,
 		foldState,
-		foldStateHash,
 		setFoldState,
 		layoutState,
-		layoutStateHash,
 		setLayoutState,
 		userState,
 		setUserState
@@ -43,6 +50,7 @@ export const InstructionalHierarchy = props => {
 	// ----------
 	// STATE INIT
 	// ----------
+
 	const [contStyle, setContStyle] = useState({});
 	const classes = useStyles();
 	const cardRef = useRef();
@@ -56,13 +64,17 @@ export const InstructionalHierarchy = props => {
 
 	const maxLevel = useMemo(() => calcMaxLevel(initFold && initFold.instructions), [foldLastUpdated]);
 
-	const trackTop = (window.innerHeight - 264 - (HIER_PX_SIZE * foldState.stepIdx))  + 'px';
+	const trackTop = window.innerHeight - 264 - HIER_PX_SIZE * foldState.stepIdx + 'px';
 
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
 
-	// Changes the current instructional sequential step, prompting animation.
+	/**
+	 * Changes the current instructional sequential step, prompting animation through redux changes.
+	 * @param delta The number of step indices to change by. Positive to go towards end of instructions, negative to go back 
+	 * @param isFromLooper true if this step change was done automatically
+	 */
 	const changeStep = (delta, isFromLooper) => {
 		let newStepIndex = Math.min(Math.max(foldState.stepIdx + delta, -1), foldState.maxSteps);
 		let newFoldState = {
@@ -71,9 +83,8 @@ export const InstructionalHierarchy = props => {
 
 		if (!isFromLooper) {
 			newFoldState.repeatRoot = -1;
-			newFoldState.repeatRange = null	
+			newFoldState.repeatRange = null;
 			if (looperWorkerId !== -1) {
-				// console.log("CLEARING - changeStep");
 				clearInterval(looperWorkerId);
 				setLooperWorkerId(-1);
 			}
@@ -82,12 +93,18 @@ export const InstructionalHierarchy = props => {
 		setFoldState(newFoldState);
 	};
 
+	/**
+	 * Calculate how many "default", or 2D, steps come before this one, and get their lengths.
+	 * This is useful since we know our index within the stepArray, but without information from this function,
+	 * we would have no way of deriving the final height of the whole component.
+	 * @param stepIdx count all the steps before this index 
+	 */
 	const calcNumDefaultsBefore = stepIdx => {
 		let total = 0;
 
 		stepArray.some((elem, i) => {
 			if (i > stepIdx) {
-				return true;	
+				return true;
 			}
 
 			// Only default items are 2D arrays
@@ -100,18 +117,21 @@ export const InstructionalHierarchy = props => {
 		return total;
 	};
 
+	/**
+	 * Calculate where the card appears based on the current step and the shape of the overall instructions.
+	 * @return a CSS-in-JS styling object 
+	 */
 	const calcCardPos = () => {
 		// const right = window.innerWidth > 1200 ? ((window.innerWidth / 2) + 0 + 'px') : undefined;
 		// const left = right ? undefined : 10;
-		const width = (maxLevel - 1) * HIER_PX_SIZE + 14
+		const width = (maxLevel - 1) * HIER_PX_SIZE + 14;
 
 		// Left side is outside the center column if there's room, else just sticks to the left side
-		const left = window.innerWidth < (1200 + width + 10) ? 0 : (-width - 10);
+		const left = window.innerWidth < 1200 + width + 10 ? 0 : -width - 10;
 
 		// Top updates every time the step changes
 		const numDefaultsBefore = calcNumDefaultsBefore(foldState.stepIdx);
-		// console.log("[calcCardPos]", numDefaultsBefore, foldState.stepIdx, stepArray)
-		const top = (window.innerHeight - 296) - (HIER_PX_SIZE * (foldState.stepIdx + 1 + numDefaultsBefore));
+		const top = window.innerHeight - 296 - HIER_PX_SIZE * (foldState.stepIdx + 1 + numDefaultsBefore);
 		let style = {
 			// Don't show first column, and account for padding
 			width: width + 'px',
@@ -123,23 +143,28 @@ export const InstructionalHierarchy = props => {
 		return style;
 	};
 
+	/**
+	 * Rerender this component.
+	 */
 	const triggerRerender = () => {
 		setHash(cur => cur + 1);
 	};
 
-	const handleExpandClick = e => {
-		setLayoutState({ expandHierarchy: !layoutState.expandHierarchy });
-	};
-
+	/**
+	 * Execute logic necessary when a user clicks one of the nodes, which usually will simply set the
+	 * current step to whatever node was clicked, but can do other things if, e.g., they held shift to
+	 * start a loop.
+	 * @param event Event object from MUI
+	 * @param path Unique string representing the node that was clicked
+	 */
 	const handleHierNodeClick = (event, path) => {
 		const stepIdx = stepArray.findIndex(step => path === step[0]);
 		let newFoldState = {};
 
 		const [startUseIndex, endUseIndex] = findInUseFamilyNode(stepArray, path);
-		// console.log("[handleHierNodeClick]", event, stepIdx, startUseIndex, endUseIndex);
 
 		if (!event.shiftKey) {
-			// If no shift, just move to this node 
+			// If no shift, just move to this node
 			if (stepIdx !== -1) {
 				// If it's in the stepArray, just set the index to that element
 				newFoldState.stepIdx = stepIdx - 1;
@@ -155,13 +180,12 @@ export const InstructionalHierarchy = props => {
 				newFoldState.repeatRange = null;
 
 				if (looperWorkerId !== -1) {
-					// console.log("CLEARING");
 					clearInterval(looperWorkerId);
 					setLooperWorkerId(-1);
 				}
 			}
 		} else {
-			// If shift held, then start or modify repeatRange 
+			// If shift held, then start or modify repeatRange
 			if (foldState.repeatRoot !== -1) {
 				// Modify existing range, replacing the second clicked index
 				if (stepIdx !== -1) {
@@ -171,12 +195,11 @@ export const InstructionalHierarchy = props => {
 					newFoldState.repeatRange = [startUseIndex, endUseIndex];
 				} else if (startUseIndex < foldState.repeatRoot) {
 					// Clicked something before
-					newFoldState.repeatRange = [foldState.repeatRoot, startUseIndex]	
+					newFoldState.repeatRange = [foldState.repeatRoot, startUseIndex];
 				} else {
 					// Clicked something after
-					newFoldState.repeatRange = [foldState.repeatRoot, endUseIndex]	
+					newFoldState.repeatRange = [foldState.repeatRoot, endUseIndex];
 				}
-
 			} else {
 				if (stepIdx !== -1) {
 					// If this is the first shift click, we're starting at this location
@@ -194,7 +217,6 @@ export const InstructionalHierarchy = props => {
 			}
 
 			if (looperWorkerId === -1) {
-				// console.log("SETTING");
 				setLooperWorkerId(setInterval(looperWorker, 2500));
 			}
 
@@ -203,19 +225,30 @@ export const InstructionalHierarchy = props => {
 
 			// Go to the start, and progress forward
 			newFoldState.stepIdx = newFoldState.repeatRange[0] - 1;
-			// console.log("setting looper - handleHierNodeClick", 1);
 			setLooperDirection(1);
 		}
 
-		// console.log("[setting repeatRange]", newFoldState);
 		setFoldState(newFoldState);
 	};
 
+	/**
+	 * Wrapper for collectStepsForLevel using local vars. 
+	 * @returns the array of "actual"/"in-use" steps
+	 */
 	const buildStepArray = () => {
-		// console.log("[InstructionalHierarchy buildStepArray]", initFold && initFold.frame_title);
-		return collectStepsForLevel(initFold, 0, foldState.usingDefaults)
+		return collectStepsForLevel(initFold, 0, foldState.usingDefaults);
 	};
 
+	/**
+	 * Render one node in the hierarchy.
+	 * NOTE: This doesn't return the node, but rather saves it to the renderRows object passed in.
+	 * @param inst this particular instruction object
+	 * @param renderRows output array of renderable objects
+	 * @param levelIdx the index of the current hierarchy level
+	 * @param path the path of this instructional node
+	 * @param belowDefault true if we are "below" a default node, which requires special handling
+	 * @return the height of the rendered row
+	 */
 	const renderNode = (inst, renderRows, levelIdx, path, belowDefault) => {
 		// Error case - we're on a level deeper than the tree supports
 		if (levelIdx > maxLevel) {
@@ -276,7 +309,6 @@ export const InstructionalHierarchy = props => {
 
 		const pxHeight = HIER_PX_SIZE * style.flexGrow - 4;
 
-		// console.log('[renderNode]', stepArray, levelIdx, path, stepIdx, foldState.stepIdx, type, isSelectedLevel);
 		renderRows[levelIdx].push(
 			<Tooltip
 				title={inst.desc}
@@ -284,7 +316,12 @@ export const InstructionalHierarchy = props => {
 				classes={{ popper: classes.hier_node_tooltip }}
 				key={path}
 			>
-				<div className={`${classes.hier_node_anchor}`} ref={activeNodeRef} style={style} onClick={event => handleHierNodeClick(event, path)}>
+				<div
+					className={`${classes.hier_node_anchor}`}
+					ref={activeNodeRef}
+					style={style}
+					onClick={event => handleHierNodeClick(event, path)}
+				>
 					<div
 						className={`${classes.hier_node} ${classes['hier_node__' + type]}`}
 						style={{ height: pxHeight }}
@@ -296,6 +333,10 @@ export const InstructionalHierarchy = props => {
 		return height;
 	};
 
+	/**
+	 * Re-render all the rows.
+	 * @param cardStyle the style object that describes the shape of the component
+	 */
 	const refreshRenderRows = cardStyle => {
 		if (!initFold) {
 			return;
@@ -318,26 +359,38 @@ export const InstructionalHierarchy = props => {
 		);
 	};
 
+	/**
+	 * Set the current step to the last one, ending the instructions.
+	 */
 	const jumpToEnd = () => setFoldState({ stepIdx: foldState.maxSteps - 1 });
 
-	const getDescForNode = (stepIdx) => {
-		// console.log("[getDescForNode]", stepIdx, stepArray);
-		const step = stepArray[foldState.stepIdx + 1]
-		const path = step[0].split(",").slice(1)
+	/**
+	 * Get the description for the current step.
+	 * @param stepIdx the index of the current step
+	 */
+	const getDescForNode = stepIdx => {
+		const step = stepArray[foldState.stepIdx + 1];
+		const path = step[0].split(',').slice(1);
 		let node = getHierNode(initFold.instructions, path);
 
 		return node.desc;
-	}
+	};
 
+	/**
+	 * Changes the looperHash, which runs updateLooper() via a lifecycle call.
+	 */
 	const looperWorker = () => {
 		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
-			console.log("[looperWorker] ERR - null arguments");
+			console.log('[looperWorker] ERR - null arguments');
 			return;
 		}
 
 		setLooperHash(curHash => curHash + 1);
 	};
 
+	/**
+	 * Carry out one iteration of the looping behavior, either going one forward one step or jumping back to the start of the loop.
+	 */
 	const updateLooper = () => {
 		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
 			return;
@@ -345,7 +398,6 @@ export const InstructionalHierarchy = props => {
 
 		const distFromStart = foldState.stepIdx - foldState.repeatRange[0];
 		const distFromEnd = foldState.repeatRange[1] - foldState.stepIdx;
-		// console.log("[looperWorker]", foldState.stepIdx, foldState.repeatRoot, looperDirection, distFromStart, distFromEnd);
 
 		// Switch direction to go back up
 		let tmpDirection = looperDirection;
@@ -361,6 +413,10 @@ export const InstructionalHierarchy = props => {
 		changeStep(tmpDirection, true);
 	};
 
+	/**
+	 * Render the looper indication, which is a series of boxex, one for each step already executed for this loop.
+	 * @return a renderable object 
+	 */
 	const renderLooperItems = () => {
 		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
 			return null;
@@ -369,7 +425,11 @@ export const InstructionalHierarchy = props => {
 		let ret = [];
 		for (let i = foldState.repeatRange[0]; i <= foldState.repeatRange[1]; i++) {
 			ret.push(
-				<div className={`${classes.hier_looper_item} ${(i <= foldState.stepIdx + 1) ? classes.hier_looper_item__active : ""}`} />
+				<div
+					className={`${classes.hier_looper_item} ${
+						i <= foldState.stepIdx + 1 ? classes.hier_looper_item__active : ''
+					}`}
+				/>
 			);
 		}
 
@@ -379,8 +439,8 @@ export const InstructionalHierarchy = props => {
 	// ---------
 	// LIFECYCLE
 	// ---------
-	// const cardStyle = useMemo(calcCardPos, [window.innerWidth, window.innerHeight, foldState.stepIdx, contStyle.height]);
-
+	
+	// On mount build the button classes object
 	const buttonClasses = useMemo(
 		() => ({
 			root: classes.fold_controls_button,
@@ -389,11 +449,10 @@ export const InstructionalHierarchy = props => {
 		[]
 	);
 
-	const stepArray = useMemo(buildStepArray, [
-		!initFold || !initFold.instructions,
-		initFold && initFold.frame_title
-	]);
+	// Build a new "actual"/"in-use" step array whenever the instructions change
+	const stepArray = useMemo(buildStepArray, [!initFold || !initFold.instructions, initFold && initFold.frame_title]);
 
+	// Recalculate the shape of the card every render 
 	const cardStyle = calcCardPos();
 
 	// Perform mount and unmount actions
@@ -407,35 +466,35 @@ export const InstructionalHierarchy = props => {
 			if (looperWorkerId !== -1) {
 				clearInterval(looperWorkerId);
 			}
-		}
+		};
 	}, []);
 
 	// Start actually rendering text after a second
 	useEffect(() => setTimeout(() => setFinishedInit(true), 1000), []);
 
-	useEffect(() => refreshRenderRows(maxLevel), [foldLastUpdated, foldState.stepIdx]);
+	// Rerender the data every time the step index changes (or the fold itself changes)
+	useEffect(() => refreshRenderRows(maxLevel), [foldState.stepIdx, foldLastUpdated]);
 
-	useEffect(updateLooper, [looperHash])
+	// Take another step in the looping behavior whenever asked to
+	useEffect(updateLooper, [looperHash]);
 
-	// console.log('[InstructionalHierarchy]', renderRows.current);
-
-	const ctrlCardLeftPx = `${(window.innerWidth / 2) + 256}px`;
-
+	// Calculate all these every render
+	const ctrlCardLeftPx = `${window.innerWidth / 2 + 256}px`;
 	const curBodyWidth = Math.min(1200, window.innerWidth);
-	const buttonSize = (window.innerWidth > 440) ? Math.min(200, curBodyWidth * 0.15) : 95;
-	const buttonIconClass = buttonSize < 100 ?  classes.fold_controls_button_icon : classes.fold_controls_button_icon_large;
+	const buttonSize = window.innerWidth > 440 ? Math.min(200, curBodyWidth * 0.15) : 95;
+	const buttonIconClass =
+		buttonSize < 100 ? classes.fold_controls_button_icon : classes.fold_controls_button_icon_large;
 	const fabStyle = {
 		width: buttonSize + 'px',
-		height: buttonSize + 'px',
+		height: buttonSize + 'px'
 	};
 
 	// Magic nums:
-		// 1200 is max width of the center colun
-		// 10 is common spacing
-		// 32 is padding on center column
-	const instCardMargin = window.innerWidth < (1200 + parseInt(cardStyle.width) + 10) ? (parseInt(cardStyle.width) - 32 + 10 + 'px') : "0";
-
-	// console.log("[InstructionalHierarchy]", stepArray);
+	// 1200 is max width of the center colun
+	// 10 is common spacing
+	// 32 is padding on center column
+	const instCardMargin =
+		window.innerWidth < 1200 + parseInt(cardStyle.width) + 10 ? parseInt(cardStyle.width) - 32 + 10 + 'px' : '0';
 
 	return (
 		<div className={classes.centerColumn_flex}>
@@ -446,9 +505,7 @@ export const InstructionalHierarchy = props => {
 					{initFold &&
 						renderRows.current.reduce((acc, row, idx) => {
 							if (idx !== 0) {
-								acc.push(
-									<div className={classes.hier_node_container} >{row}</div>
-								);
+								acc.push(<div className={classes.hier_node_container}>{row}</div>);
 							}
 							return acc;
 						}, [])}
@@ -462,25 +519,27 @@ export const InstructionalHierarchy = props => {
 			{initFold && initFold.instructions && (
 				<div className={classes.hier_desc_container}>
 					{foldState.repeatRoot !== -1 && (
-						<div className={classes.hier_looper_rail} style={{marginLeft: instCardMargin}}>
-							<div className={classes.hier_looper_container} >
-								{renderLooperItems()}
-							</div>
+						<div className={classes.hier_looper_rail} style={{ marginLeft: instCardMargin }}>
+							<div className={classes.hier_looper_container}>{renderLooperItems()}</div>
 						</div>
 					)}
-					<Card className={classes.hier_desc_card} style={{marginLeft: instCardMargin}}> 
+					<Card className={classes.hier_desc_card} style={{ marginLeft: instCardMargin }}>
 						{finishedInit ? (
 							<React.Fragment>
-								<Typography className={classes.modelCard_title} variant="h5" component="h2"> Current Step </Typography>
+								<Typography className={classes.modelCard_title} variant="h5" component="h2">
+									{' '}
+									Current Step{' '}
+								</Typography>
 								<Typography>
-									{(foldState.stepIdx < foldState.maxSteps - 1) ?
-										getDescForNode(foldState.stepIdx) :
-										// "text" :
-										"Congratulations - your model is complete!"
-									}
+									{foldState.stepIdx < foldState.maxSteps - 1
+										? getDescForNode(foldState.stepIdx)
+										: // "text" :
+										  'Congratulations - your model is complete!'}
 								</Typography>
 							</React.Fragment>
-						) : <SquareLoader color="#e0e0e0" size={75} css="margin: 16px;" />}
+						) : (
+							<SquareLoader color="#e0e0e0" size={75} css="margin: 16px;" />
+						)}
 					</Card>
 				</div>
 			)}
@@ -508,14 +567,9 @@ export const InstructionalHierarchy = props => {
 				</Fab>
 			</div>
 
-			{userState.showTimerAssess && (
-				<TimerContainer />
-			)}
+			{userState.showTimerAssess && <TimerContainer />}
 		</div>
 	);
-				// <Fab aria-label="expand instructions" className={classes.hier_expandCtrl} onClick={handleExpandClick} color="secondary" size="small">
-				// 	{layoutState.expandHierarchy ? <ExpandLess /> : <ExpandMore />}
-				// </Fab>
 };
 
 export const mapStateToProps = (state, props) => {

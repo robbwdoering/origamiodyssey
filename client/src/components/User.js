@@ -49,6 +49,7 @@ export const User = props => {
 	// ----------
 	// STATE INIT
 	// ----------
+
 	const classes = useStyles();
 	const { user, loginWithRedirect, isLoading, logout, isAuthenticated } = useAuth0();
 	const [addModelAnchor, setAddModelAnchor] = useState();
@@ -58,10 +59,20 @@ export const User = props => {
 	// MEMBER FUNCTIONS
 	// ----------------
 
+	/**
+	 * 
+	 * @param name 
+	 * @param value 
+	 */
 	const handleUserFormChange = (name, value) => {
 		setUserState({ [name]: value });
 	};
 
+	/**
+	 * Adds a model to the "plan" for the assistant, where each model is tracked by the supermemo2 spaced learning algo separately.
+	 * Each model should only appear in this array once.
+	 * @param foldKey the unique key for this model
+	 */
 	const handleModelSelection = foldKey => {
 		setAddModelAnchor(null);
 
@@ -81,13 +92,10 @@ export const User = props => {
 		setUserState({ modelList: newModelList });
 	};
 
-	const handleOpenFold = foldKey => {
-		setLayoutState({
-			page: Pages.Fold,
-			curFold: foldKey
-		});
-	};
-
+	/**
+	 * Remove a model from the "plan" for the assistant.
+	 * @param foldKey the unique key for this model
+	 */
 	const handleRemoveFold = foldKey => {
 		const idx = userState.modelList.findIndex(entry => entry.foldKey === foldKey);
 		// Exit early if this isn't already in the list
@@ -100,19 +108,31 @@ export const User = props => {
 
 		setUserState({ modelList: newArr });
 	};
+
+	/**
+	 * Navigate to an active folding session for the specified model.
+	 * @param foldKey the unique key for this model
+	 */
+	const handleOpenFold = foldKey => {
+		setLayoutState({
+			page: Pages.Fold,
+			curFold: foldKey
+		});
+	};
+
 	// ---------
 	// LIFECYCLE
 	// ---------
 
 	// ------
-	// RENDER 
+	// RENDER
 	// ------
-
+	
 	const ControlRow = ({ text, children, ...rest }) => (
 		<Grid item className={classes.editor_row} {...rest}>
 			{/* Title */}
 
-			<Typography className={classes.modelCard_label} variant='body2' color='textSecondary' component='h4'>
+			<Typography className={classes.modelCard_label} variant="body2" color="textSecondary" component="h4">
 				{text}
 			</Typography>
 			<Divider />
@@ -126,27 +146,30 @@ export const User = props => {
 		return (
 			<TableRow key={`${entry.foldKey}-assistant-row`}>
 				<TableCell className={classes.slimCol}>
-					<ButtonGroup className={classes.user_row_controls} color='primary'>
-						<Button onClick={() => handleRemoveFold(entry.foldKey)} title='Remove this model from the schedule'>
+					<ButtonGroup className={classes.user_row_controls} color="primary">
+						<Button
+							onClick={() => handleRemoveFold(entry.foldKey)}
+							title="Remove this model from the schedule"
+						>
 							{' '}
 							<Remove />{' '}
 						</Button>
-						<Button onClick={() => handleOpenFold(entry.foldKey)} title='Start this fold'>
+						<Button onClick={() => handleOpenFold(entry.foldKey)} title="Start this fold">
 							{' '}
 							<ExitToApp />{' '}
 						</Button>
 					</ButtonGroup>
 				</TableCell>
 				<TableCell> {foldObj.name} </TableCell>
-				<TableCell align='right' className={classes.slimCol}>
+				<TableCell align="right" className={classes.slimCol}>
 					{' '}
 					{new Intl.DateTimeFormat().format(new Date(Date.now() + entry.schedule * 24 * 60 * 60 * 1000))}{' '}
 				</TableCell>
-				<TableCell align='right' className={classes.slimCol}>
+				<TableCell align="right" className={classes.slimCol}>
 					{' '}
 					{entry.factor.toFixed(2)}{' '}
 				</TableCell>
-				<TableCell align='right' className={classes.slimCol}>
+				<TableCell align="right" className={classes.slimCol}>
 					{' '}
 					{entry.isRepeatAgain ? 'True' : 'False'}{' '}
 				</TableCell>
@@ -159,12 +182,16 @@ export const User = props => {
 			case 0:
 				return (
 					<React.Fragment key="assistant-plan-tab">
-						<Button id="oo-assistant-add-model" className={classes.user_add_model_button} onClick={event => setAddModelAnchor(event.currentTarget)}>
+						<Button
+							id="oo-assistant-add-model"
+							className={classes.user_add_model_button}
+							onClick={event => setAddModelAnchor(event.currentTarget)}
+						>
 							Add Model To Plan
 						</Button>
 						<Menu
-							name='modelAdd'
-							input={<Input id='Menu-multiple-chip' />}
+							name="modelAdd"
+							input={<Input id="Menu-multiple-chip" />}
 							className={classes.user_add_model_menu}
 							anchorEl={addModelAnchor}
 							open={Boolean(addModelAnchor)}
@@ -173,35 +200,37 @@ export const User = props => {
 							{Object.keys(Folds)
 								.filter(foldKey => !userState.modelList.find(entry => entry.foldKey === foldKey))
 								.map(foldKey => (
-									<MenuItem key={foldKey} value={foldKey} onClick={() => handleModelSelection(foldKey)}>
+									<MenuItem
+										key={foldKey}
+										value={foldKey}
+										onClick={() => handleModelSelection(foldKey)}
+									>
 										{Folds[foldKey].name}
 									</MenuItem>
 								))}
 						</Menu>
 
 						<TableContainer>
-							<Table size='small'>
+							<Table size="small">
 								<TableHead className={classes.user_models_header}>
 									<TableRow>
 										<TableCell className={classes.slimCol}> Controls </TableCell>
 										<TableCell> Model Name </TableCell>
-										<TableCell align='right' className={classes.slimCol}>
+										<TableCell align="right" className={classes.slimCol}>
 											{' '}
 											Day to Practice{' '}
 										</TableCell>
-										<TableCell align='right' className={classes.slimCol}>
+										<TableCell align="right" className={classes.slimCol}>
 											{' '}
 											Factor{' '}
 										</TableCell>
-										<TableCell align='right' className={classes.slimCol}>
+										<TableCell align="right" className={classes.slimCol}>
 											{' '}
 											In Schedule?{' '}
 										</TableCell>
 									</TableRow>
 								</TableHead>
-								<TableBody>
-									{userState.modelList.map(renderAssistantRow)}
-								</TableBody>
+								<TableBody>{userState.modelList.map(renderAssistantRow)}</TableBody>
 							</Table>
 						</TableContainer>
 					</React.Fragment>
@@ -209,23 +238,23 @@ export const User = props => {
 			case 1:
 				return (
 					<TableContainer key="assistant-history-tab">
-						<Table size='small'>
+						<Table size="small">
 							<TableHead className={classes.user_models_header}>
 								<TableRow>
-									<TableCell align='right' className={classes.slimCol}>
+									<TableCell align="right" className={classes.slimCol}>
 										{' '}
 										Controls{' '}
 									</TableCell>
 									<TableCell> Model Name </TableCell>
-									<TableCell align='right' className={classes.slimCol}>
+									<TableCell align="right" className={classes.slimCol}>
 										{' '}
 										Day{' '}
 									</TableCell>
-									<TableCell align='right' className={classes.slimCol}>
+									<TableCell align="right" className={classes.slimCol}>
 										{' '}
 										Quality{' '}
 									</TableCell>
-									<TableCell align='right' className={classes.slimCol}>
+									<TableCell align="right" className={classes.slimCol}>
 										{' '}
 										Timer{' '}
 									</TableCell>
@@ -236,27 +265,30 @@ export const User = props => {
 									const foldObj = Folds[entry.foldKey];
 									return (
 										<TableRow key={`${entry.foldKey}-foldhistory-row-${i}`}>
-											<TableCell align='right' className={classes.slimCol}>
-												<ButtonGroup className={classes.user_row_controls} color='primary'>
-													<Button onClick={() => handleOpenFold(entry.foldKey)} title='Start this fold'>
+											<TableCell align="right" className={classes.slimCol}>
+												<ButtonGroup className={classes.user_row_controls} color="primary">
+													<Button
+														onClick={() => handleOpenFold(entry.foldKey)}
+														title="Start this fold"
+													>
 														{' '}
 														<ExitToApp />{' '}
 													</Button>
 												</ButtonGroup>
 											</TableCell>
-											<TableCell component='th' scope='row'>
+											<TableCell component="th" scope="row">
 												{' '}
 												{foldObj.name}{' '}
 											</TableCell>
-											<TableCell align='right' className={classes.slimCol}>
+											<TableCell align="right" className={classes.slimCol}>
 												{' '}
 												{new Intl.DateTimeFormat().format(new Date(entry.time))}{' '}
 											</TableCell>
-											<TableCell align='right' className={classes.slimCol}>
+											<TableCell align="right" className={classes.slimCol}>
 												{' '}
 												{entry.quality + 1}/5{' '}
 											</TableCell>
-											<TableCell align='right' className={classes.slimCol}>
+											<TableCell align="right" className={classes.slimCol}>
 												{' '}
 												{entry.timer ? timerPosixToString(entry.timer) : ''}{' '}
 											</TableCell>
@@ -276,22 +308,22 @@ export const User = props => {
 
 	if (isLoading) {
 		return (
-			<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
-				<SquareLoader color='#e0e0e0' size={100} />
+			<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
+				<SquareLoader color="#e0e0e0" size={100} />
 			</Typography>
 		);
 	} else if (!isAuthenticated || logoutOverride) {
 		return (
 			<Paper className={classes.user_login_prompt} elevation={3}>
-				<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
+				<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
 					Login
 				</Typography>
 
-				<Typography variant='body2' color='textSecondary' component='body'>
+				<Typography variant="body2" color="textSecondary" component="body">
 					Please login to access user page features and preferences.
 				</Typography>
 
-				<Button onClick={() => loginWithRedirect()} color='primary'>
+				<Button onClick={() => loginWithRedirect()} color="primary">
 					Login
 				</Button>
 			</Paper>
@@ -303,17 +335,17 @@ export const User = props => {
 			{/* Profile Information */}
 			<Grid item xs={12} md={4}>
 				<Paper className={classes.user_profile} elevation={3}>
-					<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
+					<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
 						Profile
 					</Typography>
 					<Divider />
 					<br />
 					<Grid container>
-						<ControlRow text='Email' xs={12} md={8}>
+						<ControlRow text="Email" xs={12} md={8}>
 							<div> {user.email} </div>
 						</ControlRow>
-						<ControlRow text='Logout' xs={12} md={4}>
-							<Button onClick={() => logout()} color='primary'>
+						<ControlRow text="Logout" xs={12} md={4}>
+							<Button onClick={() => logout()} color="primary">
 								Logout
 							</Button>
 						</ControlRow>
@@ -324,7 +356,7 @@ export const User = props => {
 			{/* Preferences */}
 			<Grid id="oo-preferences-container" item xs={12} md={8}>
 				<Paper className={classes.user_pref} elevation={2}>
-					<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
+					<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
 						Preferences
 					</Typography>
 					<Divider />
@@ -340,9 +372,9 @@ export const User = props => {
 							</ToggleButton>
 						</Grid>
 						<Grid item xs={12} md={8}>
-							<Typography variant='body2' color='textSecondary' component='h4'>
-								Show special cards during instructions for controlling the animation, and identifying individual vertices and edges in the
-								paper.
+							<Typography variant="body2" color="textSecondary" component="h4">
+								Show special cards during instructions for controlling the animation, and identifying
+								individual vertices and edges in the paper.
 							</Typography>
 						</Grid>
 
@@ -356,9 +388,9 @@ export const User = props => {
 							</ToggleButton>
 						</Grid>
 						<Grid item xs={12} md={8}>
-							<Typography variant='body2' color='textSecondary' component='h4'>
-								Show a timer that allows you to track model folding speed over time. Turning this on allows the assistant to identify your
-								strengths and weakenesses better.
+							<Typography variant="body2" color="textSecondary" component="h4">
+								Show a timer that allows you to track model folding speed over time. Turning this on
+								allows the assistant to identify your strengths and weakenesses better.
 							</Typography>
 						</Grid>
 
@@ -372,9 +404,9 @@ export const User = props => {
 							</ToggleButton>
 						</Grid>
 						<Grid item xs={12} md={8}>
-							<Typography variant='body2' color='textSecondary' component='h4'>
-								Show a prompt after completing a model, allowing you to track quality over time. Turning this on allows the assistant to
-								identify your strengths and weakenesses better.
+							<Typography variant="body2" color="textSecondary" component="h4">
+								Show a prompt after completing a model, allowing you to track quality over time. Turning
+								this on allows the assistant to identify your strengths and weakenesses better.
 							</Typography>
 						</Grid>
 					</Grid>
@@ -384,14 +416,15 @@ export const User = props => {
 			{/* Assistant */}
 			<Grid id="oo-assistant" item xs={12}>
 				<Paper className={classes.user_assistant} elevation={2}>
-					{/*					<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
-						Assistant
-					</Typography>
-*/}
-					<Tabs value={assistantTab} indicatorColor='primary' textColor='primary' onChange={(e, val) => setAssistantTab(val)}>
-						<Tab label='Plan' />
-						<Tab label='History' />
-						<Tab label='Settings' />
+					<Tabs
+						value={assistantTab}
+						indicatorColor="primary"
+						textColor="primary"
+						onChange={(e, val) => setAssistantTab(val)}
+					>
+						<Tab label="Plan" />
+						<Tab label="History" />
+						<Tab label="Settings" />
 					</Tabs>
 
 					<Divider />

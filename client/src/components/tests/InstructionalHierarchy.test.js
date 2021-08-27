@@ -2,7 +2,7 @@
  * FILENAME: InstructionalHierarchy.test.js
  */
 
-// React + Enzyme 
+// React + Enzyme
 import React from 'react';
 import { shallow } from './../../infra/enzyme';
 
@@ -14,14 +14,14 @@ import { InstructionalHierarchy } from './../InstructionalHierarchy';
 describe('Fold Editor', () => {
 	let comp;
 	let setFoldState, setLayoutState, setUserState;
-			
+
 	beforeEach(() => {
 		setFoldState = jest.fn();
 		setLayoutState = jest.fn();
 		setUserState = jest.fn();
 
 		comp = shallow(
-			<InstructionalHierarchy 
+			<InstructionalHierarchy
 				windowHeight={500}
 				initFold={Object.assign({}, Folds.BirdBase.json)}
 				foldLastUpdated={0}
@@ -31,7 +31,6 @@ describe('Fold Editor', () => {
 				layoutStateHash={0}
 				userState={Object.assign({}, testRedux.userState)}
 				userStateHash={0}
-
 				setFoldState={setFoldState}
 				setLayoutState={setLayoutState}
 				setUserState={setUserState}
@@ -44,6 +43,10 @@ describe('Fold Editor', () => {
 	});
 
 	it('renders without crashing', () => {
+		expect(comp).toMatchSnapshot();
+	});
+
+	it('does something else', () => {
 		expect(comp).toMatchSnapshot();
 	});
 });

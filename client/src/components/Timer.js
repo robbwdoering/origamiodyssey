@@ -60,6 +60,7 @@ export const Timer = props => {
 	// ----------
 	// STATE INIT
 	// ----------
+
 	const [curHash, setHash] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [startPosix, setStartPosix] = useState(-1);
@@ -75,10 +76,18 @@ export const Timer = props => {
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
+
+	/**
+	 * Rerender this component.
+	 */
 	const triggerRerender = () => {
 		setHash(cur => cur + 1);
 	};
 
+	/**
+	 * Change the central "on/off" state of this timer. Saves to redux when stopped, and sets
+	 * up a worker when started to prompt rerenders once a second. 
+	 */
 	const toggleTimer = () => {
 		if (isPlaying && workerId !== -1) {
 			setFoldState({
@@ -110,6 +119,9 @@ export const Timer = props => {
 		// Don't update the worker - if it's running, let it continue running
 	};
 
+	/**
+	 * Reset the timer to 0 seconds, as if it had just mounted. Also resets redux stores times.
+	 */
 	const resetAllState = () => {
 		setIsPlaying(false);
 		setHasInitialized(false);
@@ -119,10 +131,16 @@ export const Timer = props => {
 		setFoldState({ lastRecordedTimer: 0 });
 	};
 
+	/**
+	 * Change the snackbar to show the quality assessment screen.
+	 */
 	const handleRecordQuality = () => {
 		setShowLikertAssess(true);
 	};
 
+	/**
+	 * Navigate to the model selection screen, closing the fold page.
+	 */
 	const handleModelSelect = () => {
 		closeSnackbar();
 		setLayoutState({
@@ -134,6 +152,9 @@ export const Timer = props => {
 		setFoldState(null);
 	};
 
+	/**
+	 * Resets this folding session, so the user can fold the model again.
+	 */
 	const handleFoldAnother = () => {
 		closeSnackbar();
 		resetAllState();
@@ -146,10 +167,17 @@ export const Timer = props => {
 		});
 	};
 
+	/**
+	 * Close the quality assessment input snackbar, going back to the default.
+	 */
 	const handleSubmitLikert = () => {
 		setShowLikertAssess(false);
 	};
 
+	/**
+	 * Render the actual input elements for the quality assessment snackbar.
+	 * @return renderable object
+	 */
 	const genLikertScale = () => {
 		let ret = [];
 		for (let i = 0; i < 5; i++) {
@@ -186,6 +214,10 @@ export const Timer = props => {
 		);
 	};
 
+	/**
+	 * Close the whole snackbar, potentially saving off the results of this folding session
+	 * if that hasn't been done yet.
+	 */
 	const closeSnackbar = () => {
 		if (!showSnackbar) {
 			return;
@@ -222,6 +254,7 @@ export const Timer = props => {
 		display: isHidden ? 'none' : undefined
 	};
 
+	// Get the placement of this from the parent every render
 	if (placeholderRef && placeholderRef.current) {
 		style.current.top = placeholderRef.current.offsetTop;
 		style.current.left = placeholderRef.current.offsetLeft;

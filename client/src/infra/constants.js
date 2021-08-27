@@ -248,28 +248,28 @@ export const Actions = {
 export const initNavTree = [
 	{
 		text: 'Return to Fold',
-		conditional: "is_saved_fold",
-		className: "primary-drawer-node",
-		key: Pages.Fold 
+		conditional: 'is_saved_fold',
+		className: 'primary-drawer-node',
+		key: Pages.Fold
 	},
 	{
 		text: 'Model Select',
-		key: Pages.ModelSelect 
+		key: Pages.ModelSelect
 	},
 	{
 		text: 'User Page',
-		conditional: "is_logged_in",
-		key: Pages.User 
+		conditional: 'is_logged_in',
+		key: Pages.User
 	},
 	{
 		text: 'Login',
-		conditional: "is_not_logged_in",
-		key: 'login' 
+		conditional: 'is_not_logged_in',
+		key: 'login'
 	},
 	{
 		text: 'Sign Up',
-		conditional: "is_not_logged_in",
-		key: 'signup' 
+		conditional: 'is_not_logged_in',
+		key: 'signup'
 	},
 	// {
 	// 	text: 'What is Origami?',
@@ -360,14 +360,14 @@ export const Lines = {
 */
 
 export const LikertTitles = [
-	"I was not able to finish the model.",
-	"I finished it, but there many distracting differences.",
-	"There are a few noticeable differences, like edges not lining up perfectly.",
-	"There are only a couple differences; you have to inspect closely to find a problem.",
-	"There are no differences, this model was perfectly folded!"
+	'I was not able to finish the model.',
+	'I finished it, but there many distracting differences.',
+	'There are a few noticeable differences, like edges not lining up perfectly.',
+	'There are only a couple differences; you have to inspect closely to find a problem.',
+	'There are no differences, this model was perfectly folded!'
 ];
 
 export const DEF_API_OPTIONS = {
 	audience: 'https://server.origamiodyssey.com',
 	scope: 'read:current_user update:current_user'
-}
+};
