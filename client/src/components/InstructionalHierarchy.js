@@ -428,6 +428,7 @@ export const InstructionalHierarchy = props => {
 		for (let i = foldState.repeatRange[0]; i <= foldState.repeatRange[1]; i++) {
 			ret.push(
 				<div
+					key={i}
 					className={`${classes.hier_looper_item} ${
 						i <= foldState.stepIdx + 1 ? classes.hier_looper_item__active : ''
 					}`}
@@ -498,8 +499,6 @@ export const InstructionalHierarchy = props => {
 	const instCardMargin =
 		window.innerWidth < 1200 + parseInt(cardStyle.width) + 10 ? parseInt(cardStyle.width) - 32 + 10 + 'px' : '0';
 
-	// console.log('[InstructionalHierarchy]');
-
 	return (
 		<div key='hier-center-col' className={classes.centerColumn_flex}>
 			{/* The card contains the timeline, which contains most actions here */}
@@ -552,7 +551,7 @@ export const InstructionalHierarchy = props => {
 				</div>
 			)}
 
-			<div className={classes.fold_controls_button_container}>
+			<div className={classes.fold_controls_button_container} id="oo-main-button-step-ctrls">
 				<Fab
 					classes={buttonClasses}
 					onClick={() => changeStep(-1)}
