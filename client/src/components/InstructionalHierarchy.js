@@ -72,7 +72,7 @@ export const InstructionalHierarchy = props => {
 
 	/**
 	 * Changes the current instructional sequential step, prompting animation through redux changes.
-	 * @param delta The number of step indices to change by. Positive to go towards end of instructions, negative to go back 
+	 * @param delta The number of step indices to change by. Positive to go towards end of instructions, negative to go back
 	 * @param isFromLooper true if this step change was done automatically
 	 */
 	const changeStep = (delta, isFromLooper) => {
@@ -97,7 +97,7 @@ export const InstructionalHierarchy = props => {
 	 * Calculate how many "default", or 2D, steps come before this one, and get their lengths.
 	 * This is useful since we know our index within the stepArray, but without information from this function,
 	 * we would have no way of deriving the final height of the whole component.
-	 * @param stepIdx count all the steps before this index 
+	 * @param stepIdx count all the steps before this index
 	 */
 	const calcNumDefaultsBefore = stepIdx => {
 		let total = 0;
@@ -119,7 +119,7 @@ export const InstructionalHierarchy = props => {
 
 	/**
 	 * Calculate where the card appears based on the current step and the shape of the overall instructions.
-	 * @return a CSS-in-JS styling object 
+	 * @return a CSS-in-JS styling object
 	 */
 	const calcCardPos = () => {
 		// const right = window.innerWidth > 1200 ? ((window.innerWidth / 2) + 0 + 'px') : undefined;
@@ -232,7 +232,7 @@ export const InstructionalHierarchy = props => {
 	};
 
 	/**
-	 * Wrapper for collectStepsForLevel using local vars. 
+	 * Wrapper for collectStepsForLevel using local vars.
 	 * @returns the array of "actual"/"in-use" steps
 	 */
 	const buildStepArray = () => {
@@ -317,12 +317,14 @@ export const InstructionalHierarchy = props => {
 				key={path}
 			>
 				<div
+					key={`${path}-div`}
 					className={`${classes.hier_node_anchor}`}
 					ref={activeNodeRef}
 					style={style}
 					onClick={event => handleHierNodeClick(event, path)}
 				>
 					<div
+						key={`${path}-div-div`}
 						className={`${classes.hier_node} ${classes['hier_node__' + type]}`}
 						style={{ height: pxHeight }}
 					/>
@@ -415,7 +417,7 @@ export const InstructionalHierarchy = props => {
 
 	/**
 	 * Render the looper indication, which is a series of boxex, one for each step already executed for this loop.
-	 * @return a renderable object 
+	 * @return a renderable object
 	 */
 	const renderLooperItems = () => {
 		if (foldState.repeatRoot === -1 || !foldState.repeatRange) {
@@ -439,7 +441,7 @@ export const InstructionalHierarchy = props => {
 	// ---------
 	// LIFECYCLE
 	// ---------
-	
+
 	// On mount build the button classes object
 	const buttonClasses = useMemo(
 		() => ({
@@ -452,7 +454,7 @@ export const InstructionalHierarchy = props => {
 	// Build a new "actual"/"in-use" step array whenever the instructions change
 	const stepArray = useMemo(buildStepArray, [!initFold || !initFold.instructions, initFold && initFold.frame_title]);
 
-	// Recalculate the shape of the card every render 
+	// Recalculate the shape of the card every render
 	const cardStyle = calcCardPos();
 
 	// Perform mount and unmount actions
@@ -496,16 +498,22 @@ export const InstructionalHierarchy = props => {
 	const instCardMargin =
 		window.innerWidth < 1200 + parseInt(cardStyle.width) + 10 ? parseInt(cardStyle.width) - 32 + 10 + 'px' : '0';
 
+	// console.log('[InstructionalHierarchy]');
+
 	return (
-		<div className={classes.centerColumn_flex}>
+		<div key='hier-center-col' className={classes.centerColumn_flex}>
 			{/* The card contains the timeline, which contains most actions here */}
-			<div className={classes.hier_card} style={cardStyle} ref={cardRef}>
+			<div key='hier-card' className={classes.hier_card} style={cardStyle} ref={cardRef}>
 				{/* The timeline */}
-				<div className={classes.hier_container} style={contStyle}>
+				<div key='hier-timeline' className={classes.hier_container} style={contStyle}>
 					{initFold &&
 						renderRows.current.reduce((acc, row, idx) => {
 							if (idx !== 0) {
-								acc.push(<div className={classes.hier_node_container}>{row}</div>);
+								acc.push(
+									<div idx={idx} key={'oo-hcr-' + idx} className={classes.hier_node_container}>
+										{row.map((elem, subIdx) => <div key={'oo-oo-hcr-' + subIdx}> {elem} </div>)}
+									</div>
+								);
 							}
 							return acc;
 						}, [])}

@@ -4,7 +4,7 @@
 
 // React + Enzyme
 import React from 'react';
-import { shallow } from './../../infra/enzyme';
+import { mount } from './../../infra/enzyme';
 
 // Local
 import { testRedux } from './../../infra/testConstants';
@@ -20,7 +20,7 @@ describe('Fold Editor', () => {
 		setLayoutState = jest.fn();
 		setUserState = jest.fn();
 
-		comp = shallow(
+		comp = mount(
 			<InstructionalHierarchy
 				windowHeight={500}
 				initFold={Object.assign({}, Folds.BirdBase.json)}
@@ -46,7 +46,38 @@ describe('Fold Editor', () => {
 		expect(comp).toMatchSnapshot();
 	});
 
-	it('does something else', () => {
-		expect(comp).toMatchSnapshot();
+	it('changes step when a node is clicked on', () => {
+		comp.find('ForwardRef(Tooltip)').at(5).simulate('click');
+
+		expect(setFoldState).toHaveBeenCalled();
+		expect(setFoldState.mock.calls[0][0].stepIdx).toBe(3);
 	});
+
+	it('enables looping behavior', () => {
+		// Turn on looper
+		comp.find('ForwardRef(Tooltip)').at(5).simulate('click', { shiftKey: true });
+
+		expect(setFoldState).toHaveBeenCalled();
+		expect(setFoldState.mock.calls[0][0]).toEqual({
+			repeatRange: [ 4, 7 ],
+			repeatRoot: 4,
+			stepIdx: 3
+		});
+	});
+
+	it('looper changes steps predictably', () => {
+		// Turn on looper
+		comp.find('ForwardRef(Tooltip)').at(5).simulate('click', { shiftKey: true });
+		comp.setProps({
+			foldState: Object.assign({}, testRedux.foldState, {
+				repeatRange: [ 4, 7 ],
+				repeatRoot: 4,
+				stepIdx: 3
+			})
+		});
+	});
+
+	it('clears looper when any node is clicked', () => {
+	});
+
 });

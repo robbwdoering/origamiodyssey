@@ -4,7 +4,8 @@
  * DESCRIPTION: Contains constants for use accross the app.
  */
 
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+// Icons
+import React from 'react';
 import GitHubIcon from '@material-ui/icons/GitHub';
 import SchoolIcon from '@material-ui/icons/School';
 import ClassIcon from '@material-ui/icons/Class';
