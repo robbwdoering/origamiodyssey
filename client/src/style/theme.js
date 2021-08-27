@@ -247,6 +247,9 @@ export const useStyles = makeStyles(theme => ({
 	},
 	likert_icon: {
 	},
+	likert_container: {
+		display: 'inline-flex'
+	},
 
 	// Fold Editor
 	editorState: {

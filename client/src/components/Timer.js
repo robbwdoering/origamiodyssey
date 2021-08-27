@@ -1,7 +1,7 @@
 /**
  * FILENAME: Timer.js
  *
- * DESCRIPTION: This component shows a simple timer that records to redux the amount of time taken to complete a set of instructions. 
+ * DESCRIPTION: This component shows a simple timer that records to redux the amount of time taken to complete a set of instructions.
  */
 
 // React + Redux
@@ -27,7 +27,7 @@ import {
 	Paper,
 	Tooltip
 } from '@material-ui/core';
-import MuiAlert from "@material-ui/lab/Alert";
+import MuiAlert from '@material-ui/lab/Alert';
 import FilterList from '@material-ui/icons/FilterList';
 import Clear from '@material-ui/icons/Clear';
 import PlayArrow from '@material-ui/icons/PlayArrow';
@@ -56,6 +56,10 @@ export const Timer = props => {
 		userState,
 		addHistoryEntry
 	} = props;
+
+	// ----------
+	// STATE INIT
+	// ----------
 	const [curHash, setHash] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [startPosix, setStartPosix] = useState(-1);
@@ -68,6 +72,9 @@ export const Timer = props => {
 	const classes = useStyles();
 	const style = useRef({});
 
+	// ----------------
+	// MEMBER FUNCTIONS
+	// ----------------
 	const triggerRerender = () => {
 		setHash(cur => cur + 1);
 	};
@@ -81,8 +88,8 @@ export const Timer = props => {
 			clearInterval(workerId);
 			setWorkerId(-1);
 			setStartPosix(-1);
-		} else if (!isPlaying && workerId === -1){
-			setWorkerId(setInterval(triggerRerender, 1000))
+		} else if (!isPlaying && workerId === -1) {
+			setWorkerId(setInterval(triggerRerender, 1000));
 			setStartPosix(Date.now());
 		}
 
@@ -91,14 +98,14 @@ export const Timer = props => {
 
 	/**
 	 * Reset the state that backs the value of the timer. Does not affect the running state;
-	 * a running timer that is reset will immediately start counting from 0. 
+	 * a running timer that is reset will immediately start counting from 0.
 	 */
 	const resetTimer = () => {
 		// Erase any record of the previous run - it is not saved anywhere
 		setFoldState({ lastRecordedTimer: 0 });
 
 		// Start running immediately if it was already running
-		setStartPosix(isPlaying ? Date.now()  : -1);
+		setStartPosix(isPlaying ? Date.now() : -1);
 
 		// Don't update the worker - if it's running, let it continue running
 	};
@@ -109,7 +116,7 @@ export const Timer = props => {
 		setHasFinished(false);
 		setStartPosix(-1);
 
-		setFoldState({lastRecordedTimer: 0});
+		setFoldState({ lastRecordedTimer: 0 });
 	};
 
 	const handleRecordQuality = () => {
@@ -133,11 +140,11 @@ export const Timer = props => {
 
 		// Reset fold state
 		setFoldState({
-			stepIdx: -1	,
+			stepIdx: -1,
 			repeatRoot: -1,
 			repeatRange: null
 		});
-	}
+	};
 
 	const handleSubmitLikert = () => {
 		setShowLikertAssess(false);
@@ -154,25 +161,32 @@ export const Timer = props => {
 					classes={{ popper: classes.hier_node_tooltip }}
 					key={`likert-tt-${i}`}
 				>
-					<div key={i} className={classes.likert_icon_container} onClick={() => setLastLikert(cur => cur === i ? -1 : i)}>
-						{isActive ? <Star className={classes.likert_icon}/> : <StarBorder className={classes.likert_icon}/>}
+					<div
+						key={i}
+						className={classes.likert_icon_container}
+						onClick={() => setLastLikert(cur => (cur === i ? -1 : i))}
+					>
+						{isActive ? (
+							<Star className={classes.likert_icon} />
+						) : (
+							<StarBorder className={classes.likert_icon} />
+						)}
 					</div>
 				</Tooltip>
 			);
 		}
 
 		return (
-			<ButtonGroup variant="text">
+			<div className={classes.likert_container}>
 				{ret}
 				<Button onClick={handleSubmitLikert} disabled={lastLikert === -1}>
-					Submit	
+					Submit
 				</Button>
-			</ButtonGroup>
+			</div>
 		);
 	};
 
 	const closeSnackbar = () => {
-		// console.log("[closeSnackbar]", hasFinished, showSnackbar, lastLikert, layoutState.curFold);
 		if (!showSnackbar) {
 			return;
 		}
@@ -181,7 +195,7 @@ export const Timer = props => {
 
 		// If details weren't already sent, send them now
 		if (!hasFinished) {
-			setHasFinished(true);	
+			setHasFinished(true);
 
 			let newEntry = {
 				foldKey: layoutState.curFold,
@@ -197,7 +211,9 @@ export const Timer = props => {
 		}
 	};
 
+	// ---------
 	// LIFECYCLE
+	// ---------
 
 	// Dynamically calculate the target size of the card
 	style.current = {
@@ -211,12 +227,21 @@ export const Timer = props => {
 		style.current.left = placeholderRef.current.offsetLeft;
 	}
 
+	// Cleanup worker on unmount no matter what
+	useEffect(() => {
+		return () => {
+			if (workerId !== -1) {
+				clearInterval(workerId);
+			}
+		};
+	}, [workerId]);
+
 	// Every time a new model is selected, the timer starts from scratch
 	useEffect(resetAllState, [layoutState.curFold]);
 
 	// Every time a step is advanced, check for completion
 	useEffect(() => {
-		// If this is a change to the last step, 
+		// If this is a change to the last step,
 		if (foldState.stepIdx >= foldState.maxSteps - 1) {
 			if (isPlaying) {
 				toggleTimer();
@@ -232,12 +257,11 @@ export const Timer = props => {
 		return closeSnackbar;
 	}, [foldState.stepIdx]);
 
+	// The current total time is the last recorded time, plus the length of this run
 	let timerPosix = foldState.lastRecordedTimer;
 	if (isPlaying) {
 		timerPosix += Date.now() - startPosix;
 	}
-
-	// console.log("[Timer]", timerPosix, foldState.lastRecordedTimer, isPlaying);
 
 	return (
 		<React.Fragment>
@@ -245,65 +269,68 @@ export const Timer = props => {
 				<ButtonGroup id="oo-timer-container">
 					<Button
 						className={`${classes.fold_timer} ${!isPlaying ? classes.fold_timer__paused : ''}`}
-						color={isPlaying ? undefined : "primary"}
+						color={isPlaying ? undefined : 'primary'}
 						onClick={toggleTimer}
 					>
-						{!isPlaying && <PlayArrow/>}
+						{!isPlaying && <PlayArrow id="oo-timer-play-icon" />}
 						{timerPosixToString(timerPosix)}
 					</Button>
-					<Button className={classes.fold_timer_control} onClick={resetTimer} disabled={!isPlaying && !foldState.lastRecordedTimer}>
-						<Clear />	
+					<Button
+						className={classes.fold_timer_control}
+						onClick={resetTimer}
+						disabled={!isPlaying && !foldState.lastRecordedTimer}
+					>
+						<Clear id="oo-timer-cancel-icon" />
 					</Button>
 				</ButtonGroup>
 			</div>
-			<Snackbar className={classes.fold_timer_snackbar} open={showSnackbar} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+			<Snackbar
+				id="oo-timer-snackbar"
+				className={classes.fold_timer_snackbar}
+				open={showSnackbar}
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+			>
 				<Paper elevation={5}>
-				{showLikertAssess ? (
-					<Grid className={classes.fold_timer_grid} container>
-						<Grid item xs={12}>
-							<Typography variant="h4" component="h4">
-								Please rate the quality of this result...	
-							</Typography>
+					{showLikertAssess ? (
+						<Grid className={classes.fold_timer_grid} container>
+							<Grid item xs={12}>
+								<Typography variant="h4" component="h4">
+									Please rate the quality of this result...
+								</Typography>
+							</Grid>
+							<Grid item xs={12}>
+								{genLikertScale()}
+							</Grid>
 						</Grid>
-						<Grid item xs={12}>
-							{genLikertScale()}
-						</Grid>
-					</Grid>
-				) : (
-					<Grid className={classes.fold_timer_grid} container>
-						<Grid item xs={10}>
-							<Typography  variant="h4" component="h4">
-								Model complete
-							</Typography>
-							<Button classes={{root: classes.fold_timer_snackbar_close}} onClick={closeSnackbar}>
-								<Clear />
-							</Button>
-						</Grid>
-						{userState.showLikertAssess && (
-							<Grid item xs={12} md={4}>
-								<Button onClick={handleRecordQuality} disabled={lastLikert !== -1}>
-									{lastLikert !== -1 && (
-										<Done className={classes.fold_timer_done_icon} />
-									)}
-									Record Quality
+					) : (
+						<Grid className={classes.fold_timer_grid} container>
+							<Grid item xs={10}>
+								<Typography variant="h4" component="h4">
+									Model complete
+								</Typography>
+								<Button classes={{ root: classes.fold_timer_snackbar_close }} onClick={closeSnackbar}>
+									<Clear />
 								</Button>
 							</Grid>
-						)}
-						<Grid item xs={12} md={4}>
-							<Button onClick={handleFoldAnother}>
-								Fold Another	
-							</Button>
+							{userState.showLikertAssess && (
+								<Grid item xs={12} md={4}>
+									<Button onClick={handleRecordQuality} disabled={lastLikert !== -1}>
+										{lastLikert !== -1 && <Done className={classes.fold_timer_done_icon} />}
+										Record Quality
+									</Button>
+								</Grid>
+							)}
+							<Grid item xs={12} md={4}>
+								<Button onClick={handleFoldAnother}>Fold Another</Button>
+							</Grid>
+							<Grid item xs={12} md={4}>
+								<Button onClick={handleModelSelect}>Find Another Model</Button>
+							</Grid>
 						</Grid>
-						<Grid item xs={12} md={4}>
-							<Button onClick={handleModelSelect}>
-								Find Another Model	
-							</Button>
-						</Grid>
-					</Grid>
-				)}
+					)}
 				</Paper>
 			</Snackbar>
-			</React.Fragment>
+		</React.Fragment>
 	);
 };
 

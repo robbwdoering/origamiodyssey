@@ -68,7 +68,6 @@ export const Paper = props => {
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
-
 	const recursiveTriangulation = (curFace, foldObj) => {
 		if (curFace.length <= 3) {
 			// If this is a triangle (or invalid...), just push it as is

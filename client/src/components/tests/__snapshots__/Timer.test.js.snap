@@ -1,3 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Timer renders without crashing 1`] = `ShallowWrapper {}`;
+exports[`Timer generates a Likert scale without crashing 1`] = `ReactWrapper {}`;
+
+exports[`Timer renders without crashing 1`] = `ReactWrapper {}`;

@@ -6,4 +6,8 @@
 
 import { initAppReducerState } from "./constants";
 
-export const testRedux = Object.assign({}, initAppReducerState, {});
+export const testRedux = Object.assign({}, initAppReducerState, {
+    foldState: Object.assign({}, initAppReducerState.foldState, {
+        maxSteps: 10
+    })
+});
