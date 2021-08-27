@@ -44,32 +44,19 @@ import { setUserState, setLayoutState } from './../infra/actions';
 import { timerPosixToString, useApi } from './../infra/utils';
 
 export const User = props => {
-	const { userState, setUserState, layoutState, setLayoutState } = props;
+	const { userState, setUserState, layoutState, setLayoutState, logoutOverride } = props;
+
+	// ----------
+	// STATE INIT
+	// ----------
 	const classes = useStyles();
 	const { user, loginWithRedirect, isLoading, logout, isAuthenticated } = useAuth0();
 	const [addModelAnchor, setAddModelAnchor] = useState();
 	const [assistantTab, setAssistantTab] = useState(0);
 
-	// ----------
-	// STATE INIT
-	// ----------
-
 	// ----------------
 	// MEMBER FUNCTIONS
 	// ----------------
-
-	const ControlRow = ({ text, children, ...rest }) => (
-		<Grid item className={classes.editor_row} {...rest}>
-			{/* Title */}
-
-			<Typography className={classes.modelCard_label} variant='body2' color='textSecondary' component='h4'>
-				{text}
-			</Typography>
-			<Divider />
-
-			{children}
-		</Grid>
-	);
 
 	const handleUserFormChange = (name, value) => {
 		setUserState({ [name]: value });
@@ -103,7 +90,6 @@ export const User = props => {
 
 	const handleRemoveFold = foldKey => {
 		const idx = userState.modelList.findIndex(entry => entry.foldKey === foldKey);
-		console.log('[handleRemoveFold]', idx);
 		// Exit early if this isn't already in the list
 		if (idx === -1) {
 			return;
@@ -114,13 +100,66 @@ export const User = props => {
 
 		setUserState({ modelList: newArr });
 	};
+	// ---------
+	// LIFECYCLE
+	// ---------
+
+	// ------
+	// RENDER 
+	// ------
+
+	const ControlRow = ({ text, children, ...rest }) => (
+		<Grid item className={classes.editor_row} {...rest}>
+			{/* Title */}
+
+			<Typography className={classes.modelCard_label} variant='body2' color='textSecondary' component='h4'>
+				{text}
+			</Typography>
+			<Divider />
+
+			{children}
+		</Grid>
+	);
+
+	const renderAssistantRow = entry => {
+		const foldObj = Folds[entry.foldKey];
+		return (
+			<TableRow key={`${entry.foldKey}-assistant-row`}>
+				<TableCell className={classes.slimCol}>
+					<ButtonGroup className={classes.user_row_controls} color='primary'>
+						<Button onClick={() => handleRemoveFold(entry.foldKey)} title='Remove this model from the schedule'>
+							{' '}
+							<Remove />{' '}
+						</Button>
+						<Button onClick={() => handleOpenFold(entry.foldKey)} title='Start this fold'>
+							{' '}
+							<ExitToApp />{' '}
+						</Button>
+					</ButtonGroup>
+				</TableCell>
+				<TableCell> {foldObj.name} </TableCell>
+				<TableCell align='right' className={classes.slimCol}>
+					{' '}
+					{new Intl.DateTimeFormat().format(new Date(Date.now() + entry.schedule * 24 * 60 * 60 * 1000))}{' '}
+				</TableCell>
+				<TableCell align='right' className={classes.slimCol}>
+					{' '}
+					{entry.factor.toFixed(2)}{' '}
+				</TableCell>
+				<TableCell align='right' className={classes.slimCol}>
+					{' '}
+					{entry.isRepeatAgain ? 'True' : 'False'}{' '}
+				</TableCell>
+			</TableRow>
+		);
+	};
 
 	const renderAssistantTab = assistantTab => {
 		switch (assistantTab) {
 			case 0:
 				return (
-					<React.Fragment>
-						<Button className={classes.user_add_model_button} onClick={event => setAddModelAnchor(event.currentTarget)}>
+					<React.Fragment key="assistant-plan-tab">
+						<Button id="oo-assistant-add-model" className={classes.user_add_model_button} onClick={event => setAddModelAnchor(event.currentTarget)}>
 							Add Model To Plan
 						</Button>
 						<Menu
@@ -161,39 +200,7 @@ export const User = props => {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									{userState.modelList.map(entry => {
-										console.log('[modelList]', entry);
-										const foldObj = Folds[entry.foldKey];
-										return (
-											<TableRow>
-												<TableCell className={classes.slimCol}>
-													<ButtonGroup className={classes.user_row_controls} color='primary'>
-														<Button onClick={() => handleRemoveFold(entry.foldKey)} title='Remove this model from the schedule'>
-															{' '}
-															<Remove />{' '}
-														</Button>
-														<Button onClick={() => handleOpenFold(entry.foldKey)} title='Start this fold'>
-															{' '}
-															<ExitToApp />{' '}
-														</Button>
-													</ButtonGroup>
-												</TableCell>
-												<TableCell> {foldObj.name} </TableCell>
-												<TableCell align='right' className={classes.slimCol}>
-													{' '}
-													{new Intl.DateTimeFormat().format(new Date(Date.now() + entry.schedule * 24 * 60 * 60 * 1000))}{' '}
-												</TableCell>
-												<TableCell align='right' className={classes.slimCol}>
-													{' '}
-													{entry.factor.toFixed(2)}{' '}
-												</TableCell>
-												<TableCell align='right' className={classes.slimCol}>
-													{' '}
-													{entry.isRepeatAgain ? 'True' : 'False'}{' '}
-												</TableCell>
-											</TableRow>
-										);
-									})}
+									{userState.modelList.map(renderAssistantRow)}
 								</TableBody>
 							</Table>
 						</TableContainer>
@@ -201,7 +208,7 @@ export const User = props => {
 				);
 			case 1:
 				return (
-					<TableContainer>
+					<TableContainer key="assistant-history-tab">
 						<Table size='small'>
 							<TableHead className={classes.user_models_header}>
 								<TableRow>
@@ -225,10 +232,10 @@ export const User = props => {
 								</TableRow>
 							</TableHead>
 							<TableBody>
-								{userState.foldHistory.map(entry => {
+								{userState.foldHistory.map((entry, i) => {
 									const foldObj = Folds[entry.foldKey];
 									return (
-										<TableRow>
+										<TableRow key={`${entry.foldKey}-foldhistory-row-${i}`}>
 											<TableCell align='right' className={classes.slimCol}>
 												<ButtonGroup className={classes.user_row_controls} color='primary'>
 													<Button onClick={() => handleOpenFold(entry.foldKey)} title='Start this fold'>
@@ -263,17 +270,9 @@ export const User = props => {
 
 			case 2:
 			default:
-				return <span> ERROR </span>;
+				return <span key="assistant-error-tab"> ERROR </span>;
 		}
 	};
-
-	// ---------
-	// LIFECYCLE
-	// ---------
-
-	// ------
-	// RENDER 
-	// ------
 
 	if (isLoading) {
 		return (
@@ -281,7 +280,7 @@ export const User = props => {
 				<SquareLoader color='#e0e0e0' size={100} />
 			</Typography>
 		);
-	} else if (!isAuthenticated) {
+	} else if (!isAuthenticated || logoutOverride) {
 		return (
 			<Paper className={classes.user_login_prompt} elevation={3}>
 				<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
@@ -300,7 +299,7 @@ export const User = props => {
 	}
 
 	return (
-		<Grid className={classes.user_container} container spacing={2}>
+		<Grid id="oo-profile-container" className={classes.user_container} container spacing={2}>
 			{/* Profile Information */}
 			<Grid item xs={12} md={4}>
 				<Paper className={classes.user_profile} elevation={3}>
@@ -323,7 +322,7 @@ export const User = props => {
 			</Grid>
 
 			{/* Preferences */}
-			<Grid item xs={12} md={8}>
+			<Grid id="oo-preferences-container" item xs={12} md={8}>
 				<Paper className={classes.user_pref} elevation={2}>
 					<Typography className={classes.modelCard_label} variant='h3' color='textSecondary' component='h3'>
 						Preferences
@@ -383,7 +382,7 @@ export const User = props => {
 			</Grid>
 
 			{/* Assistant */}
-			<Grid item xs={12}>
+			<Grid id="oo-assistant" item xs={12}>
 				<Paper className={classes.user_assistant} elevation={2}>
 					{/*					<Typography className={classes.modelCard_label} variant="h3" color="textSecondary" component="h3">
 						Assistant

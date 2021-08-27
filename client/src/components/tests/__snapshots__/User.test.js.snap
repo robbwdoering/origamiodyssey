@@ -1,3 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`User Page renders history tab without crashing 1`] = `ShallowWrapper {}`;
+
+exports[`User Page renders login page 1`] = `ShallowWrapper {}`;
+
+exports[`User Page renders menu options 1`] = `ShallowWrapper {}`;
+
+exports[`User Page renders settings tab without crashing 1`] = `ShallowWrapper {}`;
+
 exports[`User Page renders without crashing 1`] = `ShallowWrapper {}`;

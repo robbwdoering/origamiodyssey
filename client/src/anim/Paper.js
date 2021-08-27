@@ -499,17 +499,17 @@ export const Paper = props => {
 
 	/**
 	 * This is a very complex step, and best understood by just reading the comments and section titles.
-	 * his is taking in an existing triangle (positioned as it actually is in the model
+	 * This is taking in an existing triangle (positioned as it actually is in the model
 	 * at the moment), the vertex of some triangle that's adjacent to it, and finally an angle in degrees. With this,
-	 * this function will figure out where the point would be if you folded this edge completly flat, then rotating the
-	 * new triangle by the amount given.
+	 * this function will figure out where the point would be if you folded this edge completly flat, then it will rotate the
+	 * new triangle by the amount given in the angle param.
 	 *
 	 * To make a long story short, this is placing a vertex based on existing ones that we know are in the right place already.
 	 *
-	 * @props fold - the fold object, which will be mutated by this method
-	 * @props vertIdx - the index of the vertex that's being placed
-	 * @props edge - array of the two vertIdxs that make up the edge b/w the two faces
-	 * @props angle - the angle to rotate the second face around the edge by.
+	 * @param fold - the fold object, which will be mutated by this method
+	 * @param vertIdx - the index of the vertex that's being placed
+	 * @param edge - array of the two vertIdxs that make up the edge b/w the two faces
+	 * @param angle - the angle to rotate the second face around the edge by.
 	 */
 	const rotateVertAroundEdge = (fold, vertIdx, edge, angle) => {
 		const actualXAxis = new THREE.Vector3(1, 0, 0);
