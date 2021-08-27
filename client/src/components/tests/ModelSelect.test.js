@@ -33,4 +33,19 @@ describe('Model Selection Page', () => {
 	it('renders without crashing', () => {
 		expect(comp).toMatchSnapshot();
 	});
+
+	it('shows the filter', () => {
+		expect(comp.find('WithStyles(ForwardRef(Grid))').first().prop('style').display).toBe('none');
+		comp.find('#oo-filter-button').first().simulate('click');
+
+		expect(comp.find('WithStyles(ForwardRef(Grid))').first().prop('style').display).not.toBe('none');
+	});
+
+	it('handles filter tag clicks', () => {
+		expect(comp.find('WithStyles(ForwardRef(Grid))').first().prop('style').display).toBe('none');
+		comp.find('#oo-filter-button').first().simulate('click');
+
+		console.log(comp.debug());
+		comp.find()
+	});
 });

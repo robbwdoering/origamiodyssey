@@ -4,7 +4,7 @@
 
 // React + Enzyme 
 import React from 'react';
-import { shallow } from './../../infra/enzyme';
+import { mount } from './../../infra/enzyme';
 
 // Local
 import { testRedux } from './../../infra/testConstants';
@@ -13,13 +13,16 @@ import { ModelCard } from './../ModelCard';
 
 describe('Model Card', () => {
 	let comp;
-	let handleCardClick;
+	let setLayoutState, handleCardClick, preventDefault, stopPropagation;
 
 			
 	beforeEach(() => {
+		setLayoutState = jest.fn();
 		handleCardClick = jest.fn();
+		preventDefault = jest.fn();
+		stopPropagation = jest.fn();
 
-		comp = shallow(
+		comp = mount(
 			<ModelCard 
 				// Parent
 				placeholderRef={{}} 
@@ -34,6 +37,7 @@ describe('Model Card', () => {
 				// Redux
 				layoutState={Object.assign({}, testRedux.layoutState)}
 				layoutStateHash={0}
+				setLayoutState={setLayoutState}
 			/>
 		);
 	});
@@ -44,5 +48,9 @@ describe('Model Card', () => {
 
 	it('renders without crashing', () => {
 		expect(comp).toMatchSnapshot();
+	});
+
+	it('opens fold pages', () => {
+		comp.find('button').last().simulate('click', { preventDefault, stopPropagation });
 	});
 });

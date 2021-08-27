@@ -32,17 +32,6 @@ import { setLayoutState } from './../infra/actions';
 const AnimatedCard = animated(Card);
 
 /**
- * Recreate the refs array, reusing elements. Note that this algo doesn't support reordering
- */
-// const updateCardRefs = () => {
-// 	setCardRefs(elRefs =>
-// 		Array(cardList.length)
-// 			.fill()
-// 			.map((el, i) => cardRefs[i] || createRef())
-// 	);
-// };
-
-/**
  * A subcomponent that displays one card. This component needs to grow and shrink without affecting html
  * layout styling, so it relies on a placeholder div that only suggests a shape to the actual, absolute, Card.
  */

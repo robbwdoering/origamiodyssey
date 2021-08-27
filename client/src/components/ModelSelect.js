@@ -111,7 +111,6 @@ export const ModelSelect = props => {
 				ret ||
 				!(obj.name.toLowerCase().includes(searchStr) || obj.description.toLowerCase().includes(searchStr));
 		}
-		// console.log('tagsAreHidden', ret, searchStr, obj);
 
 		return ret;
 	};
@@ -156,6 +155,7 @@ export const ModelSelect = props => {
 					)}
 					<Fab
 						className={classes.filter_toggle}
+						id='oo-filter-button'
 						onClick={e => handleCardClick(e, -2)}
 						color="primary"
 						size="large"
